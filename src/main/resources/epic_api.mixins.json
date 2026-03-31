@@ -1,0 +1,18 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "M6FGR.epic_api.mixins",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "epicfight.ControlEngineMixin",
+    "epicfight.PlayerPatchMixin"
+  ],
+  "client": [
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": false
+  }
+}

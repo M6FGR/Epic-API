@@ -1,5 +1,8 @@
 {
   "heavy_attack_consumption": 4,
   "heavy_dash_consumption": 4,
-  "heavy_airslash_consumption": 4
+  "heavy_airslash_consumption": 4,
+  "impact_modifier": 1.5,
+  "damage_modifier": 0.7,
+  "armor_negation": 12
 }

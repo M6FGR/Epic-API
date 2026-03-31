@@ -27,6 +27,7 @@ public class SimpleMovementAnimation extends MovementAnimation {
         super(transitionTime, isRepeat, path, armature);
     }
 
+    @Override
     public float getPlaySpeed(LivingEntityPatch<?> entitypatch, DynamicAnimation animation) {
         if (animation.isLinkAnimation()) {
             return 1.0F;

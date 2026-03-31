@@ -104,7 +104,7 @@ public class WeaponCapabilityRegistry {
                     if (animation != null) {
                         anims.add(animation);
                     } else {
-                        EpicAPI.LOGGER.warn("[Epic API] Missing animation {} in {}", animId, rl);
+                        EpicAPI.LOGGER.warn("Missing animation {} in {}", animId, rl);
                     }
                 }
 

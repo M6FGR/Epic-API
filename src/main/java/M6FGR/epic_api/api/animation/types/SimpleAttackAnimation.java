@@ -8,21 +8,19 @@ import yesman.epicfight.api.animation.property.AnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.EntityState;
 import yesman.epicfight.api.asset.AssetAccessor;
-import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.animation.property.ClientAnimationProperties;
-import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.client.animation.property.TrailInfo;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.model.Armature;
-import yesman.epicfight.api.utils.datastructure.ParameterizedHashMap;
 import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.registry.entries.EpicFightParticles;
-import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
-import yesman.epicfight.world.gamerule.EpicFightGameRules;
 
 import javax.annotation.Nullable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
 
 // An advanced version of ComboAttackAnimation-BasicAttackAnimation class, it alone can combine:
 // DashAttackAnimation, AirAttackAnimation, AttackAnimation, enabling trail registry too without the need for .jsons for each animation
@@ -105,6 +103,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
         this.addProperty(AnimationProperty.AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.1F);
     }
 
+    @Override
     protected void bindPhaseState(AttackAnimation.Phase phase) {;
         this.stateSpectrumBlueprint
                 .newTimePair(phase.start, phase.preDelay)
@@ -172,16 +171,6 @@ public class SimpleAttackAnimation extends AttackAnimation {
         }
     }
 
-    public ParameterizedHashMap<EntityState.StateFactor<?>> getStatesMap(LivingEntityPatch<?> entitypatch, float time) {
-        ParameterizedHashMap<EntityState.StateFactor<?>> stateMap = super.getStatesMap(entitypatch, time);
-        if (!EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(entitypatch.getOriginal().level())) {
-            stateMap.put(EntityState.MOVEMENT_LOCKED, Optional.of(false));
-            stateMap.put(EntityState.UPDATE_LIVING_MOTION, Optional.of(true));
-        }
-
-        return stateMap;
-    }
-
     public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, Joint attackingJoint, Collider collider) {
         float preDelay = (float) startFrame / 60;
         float contact = (float) endFrame / 60;
@@ -201,10 +190,6 @@ public class SimpleAttackAnimation extends AttackAnimation {
         float contact = (float) endFrame / 60;
         float recovery = (float) recoveryFrame / 60;
         return new Phase(0.0F ,preDelay, preDelay, contact, recovery, recovery, hand, JointColliderPair.of(firstJoint, collider), JointColliderPair.of(secondJoint, collider));
-    }
-
-    public Optional<JointMaskEntry> getJointMaskEntry(LivingEntityPatch<?> entitypatch, boolean useCurrentMotion) {
-        return entitypatch.isLogicalClient() && entitypatch.getClientAnimator().getPriorityFor(this.getAccessor()) == Layer.Priority.HIGHEST ? Optional.of(JointMaskEntry.COMBO_ATTACK_MASK) : super.getJointMaskEntry(entitypatch, useCurrentMotion);
     }
 
 

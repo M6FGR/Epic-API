@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "epicfight.ControlEngineMixin",
-    "epicfight.PlayerPatchMixin"
+    "epicfight.PlayerPatchMixin",
+    "epicfight.WeaponTypeReloadListenerMixin"
   ],
   "client": [
   ],

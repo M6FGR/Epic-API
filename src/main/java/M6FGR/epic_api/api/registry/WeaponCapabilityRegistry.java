@@ -1,11 +1,16 @@
 package M6FGR.epic_api.api.registry;
 
+import M6FGR.epic_api.main.EpicAPI;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
 import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.jetbrains.annotations.Nullable;
+import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.LivingMotions;
@@ -20,7 +25,9 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
+import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -73,10 +80,42 @@ public class WeaponCapabilityRegistry {
         return this;
     }
 
-    public WeaponCapabilityRegistry registerHeavyComboFromTag(WeaponCategory category, Style style, List<AnimationAccessor<? extends AttackAnimation>> animation) {
-        GLOBAL_HEAVY_COMBOS
-                .computeIfAbsent(category, k -> Maps.newHashMap())
-                .put(style, animation);
+    public WeaponCapabilityRegistry registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag, @Nullable ExtraEntryProvider extraEntryProvider) {
+        String categoryStr = rootTag.getString("category");
+        if (categoryStr.isEmpty()) return this;
+
+        WeaponCategory category = WeaponCategory.ENUM_MANAGER.getOrThrow(categoryStr);
+
+        if (rootTag.contains("heavy_combos")) {
+            CompoundTag heavyCombosTag = rootTag.getCompound("heavy_combos");
+
+            for (String styleKey : heavyCombosTag.getAllKeys()) {
+                Style style = Style.ENUM_MANAGER.getOrThrow(styleKey);
+
+                ListTag animList = heavyCombosTag.getList(styleKey, 8); // 8 is String type
+                List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<>();
+
+                for (int i = 0; i < animList.size(); ++i) {
+                    String animId = animList.getString(i);
+                    AnimationAccessor<? extends AttackAnimation> animation = (extraEntryProvider == null)
+                            ? AnimationManager.byKey(animId)
+                            : extraEntryProvider.getExtraOrBuiltInAnimation(animId);
+
+                    if (animation != null) {
+                        anims.add(animation);
+                    } else {
+                        EpicAPI.LOGGER.warn("[Epic API] Missing animation {} in {}", animId, rl);
+                    }
+                }
+
+                if (!anims.isEmpty()) {
+                    GLOBAL_HEAVY_COMBOS
+                            .computeIfAbsent(category, k -> Maps.newHashMap())
+                            .put(style, anims);
+                }
+            }
+        }
+
         return this;
     }
 

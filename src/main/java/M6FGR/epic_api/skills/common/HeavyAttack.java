@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationVariables;
+import yesman.epicfight.api.animation.property.AnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.event.EpicFightEventHooks;
@@ -21,6 +22,7 @@ import yesman.epicfight.api.event.types.player.ComboAttackEvent;
 import yesman.epicfight.api.event.types.player.ModifyComboCounter;
 import yesman.epicfight.api.event.types.player.SkillConsumeEvent;
 import yesman.epicfight.api.exception.AssetLoadingException;
+import yesman.epicfight.api.utils.math.ValueModifier;
 import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.server.SPAnimatorControl;
@@ -49,11 +51,16 @@ public class HeavyAttack extends Skill {
     protected float heavyDashAttackConsumption;
     protected float heavyAirAttackConsumption;
 
+    // Scaling Parameters
+    protected float damageMultiplier;
+    protected float impactMultiplier;
+    protected float armorNegation;
+
     /**
      * Standard Builder Creator
      */
     public static SkillBuilder<?> createHeavyAttackBuilder() {
-        return new  SkillBuilder<>(HeavyAttack::new)
+        return new SkillBuilder<>(HeavyAttack::new)
                 .setCategory(EpicAPISkillCategories.HEAVY_ATTACK)
                 .setActivateType(ActivateType.ONE_SHOT)
                 .setResource(Resource.STAMINA);
@@ -63,21 +70,26 @@ public class HeavyAttack extends Skill {
         super(builder);
     }
 
-
     @Override
     public void loadDatapackParameters(CompoundTag parameters) {
-      this.heavyAttackConsumption = parameters.getFloat("heavy_attack_consumption");
-      this.heavyDashAttackConsumption = parameters.getFloat("heavy_dash_consumption");
-      this.heavyAirAttackConsumption = parameters.getFloat("heavy_airslash_consumption");
+        this.heavyAttackConsumption = parameters.getFloat("heavy_attack_consumption");
+        this.heavyDashAttackConsumption = parameters.getFloat("heavy_dash_consumption");
+        this.heavyAirAttackConsumption = parameters.getFloat("heavy_airslash_consumption");
+
+        this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5f;
+        this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0f;
+        this.armorNegation = parameters.contains("armor_negation") ? parameters.getFloat("armor_negation") : 15.0f;
     }
 
     @Override
     public void executeOnServer(SkillContainer skillContainer, CompoundTag args) {
         ServerPlayerPatch executor = skillContainer.getServerExecutor();
         SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
+
         if (!executor.getEntityState().canBasicAttack()) {
             return;
         }
+
         if (!EpicFightEventHooks.Player.CONSUME_SKILL.postWithListener(event, event.getEntityPatch().getEventListener()).isCanceled()) {
             event.getResourceType().consumer.consume(skillContainer, executor, event.getAmount());
         }
@@ -99,7 +111,7 @@ public class HeavyAttack extends Skill {
 
             int comboSize = combo.size();
             if (comboSize < 3) {
-                throw new AssetLoadingException("Heavy combo for " + cap.getWeaponCategory() + " needs at least 3 animations.");
+                throw new AssetLoadingException("Heavy combo for " + cap.getWeaponCategory() + " needs at least 3 animations (Regular, Dash, Air).");
             }
 
             if (airAttack) {
@@ -113,6 +125,11 @@ public class HeavyAttack extends Skill {
             }
 
             if (attackMotion != null && this.checkConsumption(executor, dashAttack, airAttack)) {
+                // Apply scaling to the animation before playing
+                if (attackMotion.get() instanceof AttackAnimation attackAnim) {
+                    this.applyWeaponScaling(attackAnim);
+                }
+
                 setHeavyCounter(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
                 executor.getAnimator().playAnimation(attackMotion, 0.0F);
                 executor.getAnimator().getVariables().put(HEAVY_COMBO, attackMotion, true);
@@ -125,10 +142,18 @@ public class HeavyAttack extends Skill {
         }
     }
 
+
+    private void applyWeaponScaling(AttackAnimation animation) {
+        for (AttackAnimation.Phase phase : animation.phases) {
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(this.damageMultiplier));
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(this.impactMultiplier));
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(this.armorNegation));
+        }
+    }
+
     @Override
     public void updateContainer(SkillContainer container) {
         container.runOnServer((serverPlayerPatch) -> {
-            // Reset combo if the player hasn't acted in 16 ticks (0.8s)
             if (container.getExecutor().getTickSinceLastAction() > 16 && container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER) > 0) {
                 setHeavyCounter(ModifyComboCounter.Causal.TIME_EXPIRED, serverPlayerPatch, container, null, 0);
             }
@@ -165,11 +190,9 @@ public class HeavyAttack extends Skill {
         return playerPatch.consumeForSkill(this, this.resource, consumption);
     }
 
-
     private static @NotNull SPAnimatorControl getAnimatorControl(SkillContainer skillContainer, boolean stiffAttack, AnimationManager.AnimationAccessor<? extends AttackAnimation> attackMotion) {
         return stiffAttack
                 ? new SPAnimatorControl(AbstractAnimatorControl.Action.PLAY, attackMotion, skillContainer.getExecutor(), 0.0F)
                 : new SPAnimatorControl(AbstractAnimatorControl.Action.PLAY_CLIENT, attackMotion, skillContainer.getExecutor(), 0.0F, AbstractAnimatorControl.Layer.COMPOSITE_LAYER, AbstractAnimatorControl.Priority.HIGHEST);
     }
-
 }

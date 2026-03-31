@@ -195,7 +195,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
         return this;
     }
 
-    record TrailDefinition(String joint, TrailColor color, float startDelay, float endDelay, TrailPreset preset) {}
+    private record TrailDefinition(String joint, TrailColor color, float startDelay, float endDelay, TrailPreset preset) {}
 
     public enum TrailColor {
         WOOD(0.55f, 0.41f, 0.29f),

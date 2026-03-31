@@ -71,7 +71,7 @@ public class WeaponCapabilityPresets implements ILoadableClass {
                     null,
                     EpicFightSkills.SHARP_STAB.get()
             )
-                    // Innate skill preset
+                    // Innate skill preset (Ochs)
             .secondaryPreset(
                     Styles.OCHS,
                     null,

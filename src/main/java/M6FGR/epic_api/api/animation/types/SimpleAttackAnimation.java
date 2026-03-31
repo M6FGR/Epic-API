@@ -1,5 +1,6 @@
 package M6FGR.epic_api.api.animation.types;
 
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.Joint;
@@ -179,6 +180,27 @@ public class SimpleAttackAnimation extends AttackAnimation {
         }
 
         return stateMap;
+    }
+
+    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, Joint attackingJoint, Collider collider) {
+        float preDelay = (float) startFrame / 60;
+        float contact = (float) endFrame / 60;
+        float recovery = (float) recoveryFrame / 60;
+        return new Phase(preDelay, preDelay, contact, recovery, recovery, attackingJoint, collider);
+    }
+
+    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint attackingJoint, Collider collider) {
+        float preDelay = (float) startFrame / 60;
+        float contact = (float) endFrame / 60;
+        float recovery = (float) recoveryFrame / 60;
+        return new Phase(preDelay, preDelay, contact, recovery, recovery, hand, attackingJoint, collider);
+    }
+
+    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint firstJoint, Joint secondJoint, Collider collider) {
+        float preDelay = (float) startFrame / 60;
+        float contact = (float) endFrame / 60;
+        float recovery = (float) recoveryFrame / 60;
+        return new Phase(0.0F ,preDelay, preDelay, contact, recovery, recovery, hand, JointColliderPair.of(firstJoint, collider), JointColliderPair.of(secondJoint, collider));
     }
 
     public Optional<JointMaskEntry> getJointMaskEntry(LivingEntityPatch<?> entitypatch, boolean useCurrentMotion) {

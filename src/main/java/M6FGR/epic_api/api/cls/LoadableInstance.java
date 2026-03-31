@@ -32,14 +32,13 @@ class LoadableInstance {
                 .forEach(data -> {
                     String className = data.clazz().getClassName();
 
-                    // 2. Fast String-based check
                     if (loadedNames.contains(className)) {
                         return; // Skip: We already loaded this one.
                     }
 
                     try {
                         Class<?> cls = Class.forName(className);
-                        // 3. Ensure it's not the interface itself or an abstract class
+                        // Ensure it's not the interface itself or an abstract class
                         if (!loadedNames.contains(cls.getName())) {
                             LOGGER.error("Class: [{}] was never loaded!", className);
                         }

@@ -53,9 +53,7 @@ public class WeaponCapabilityRegistry {
         return new WeaponCapabilityRegistry();
     }
 
-    /**
-     * Static accessor for HeavyAttack.class
-     */
+    // Static accessor for HeavyAttack skill
     public static @Nullable List<AnimationAccessor<? extends AttackAnimation>> getHeavyCombo(WeaponCategory category, Style style) {
         Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> styleMap = GLOBAL_HEAVY_COMBOS.get(category);
         return styleMap != null ? styleMap.get(style) : null;
@@ -72,6 +70,13 @@ public class WeaponCapabilityRegistry {
     @SafeVarargs
     public final WeaponCapabilityRegistry withNewHeavyCombo(AnimationAccessor<? extends AttackAnimation>... heavyCombo) {
         this.localHeavyComboMap.put(this.currentStyle, List.of(heavyCombo));
+        return this;
+    }
+
+    public WeaponCapabilityRegistry registerHeavyComboFromTag(WeaponCategory category, Style style, List<AnimationAccessor<? extends AttackAnimation>> animation) {
+        GLOBAL_HEAVY_COMBOS
+                .computeIfAbsent(category, k -> Maps.newHashMap())
+                .put(style, animation);
         return this;
     }
 

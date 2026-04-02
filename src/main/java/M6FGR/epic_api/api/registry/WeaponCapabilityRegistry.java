@@ -80,6 +80,13 @@ public class WeaponCapabilityRegistry {
         return this;
     }
 
+    @SafeVarargs
+    static void registerHeavyCombo(WeaponCategory category, Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... animations) {
+        GLOBAL_HEAVY_COMBOS
+                .computeIfAbsent(category, k -> Maps.newHashMap())
+                .put(style, List.of(animations));
+    }
+    @SuppressWarnings("removal")
     public WeaponCapabilityRegistry registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag, @Nullable ExtraEntryProvider extraEntryProvider) {
         String categoryStr = rootTag.getString("category");
         if (categoryStr.isEmpty()) return this;

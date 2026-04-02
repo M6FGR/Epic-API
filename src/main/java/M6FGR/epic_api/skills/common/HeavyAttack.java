@@ -145,8 +145,9 @@ public class HeavyAttack extends Skill {
 
     private void applyWeaponScaling(AttackAnimation animation) {
         for (AttackAnimation.Phase phase : animation.phases) {
-            phase.addProperty(AnimationProperty.AttackPhaseProperty.DAMAGE_MODIFIER, ValueModifier.multiplier(this.damageMultiplier));
-            phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, ValueModifier.multiplier(this.impactMultiplier));
+            // in case of the multiply number is below 1, we add, so it doesn't decrease the damage nor the impact
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.DAMAGE_MODIFIER, this.damageMultiplier < 1 ? ValueModifier.adder(this.damageMultiplier) : ValueModifier.multiplier(this.damageMultiplier));
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, this.impactMultiplier < 1 ? ValueModifier.adder(this.impactMultiplier) : ValueModifier.multiplier(this.damageMultiplier));
             phase.addProperty(AnimationProperty.AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(this.armorNegation));
         }
     }

@@ -1,6 +1,7 @@
 package M6FGR.epic_api.main;
 
 import M6FGR.epic_api.api.cls.ILoadableClass;
+import M6FGR.epic_api.api.events.ExCapCapabilityRegistryEvent;
 import M6FGR.epic_api.api.input.EpicAPIIntputAction;
 import M6FGR.epic_api.api.registry.ArmatureRegistry;
 import M6FGR.epic_api.api.registry.EntityPatchRegistry;
@@ -12,6 +13,7 @@ import M6FGR.epic_api.skills.EpicAPISkillSlots;
 import M6FGR.epic_api.world.capabilities.item.WeaponCapabilityPresets;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import yesman.epicfight.api.client.input.action.InputAction;
@@ -27,17 +29,23 @@ public class EpicAPI {
         ILoadableClass.loadClasses(modBus,
                 // API registry
                 ArmatureRegistry.class,
-                WeaponCapabilityPresets.class,
                 EntityPatchRegistry.class,
                 // Assets registry
+                WeaponCapabilityPresets.class,
                 EpicAPISkills.class,
                 EpicAPISkillDataKeys.class,
                 EpicAPIKeyMappings.class
         );
+        modBus.addListener(this::onCommonEvents);
         // EpicFight Extensible Enums Registry
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
+    }
+
+    private void onCommonEvents(FMLCommonSetupEvent event) {
+        ExCapCapabilityRegistryEvent exCapCapabilityRegistryEvent = new ExCapCapabilityRegistryEvent();
+        event.enqueueWork(exCapCapabilityRegistryEvent::postAndDistribute);
     }
 
 }

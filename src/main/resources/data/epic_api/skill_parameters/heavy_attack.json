@@ -3,6 +3,6 @@
   "heavy_dash_consumption": 4,
   "heavy_airslash_consumption": 4,
   "impact_modifier": 1.5,
-  "damage_modifier": 0.7,
+  "damage_modifier": 1.2,
   "armor_negation": 12
 }

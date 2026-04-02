@@ -25,7 +25,6 @@ import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
 import java.util.function.Function;
 // just a placeholder of how the API works with heavy attacks
-// going to add ExCap compatibility soon for this
 public class WeaponCapabilityPresets implements ILoadableClass {
     // EpicFight Registry
     public static final Function<Item, WeaponCapability.Builder> LONGSWORD = item ->

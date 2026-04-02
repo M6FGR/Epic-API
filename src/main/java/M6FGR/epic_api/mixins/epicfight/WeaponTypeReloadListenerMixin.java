@@ -11,7 +11,6 @@ import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.capabilities.item.WeaponTypeReloadListener;
 // deprecated!
 import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
-// make HeavyAttack datapack friendly too!
 @Mixin(value = WeaponTypeReloadListener.class, remap = false)
 @SuppressWarnings("removal")
 public class WeaponTypeReloadListenerMixin {
@@ -22,6 +21,7 @@ public class WeaponTypeReloadListenerMixin {
             remap = false
     )
     private static void injectHeavyCombos(ResourceLocation rl, CompoundTag tag, ExtraEntryProvider extraEntryProvider, CallbackInfoReturnable<WeaponCapability.Builder> cir) {
+        // make HeavyAttack datapack friendly too!
         WeaponCapabilityRegistry.builder().registerHeavyComboFromTag(rl, tag, extraEntryProvider);
     }
 }

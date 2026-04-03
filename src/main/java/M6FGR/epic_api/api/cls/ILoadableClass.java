@@ -10,6 +10,7 @@ import net.neoforged.fml.event.lifecycle.FMLDedicatedServerSetupEvent;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 
+import java.lang.reflect.Constructor;
 import java.util.Arrays;
 
 import static M6FGR.epic_api.api.cls.LoadableInstance.*;
@@ -28,7 +29,11 @@ public interface ILoadableClass {
         }
 
         try {
-            ILoadableClass loadableIns = loadableClass.getDeclaredConstructor().newInstance();
+            Constructor<? extends ILoadableClass> constructor = loadableClass.getDeclaredConstructor();
+
+            constructor.setAccessible(true);
+
+            ILoadableClass loadableIns = constructor.newInstance();
             if (loadableIns.shouldLoad()) {
                 loadableIns.onModConstructor(bus);
                 loadableIns.onNeoForgeConstructor(NeoForge.EVENT_BUS);

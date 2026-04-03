@@ -5,11 +5,13 @@ import net.minecraft.sounds.SoundEvent;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.LivingMotion;
+import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.collider.Collider;
 import yesman.epicfight.api.ex_cap.modules.core.data.*;
 import yesman.epicfight.api.ex_cap.modules.core.provider.ProviderConditional;
+import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.world.capabilities.item.Style;
@@ -80,14 +82,14 @@ public class MoveSetRegistry {
     }
 
     @SafeVarargs
-    public final MoveSetRegistry newMoveSet(Style style, ResourceLocation id, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean offhand, @Nullable Skill pass, @Nullable Skill innate, ConditionalEntry cond, AnimationManager.AnimationAccessor<? extends AttackAnimation>... anims) {
+    public final MoveSetRegistry newMoveSet(Style style, ResourceLocation id, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean holdableInOffHand, @Nullable Skill passive, @Nullable Skill innate, ConditionalEntry cond, AnimationManager.AnimationAccessor<? extends AttackAnimation>... anims) {
         this.motherID = id;
         this.currentCombo = anims;
         this.currentCategory = category;
-        this.currentPassive = pass;
+        this.currentPassive = passive;
 
-        this.motherBuilder.identifier(id).addComboAttacks(anims).setPassiveSkill(pass).addInnateSkill((stack, patch) -> innate);
-        this.weaponCapability.category(category).canBePlacedOffhand(offhand).collider(collider).swingSound(swingSound).hitSound(hitSound).hitParticle(hitParticleType).addConditionals(cond.builder().build());
+        this.motherBuilder.identifier(id).addComboAttacks(anims).setPassiveSkill(passive).addInnateSkill((stack, patch) -> innate);
+        this.weaponCapability.category(category).canBePlacedOffhand(holdableInOffHand).collider(collider).swingSound(swingSound).hitSound(hitSound).hitParticle(hitParticleType).addConditionals(cond.builder().build());
 
         injectConditional(cond);
         this.lastActiveStyle = style;
@@ -113,7 +115,14 @@ public class MoveSetRegistry {
     }
 
     @SafeVarargs
-    public final MoveSetRegistry withChildMoveSet(Style style, ResourceLocation id, @Nullable Skill innate, @Nullable Skill pass, ConditionalEntry cond, AnimationManager.AnimationAccessor<? extends AttackAnimation>... combo) {
+    public final MoveSetRegistry withChildMoveSet(
+            Style style,
+            ResourceLocation id,
+            @Nullable Skill innate,
+            @Nullable Skill pass,
+            ConditionalEntry cond,
+            AnimationManager.AnimationAccessor<? extends AttackAnimation>... combo
+    ) {
         finalizePreviousStyle();
 
         MoveSet.MoveSetBuilder child = MoveSet.builder().identifier(id).parent(this.motherID).addInnateSkill((stack, patch) -> innate).setPassiveSkill(pass).addComboAttacks(combo);
@@ -141,6 +150,30 @@ public class MoveSetRegistry {
 
             this.persistentMotions.put(motion, anim);
         }
+        return this;
+    }
+
+
+    public MoveSetRegistry withDefaultBipedMotions() {
+        this.forEachMotion(
+                LivingMotions.IDLE, Animations.BIPED_IDLE,
+                LivingMotions.WALK, Animations.BIPED_WALK,
+                LivingMotions.RUN, Animations.BIPED_RUN,
+                LivingMotions.SNEAK, Animations.BIPED_SNEAK,
+                LivingMotions.SWIM, Animations.BIPED_SWIM,
+                LivingMotions.FLOAT, Animations.BIPED_FLOAT,
+                LivingMotions.KNEEL, Animations.BIPED_KNEEL,
+                LivingMotions.FALL, Animations.BIPED_FALL,
+                LivingMotions.MOUNT, Animations.BIPED_MOUNT,
+                LivingMotions.SIT, Animations.BIPED_SIT,
+                LivingMotions.FLY, Animations.BIPED_FLYING,
+                LivingMotions.DEATH, Animations.BIPED_DEATH,
+                LivingMotions.JUMP, Animations.BIPED_JUMP,
+                LivingMotions.CLIMB, Animations.BIPED_CLIMBING,
+                LivingMotions.SLEEP, Animations.BIPED_SLEEPING,
+                LivingMotions.CREATIVE_FLY, Animations.BIPED_CREATIVE_FLYING,
+                LivingMotions.CREATIVE_IDLE, Animations.BIPED_CREATIVE_IDLE
+        );
         return this;
     }
 

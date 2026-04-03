@@ -16,7 +16,7 @@ class LoadableInstance {
     public static final Logger LOGGER = LogManager.getLogger("ILoadableClass");
     public static final List<Class<? extends ILoadableClass>> LOADED_CLASSES = new ArrayList<>();
     // to specify classes that had an error loading
-    public static boolean LOADED;
+    public static boolean LOADED = false;
 
     public static void checkUnloaded(String modId) {
         IModFileInfo modFile = ModList.get().getModFileById(modId);

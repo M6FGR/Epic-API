@@ -18,13 +18,12 @@ public interface ILoadableClass {
     static void loadClass(IEventBus bus, Class<? extends ILoadableClass> loadableClass) {
         if (!isClass(loadableClass)) {
             // make it not loaded, so it doesn't print out as forgotten!
-            LOADED = false;
             LOGGER.error("Cannot load [{}]: not a class!", loadableClass.getName());
             return;
         }
 
         if (LOADED_CLASSES.contains(loadableClass)) {
-            LOADED = false;
+            LOADED = true;
             throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is already loaded!");
         }
 
@@ -43,15 +42,14 @@ public interface ILoadableClass {
                 }
 
                 LOADED_CLASSES.add(loadableClass);
-                LOADED = true;
                 LOGGER.info("Loaded class: [{}]", loadableClass.getSimpleName());
             }
         } catch (NoSuchMethodException noMethodEx) {
-            LOADED = false;
             LOGGER.error("Error loading Class [{}], It doesn't have a public constructor!", loadableClass.getName());
         } catch (Exception e) {
-            LOADED = false;
             LOGGER.error("Error loading Class [{}], {}", loadableClass.getName(), e.getMessage());
+        } finally {
+            LOADED = true;
         }
     }
 

@@ -29,7 +29,14 @@ base {
     archivesName = mod_id
 }
 
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+java {
+    withSourcesJar() // Creates a -sources.jar so others can see your code
+}
+
+// Ensure the jar is published in a way that other developers can use
+artifacts {
+    archives sourcesJar
+}
 
 neoForge {
     version = project.neo_version

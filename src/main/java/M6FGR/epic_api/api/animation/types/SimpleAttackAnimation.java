@@ -69,7 +69,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
         this.addProperty(AnimationProperty.StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.COMBO_ATTACK_DIRECTION_MODIFIER);
     }
 
-    public SimpleAttackAnimation(float transitionTime, AnimationManager.AnimationAccessor<? extends SimpleAttackAnimation> accessor, AssetAccessor<? extends Armature> armature, AttackAnimation.Phase... phases) {
+    public SimpleAttackAnimation(float transitionTime, AnimationManager.AnimationAccessor<? extends SimpleAttackAnimation> accessor, AssetAccessor<? extends Armature> armature, Phase... phases) {
         super(transitionTime, accessor, armature, phases);
         this.addCommonProperties();
     }
@@ -100,11 +100,11 @@ public class SimpleAttackAnimation extends AttackAnimation {
     private void addCommonProperties() {
         this.addProperty(AnimationProperty.ActionAnimationProperty.CANCELABLE_MOVE, true);
         this.addProperty(AnimationProperty.ActionAnimationProperty.MOVE_VERTICAL, false);
-        this.addProperty(AnimationProperty.AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.1F);
+        this.addProperty(AnimationProperty.AttackAnimationProperty.BASIS_ATTACK_SPEED, 1.2F);
     }
 
     @Override
-    protected void bindPhaseState(AttackAnimation.Phase phase) {;
+    protected void bindPhaseState(Phase phase) {;
         this.stateSpectrumBlueprint
                 .newTimePair(phase.start, phase.preDelay)
                 .addState(EntityState.PHASE_LEVEL, 1)
@@ -171,21 +171,21 @@ public class SimpleAttackAnimation extends AttackAnimation {
         }
     }
 
-    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, Joint attackingJoint, Collider collider) {
+    public static Phase newPhase(int startFrame, int endFrame, int recoveryFrame, Joint attackingJoint, Collider collider) {
         float preDelay = (float) startFrame / 60;
         float contact = (float) endFrame / 60;
         float recovery = (float) recoveryFrame / 60;
         return new Phase(preDelay, preDelay, contact, recovery, recovery, attackingJoint, collider);
     }
 
-    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint attackingJoint, Collider collider) {
+    public static Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint attackingJoint, Collider collider) {
         float preDelay = (float) startFrame / 60;
         float contact = (float) endFrame / 60;
         float recovery = (float) recoveryFrame / 60;
         return new Phase(preDelay, preDelay, contact, recovery, recovery, hand, attackingJoint, collider);
     }
 
-    public static AttackAnimation.Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint firstJoint, Joint secondJoint, Collider collider) {
+    public static Phase newPhase(int startFrame, int endFrame, int recoveryFrame, InteractionHand hand, Joint firstJoint, Joint secondJoint, Collider collider) {
         float preDelay = (float) startFrame / 60;
         float contact = (float) endFrame / 60;
         float recovery = (float) recoveryFrame / 60;

@@ -43,7 +43,6 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-            programArgument '--username=M6FGR'
         }
 
         server {
@@ -82,6 +81,8 @@ dependencies {
     implementation "curse.maven:epic-fight-mod-405076:7830180"
     // 21.16.1 sources (raw code)
     compileOnlyApi "local:epicfight:21.16.1:sources"
+    // to apply skins
+    implementation "local:skinrestorer:2.7.0"
 }
 
 // Fixed resource processing - This replaces the broken generateModMetadata task

@@ -15,6 +15,8 @@ import java.util.stream.Collectors;
 class LoadableInstance {
     public static final Logger LOGGER = LogManager.getLogger("ILoadableClass");
     public static final List<Class<? extends ILoadableClass>> LOADED_CLASSES = new ArrayList<>();
+    // to specify classes that had an error loading
+    public static boolean LOADED;
 
     public static void checkUnloaded(String modId) {
         IModFileInfo modFile = ModList.get().getModFileById(modId);
@@ -39,7 +41,7 @@ class LoadableInstance {
                     try {
                         Class<?> cls = Class.forName(className);
                         // Ensure it's not the interface itself or an abstract class
-                        if (!loadedNames.contains(cls.getName())) {
+                        if (!loadedNames.contains(cls.getName()) && !LOADED) {
                             LOGGER.error("Class: [{}] was never loaded!", className);
                         }
                     } catch (ClassNotFoundException ignored) {
@@ -51,5 +53,6 @@ class LoadableInstance {
     public static boolean isClass(Class<?> clazz) {
         return !clazz.isInterface() && !clazz.isEnum() && !clazz.isAnnotation();
     }
+
 
 }

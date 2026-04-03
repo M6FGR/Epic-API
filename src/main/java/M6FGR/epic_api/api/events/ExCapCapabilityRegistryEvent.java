@@ -1,8 +1,10 @@
 package M6FGR.epic_api.api.events;
 
+import M6FGR.epic_api.api.cls.ILoadableClass;
 import M6FGR.epic_api.api.events.hooks.EpicAPIEventHooks;
 import M6FGR.epic_api.api.registry.MoveSetRegistry;
 import net.minecraft.resources.ResourceLocation;
+import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.Event;
 
@@ -10,11 +12,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ExCapCapabilityRegistryEvent extends Event {
+public class ExCapCapabilityRegistryEvent extends Event implements ILoadableClass {
     private final Map<ResourceLocation, MoveSetRegistry> registryMap = new HashMap<>();
     private ResourceLocation id;
 
-    public ExCapCapabilityRegistryEvent() { }
+    ExCapCapabilityRegistryEvent() { }
 
     public void register(ResourceLocation id, MoveSetRegistry registry) {
         registry.build(id);
@@ -26,7 +28,7 @@ public class ExCapCapabilityRegistryEvent extends Event {
         return Collections.unmodifiableMap(this.registryMap);
     }
 
-    public void postAndDistribute() {
+    private void postAndDistribute() {
         EpicAPIEventHooks.Registry.EX_CAP_CAPABILITY_REGISTRY.post(this);
 
         EpicFightEventHooks.Registry.EX_CAP_DATA_CREATION.registerEvent(event -> {
@@ -53,5 +55,10 @@ public class ExCapCapabilityRegistryEvent extends Event {
                 event.getTypeEntry().put(id, (item) -> reg.getWeaponCapability());
             });
         });
+    }
+
+    @Override
+    public void onModCommonEvents(FMLCommonSetupEvent commonEvent) {
+        this.postAndDistribute();
     }
 }

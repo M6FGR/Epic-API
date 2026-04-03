@@ -49,8 +49,6 @@ public interface ILoadableClass {
                 LOADED_CLASSES.add(loadableClass);
                 LOGGER.info("Loaded class: [{}]", loadableClass.getSimpleName());
             }
-        } catch (NoSuchMethodException noMethodEx) {
-            LOGGER.error("Error loading Class [{}], It doesn't have a public constructor!", loadableClass.getName());
         } catch (Exception e) {
             LOGGER.error("Error loading Class [{}], {}", loadableClass.getName(), e.getMessage());
         } finally {

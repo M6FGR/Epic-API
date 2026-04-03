@@ -17,12 +17,15 @@ import static M6FGR.epic_api.api.cls.LoadableInstance.*;
 public interface ILoadableClass {
     static void loadClass(IEventBus bus, Class<? extends ILoadableClass> loadableClass) {
         if (!isClass(loadableClass)) {
+            // make it not loaded, so it doesn't print out as forgotten!
+            LOADED = false;
             LOGGER.error("Cannot load [{}]: not a class!", loadableClass.getName());
             return;
         }
 
         if (LOADED_CLASSES.contains(loadableClass)) {
-           throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is already loaded!");
+            LOADED = false;
+            throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is already loaded!");
         }
 
         try {
@@ -40,12 +43,15 @@ public interface ILoadableClass {
                 }
 
                 LOADED_CLASSES.add(loadableClass);
+                LOADED = true;
                 LOGGER.info("Loaded class: [{}]", loadableClass.getSimpleName());
             }
         } catch (NoSuchMethodException noMethodEx) {
-            LOGGER.error("Error loading class [{}], It doesn't have a public constructor!", loadableClass.getName());
+            LOADED = false;
+            LOGGER.error("Error loading Class [{}], It doesn't have a public constructor!", loadableClass.getName());
         } catch (Exception e) {
-            LOGGER.error("Cannot load class [{}], {}", loadableClass.getName(), e.getMessage());
+            LOADED = false;
+            LOGGER.error("Error loading Class [{}], {}", loadableClass.getName(), e.getMessage());
         }
     }
 

@@ -1,7 +1,6 @@
 package M6FGR.epic_api.skills.common;
 
-import M6FGR.epic_api.api.math.MathUtil;
-import M6FGR.epic_api.api.registry.WeaponCapabilityRegistry;
+import M6FGR.epic_api.api.builders.epicfight.WeaponCapabilityBuilder;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import net.minecraft.nbt.CompoundTag;
@@ -58,7 +57,7 @@ public class HeavyAttack extends Skill {
 
     /**
      * Standard Builder Creator
-     */
+    */
     public static SkillBuilder<?> createHeavyAttackBuilder() {
         return new SkillBuilder<>(HeavyAttack::new)
                 .setCategory(EpicAPISkillCategories.HEAVY_ATTACK)
@@ -100,8 +99,7 @@ public class HeavyAttack extends Skill {
             ServerPlayer player = executor.getOriginal();
             SkillDataManager dataManager = skillContainer.getDataManager();
             int comboCounter = dataManager.getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER);
-
-            Vec3 blocksToDelta = MathUtil.cubicVec3ToDelta(player.getDeltaMovement());
+            Vec3 blocksToDelta = this.cubicVec3ToDelta(player.getDeltaMovement());
             boolean dashAttack = player.isSprinting();
             boolean airAttack = !player.isInWater() && !player.onGround() && blocksToDelta.y() > this.MIN_ATTACK_Y && !player.getBlockStateOn().is(Block.byItem(Items.DIRT_PATH));
 
@@ -143,11 +141,24 @@ public class HeavyAttack extends Skill {
     }
 
 
+    private Vec3 cubicVec3ToDelta(Vec3 delta) {
+        double dx = delta.x * 2.12453;
+        double dz = delta.z * 2.12453;
+        double dy = 0;
+        if (delta.y > 0) {
+            dy = Math.sqrt(delta.y * 0.16) + 0.02;
+        } else if (delta.y < 0) {
+            dy = delta.y * 0.1;
+        }
+        return new Vec3(dx, dy, dz);
+    }
+
+
     private void applyWeaponScaling(AttackAnimation animation) {
         for (AttackAnimation.Phase phase : animation.phases) {
             // in case of the multiply number is below 1, we add, so it doesn't decrease the damage nor the impact
             phase.addProperty(AnimationProperty.AttackPhaseProperty.DAMAGE_MODIFIER, this.damageMultiplier < 1 ? ValueModifier.adder(this.damageMultiplier) : ValueModifier.multiplier(this.damageMultiplier));
-            phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, this.impactMultiplier < 1 ? ValueModifier.adder(this.impactMultiplier) : ValueModifier.multiplier(this.damageMultiplier));
+            phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, this.impactMultiplier < 1 ? ValueModifier.adder(this.impactMultiplier) : ValueModifier.multiplier(this.impactMultiplier));
             phase.addProperty(AnimationProperty.AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(this.armorNegation));
         }
     }
@@ -167,7 +178,7 @@ public class HeavyAttack extends Skill {
         Style currentStyle = itemCapability.getStyle(playerpatch);
 
         List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> dynamicCombo =
-                WeaponCapabilityRegistry.getHeavyCombo(currentCategory, currentStyle);
+                WeaponCapabilityBuilder.getHeavyCombo(currentCategory, currentStyle);
 
         if (dynamicCombo != null) return dynamicCombo;
 

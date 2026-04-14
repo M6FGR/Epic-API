@@ -1,6 +1,6 @@
 package M6FGR.epic_api.gameassets;
 
-import M6FGR.epic_api.api.cls.ILoadableClass;
+import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.main.EpicAPI;
 import M6FGR.epic_api.skills.common.HeavyAttack;
 import net.minecraft.network.codec.ByteBufCodecs;

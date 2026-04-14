@@ -1,4 +1,4 @@
-package M6FGR.epic_api.api.registry;
+package M6FGR.epic_api.builders.epicfight;
 
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -23,7 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MoveSetRegistry {
+public class MoveSetBuilder {
     protected MoveSetEntry moveSetEntry;
     protected BuilderEntry builderEntry;
     protected ExCapDataEntry dataEntry;
@@ -44,14 +44,14 @@ public class MoveSetRegistry {
     protected AnimationManager.AnimationAccessor<? extends AttackAnimation>[] currentCombo;
     protected Skill currentPassive;
 
-    private MoveSetRegistry() {
+    private MoveSetBuilder() {
         this.motherBuilder = MoveSet.builder();
         this.exCapData = ExCapData.builder();
         this.weaponCapability = WeaponCapability.builder();
     }
 
-    public static MoveSetRegistry builder() {
-        return new MoveSetRegistry();
+    public static MoveSetBuilder builder() {
+        return new MoveSetBuilder();
     }
 
     private void injectConditional(ConditionalEntry condition) {
@@ -82,7 +82,7 @@ public class MoveSetRegistry {
     }
 
     @SafeVarargs
-    public final MoveSetRegistry newMoveSet(Style style, ResourceLocation id, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean holdableInOffHand, @Nullable Skill passive, @Nullable Skill innate, ConditionalEntry cond, AnimationManager.AnimationAccessor<? extends AttackAnimation>... anims) {
+    public final MoveSetBuilder newMoveSet(Style style, ResourceLocation id, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean holdableInOffHand, @Nullable Skill passive, @Nullable Skill innate, ConditionalEntry cond, AnimationManager.AnimationAccessor<? extends AttackAnimation>... anims) {
         this.motherID = id;
         this.currentCombo = anims;
         this.currentCategory = category;
@@ -98,7 +98,7 @@ public class MoveSetRegistry {
         return this;
     }
 
-    public MoveSetRegistry withChild(Style style, ResourceLocation id, @Nullable Skill innate, ConditionalEntry cond) {
+    public MoveSetBuilder withChild(Style style, ResourceLocation id, @Nullable Skill innate, ConditionalEntry cond) {
         finalizePreviousStyle();
 
         MoveSet.MoveSetBuilder child = MoveSet.builder().identifier(id).parent(this.motherID).addComboAttacks(this.currentCombo).setPassiveSkill(this.currentPassive).addInnateSkill((stack, patch) -> innate);
@@ -115,7 +115,7 @@ public class MoveSetRegistry {
     }
 
     @SafeVarargs
-    public final MoveSetRegistry withChildMoveSet(
+    public final MoveSetBuilder withChildMoveSet(
             Style style,
             ResourceLocation id,
             @Nullable Skill innate,
@@ -138,7 +138,7 @@ public class MoveSetRegistry {
         return this;
     }
 
-    public MoveSetRegistry forEachMotion(Object... pairs) {
+    public MoveSetBuilder forEachMotion(Object... pairs) {
         if (pairs.length % 2 != 0) throw new IllegalArgumentException("Pairs required!");
         for (int i = 0; i < pairs.length; i += 2) {
             LivingMotion motion = (LivingMotion) pairs[i];
@@ -154,7 +154,7 @@ public class MoveSetRegistry {
     }
 
 
-    public MoveSetRegistry withDefaultBipedMotions() {
+    public MoveSetBuilder withDefaultBipedMotions() {
         this.forEachMotion(
                 LivingMotions.IDLE, Animations.BIPED_IDLE,
                 LivingMotions.WALK, Animations.BIPED_WALK,
@@ -178,16 +178,16 @@ public class MoveSetRegistry {
     }
 
     @SafeVarargs
-    public final MoveSetRegistry withHeavyCombo(AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
+    public final MoveSetBuilder withHeavyCombo(AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
         if (this.lastActiveStyle != null && this.currentCategory != null) {
-            WeaponCapabilityRegistry.registerHeavyCombo(this.currentCategory, this.lastActiveStyle, heavy);
+            WeaponCapabilityBuilder.registerHeavyCombo(this.currentCategory, this.lastActiveStyle, heavy);
         }
         return this;
     }
     @SafeVarargs
-    public final MoveSetRegistry withHeavyCombo(Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
+    public final MoveSetBuilder withHeavyCombo(Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
         if (this.lastActiveStyle != null && this.currentCategory != null) {
-            WeaponCapabilityRegistry.registerHeavyCombo(this.currentCategory, style, heavy);
+            WeaponCapabilityBuilder.registerHeavyCombo(this.currentCategory, style, heavy);
         }
         return this;
     }

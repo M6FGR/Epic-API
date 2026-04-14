@@ -1,15 +1,14 @@
 package M6FGR.epic_api.main;
 
-import M6FGR.epic_api.api.builders.epicfight.ArmatureRegistrar;
-import M6FGR.epic_api.api.builders.epicfight.EntityPatchRegistrar;
-import M6FGR.epic_api.api.builders.minecraft.GameRulesRegistrar;
-import M6FGR.epic_api.api.cls.load.ILoadableClass;
-import M6FGR.epic_api.api.events.IEventHook;
-import M6FGR.epic_api.api.events.item.ExCapCapabilityRegistryEventHook;
-import M6FGR.epic_api.api.input.EpicAPIIntputAction;
+import M6FGR.epic_api.builders.minecraft.GameRulesBuilder;
+import M6FGR.epic_api.cls.ILoadableClass;
+import M6FGR.epic_api.events.IEventHook;
+import M6FGR.epic_api.events.entity.EntityPatchEventHook;
+import M6FGR.epic_api.events.item.ExCapCapabilityRegistryEventHook;
 import M6FGR.epic_api.gameassets.EpicAPIKeyMappings;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.gameassets.EpicAPISkills;
+import M6FGR.epic_api.input.EpicAPIIntputAction;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import M6FGR.epic_api.skills.EpicAPISkillSlots;
 import net.neoforged.bus.api.IEventBus;
@@ -28,15 +27,11 @@ public class EpicAPI {
     public static final Logger LOGGER = LogManager.getLogger("EpicAPI");
 
     public EpicAPI(IEventBus modBus) {
-        // never load events via ILoadableClass!, it will only fire for me
+        // never load events via ILoadableClass!, it will only fire for Epic-API!
         modBus.addListener(this::commonEvents);
-
         ILoadableClass.loadClasses(modBus,
-                // EpicFight registrars
-                ArmatureRegistrar.class,
-                EntityPatchRegistrar.class,
-                // Minecraft Registrars
-                GameRulesRegistrar.class,
+                // Minecraft Builders
+                GameRulesBuilder.class,
                 // Assets registry
                 EpicAPISkills.class,
                 EpicAPISkillDataKeys.class,
@@ -53,9 +48,12 @@ public class EpicAPI {
     }
 
     private void commonEvents(FMLCommonSetupEvent event) {
-        IEventHook.fire(
-                ExCapCapabilityRegistryEventHook.class
-        );
+       event.enqueueWork(() -> {
+           IEventHook.fire(
+                   ExCapCapabilityRegistryEventHook.class,
+                   EntityPatchEventHook.class
+           );
+       });
     }
 
 

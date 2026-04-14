@@ -1,6 +1,6 @@
 package M6FGR.epic_api.mixins.epicfight;
 
-import M6FGR.epic_api.api.registry.WeaponCapabilityRegistry;
+import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
@@ -22,6 +22,6 @@ public class WeaponTypeReloadListenerMixin {
     )
     private static void injectHeavyCombos(ResourceLocation rl, CompoundTag tag, ExtraEntryProvider extraEntryProvider, CallbackInfoReturnable<WeaponCapability.Builder> cir) {
         // make HeavyAttack datapack friendly too!
-        WeaponCapabilityRegistry.builder().registerHeavyComboFromTag(rl, tag, extraEntryProvider);
+        WeaponCapabilityBuilder.builder().registerHeavyComboFromTag(rl, tag, extraEntryProvider);
     }
 }

@@ -1,30 +1,50 @@
-package M6FGR.epic_api.api.animation.types;
+package M6FGR.epic_api.animation.types;
 
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
-import yesman.epicfight.api.animation.types.MovementAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
+import yesman.epicfight.api.client.animation.Layer;
+import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.client.camera.EpicFightCameraAPI;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
-public class SimpleMovementAnimation extends MovementAnimation {
+public class SimpleMovementAnimation extends SimpleStaticAnimation {
     protected float movementSpeed;
-    public SimpleMovementAnimation(boolean isRepeat, float movementSpeed, AnimationManager.AnimationAccessor<? extends MovementAnimation> accessor, AssetAccessor<? extends Armature> armature) {
+
+    public SimpleMovementAnimation(boolean isRepeat, float movementSpeed, AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> accessor, AssetAccessor<? extends Armature> armature) {
         super(isRepeat, accessor, armature);
         this.movementSpeed = movementSpeed;
     }
-    public SimpleMovementAnimation(boolean isRepeat, AnimationManager.AnimationAccessor<? extends MovementAnimation> accessor, AssetAccessor<? extends Armature> armature) {
+
+    public SimpleMovementAnimation(boolean isRepeat, AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> accessor, AssetAccessor<? extends Armature> armature) {
         super(isRepeat, accessor, armature);
     }
 
-    public SimpleMovementAnimation(float transitionTime, boolean isRepeat, float movementSpeed, AnimationManager.AnimationAccessor<? extends MovementAnimation> accessor, AssetAccessor<? extends Armature> armature) {
+    public SimpleMovementAnimation(float transitionTime, boolean isRepeat, float movementSpeed, AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> accessor, AssetAccessor<? extends Armature> armature) {
         super(transitionTime, isRepeat, accessor, armature);
         this.movementSpeed = movementSpeed;
     }
 
-    public SimpleMovementAnimation(float transitionTime, boolean isRepeat, String path, AssetAccessor<? extends Armature> armature) {
-        super(transitionTime, isRepeat, path, armature);
+    @Override
+    public SimpleMovementAnimation withPriority(Layer.Priority priority) {
+        super.withPriority(priority);
+        return this;
+    }
+    @Override
+    public SimpleMovementAnimation withLayer(Layer.LayerType layer) {
+        super.withLayer(layer);
+        return this;
+    }
+    @Override
+    public SimpleMovementAnimation withJointMask(JointMasks masks) {
+        super.withJointMask(masks);
+        return this;
+    }
+    @Override
+    public SimpleMovementAnimation withJointMask(JointMaskEntry mask) {
+        super.withJointMask(mask);
+        return this;
     }
 
     @Override

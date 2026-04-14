@@ -1,9 +1,12 @@
-package M6FGR.epic_api.api.math;
-
+package M6FGR.epic_api.math;
 
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.phys.Vec3;
 
+@Deprecated(
+        forRemoval = true,
+        since = "21.2.2"
+)
 public class MathUtil {
 
     public static float fromFramesToSeconds(float frameNumber, float fps) {

@@ -1,4 +1,4 @@
-package M6FGR.epic_api.api.registry;
+package M6FGR.epic_api.builders.epicfight;
 
 import M6FGR.epic_api.main.EpicAPI;
 import com.google.common.collect.ImmutableMap;
@@ -8,7 +8,6 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
-import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -32,8 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-@Experimental
-public class WeaponCapabilityRegistry {
+public class WeaponCapabilityBuilder {
     // 1. GLOBAL STORAGE FOR SKILLS
     private static final Map<WeaponCategory, Map<Style, List<AnimationAccessor<? extends AttackAnimation>>>> GLOBAL_HEAVY_COMBOS = Maps.newHashMap();
 
@@ -52,12 +50,12 @@ public class WeaponCapabilityRegistry {
     // 2. LOCAL STORAGE FOR BUILDER
     private final Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> localHeavyComboMap = Maps.newHashMap();
 
-    private WeaponCapabilityRegistry() {
+    private WeaponCapabilityBuilder() {
         this.builder = WeaponCapability.builder();
     }
 
-    public static WeaponCapabilityRegistry builder() {
-        return new WeaponCapabilityRegistry();
+    public static WeaponCapabilityBuilder builder() {
+        return new WeaponCapabilityBuilder();
     }
 
     // Static accessor for HeavyAttack skill
@@ -69,13 +67,13 @@ public class WeaponCapabilityRegistry {
     // --- Heavy Combo Methods ---
 
     @SafeVarargs
-    public final WeaponCapabilityRegistry withNewHeavyCombo(Style style, AnimationAccessor<? extends AttackAnimation>... heavyCombo) {
+    public final WeaponCapabilityBuilder withNewHeavyCombo(Style style, AnimationAccessor<? extends AttackAnimation>... heavyCombo) {
         this.localHeavyComboMap.put(style, List.of(heavyCombo));
         return this;
     }
 
     @SafeVarargs
-    public final WeaponCapabilityRegistry withNewHeavyCombo(AnimationAccessor<? extends AttackAnimation>... heavyCombo) {
+    public final WeaponCapabilityBuilder withNewHeavyCombo(AnimationAccessor<? extends AttackAnimation>... heavyCombo) {
         this.localHeavyComboMap.put(this.currentStyle, List.of(heavyCombo));
         return this;
     }
@@ -87,7 +85,7 @@ public class WeaponCapabilityRegistry {
                 .put(style, List.of(animations));
     }
     @SuppressWarnings("removal")
-    public WeaponCapabilityRegistry registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag, @Nullable ExtraEntryProvider extraEntryProvider) {
+    public WeaponCapabilityBuilder registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag, @Nullable ExtraEntryProvider extraEntryProvider) {
         String categoryStr = rootTag.getString("category");
         if (categoryStr.isEmpty()) return this;
 
@@ -99,7 +97,7 @@ public class WeaponCapabilityRegistry {
             for (String styleKey : heavyCombosTag.getAllKeys()) {
                 Style style = Style.ENUM_MANAGER.getOrThrow(styleKey);
 
-                ListTag animList = heavyCombosTag.getList(styleKey, 8); // 8 is String type
+                ListTag animList = heavyCombosTag.getList(styleKey, 8); // 8 is String types
                 List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<>();
 
                 for (int i = 0; i < animList.size(); ++i) {
@@ -129,7 +127,7 @@ public class WeaponCapabilityRegistry {
     // --- Preset & Style Methods ---
 
     @SafeVarargs
-    public final WeaponCapabilityRegistry newPreset(Style style, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean holdableInOffHand, @Nullable Skill passiveSkill, @Nullable Skill innateSkill, AnimationAccessor<? extends AttackAnimation>... animations) {
+    public final WeaponCapabilityBuilder newPreset(Style style, WeaponCategory category, Collider collider, SoundEvent swingSound, SoundEvent hitSound, HitParticleType hitParticleType, boolean holdableInOffHand, @Nullable Skill passiveSkill, @Nullable Skill innateSkill, AnimationAccessor<? extends AttackAnimation>... animations) {
         this.currentCombo = animations;
         this.currentInnate = innateSkill;
         this.currentPassive = passiveSkill;
@@ -160,7 +158,7 @@ public class WeaponCapabilityRegistry {
     }
 
     @SafeVarargs
-    public final WeaponCapabilityRegistry secondaryPreset(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill, AnimationAccessor<? extends AttackAnimation>... animations) {
+    public final WeaponCapabilityBuilder secondaryPreset(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill, AnimationAccessor<? extends AttackAnimation>... animations) {
         this.currentCombo = animations;
         this.currentInnate = innateSkill;
         this.currentPassive = passiveSkill;
@@ -184,7 +182,7 @@ public class WeaponCapabilityRegistry {
         return this;
     }
 
-    public final WeaponCapabilityRegistry secondaryStyle(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill) {
+    public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill) {
         this.currentStyle = style;
         this.builder
                 .category(currentCategory)
@@ -205,7 +203,7 @@ public class WeaponCapabilityRegistry {
         return this;
     }
 
-    public final WeaponCapabilityRegistry secondaryStyle(Style style, @Nullable Skill innateSkill) {
+    public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill innateSkill) {
         this.currentStyle = style;
         this.builder.category(currentCategory).collider(currentCollider).hitSound(currentHitSound).swingSound(currentSwingSound)
                 .canBePlacedOffhand(currentHoldableInOffHand).passiveSkill(currentPassive)
@@ -217,19 +215,19 @@ public class WeaponCapabilityRegistry {
 
     // --- Shield Methods ---
 
-    public WeaponCapabilityRegistry newShieldPreset(WeaponCategory category) {
+    public WeaponCapabilityBuilder newShieldPreset(WeaponCategory category) {
         this.builder.constructor(BasicShieldCapability::new);
         this.builder.category(category);
         return this;
     }
 
-    public WeaponCapabilityRegistry newShieldPreset(WeaponCategory category, Function<WeaponCapability.Builder, CapabilityItem> constructor) {
+    public WeaponCapabilityBuilder newShieldPreset(WeaponCategory category, Function<WeaponCapability.Builder, CapabilityItem> constructor) {
         this.builder.constructor(constructor);
         this.builder.category(category);
         return this;
     }
 
-    public WeaponCapabilityRegistry withShieldBlockAnimation(AnimationAccessor<? extends StaticAnimation> animation) {
+    public WeaponCapabilityBuilder withShieldBlockAnimation(AnimationAccessor<? extends StaticAnimation> animation) {
         this.builder.constructor(builder -> {
             BasicShieldCapability shield = new BasicShieldCapability(builder);
             shield.animation = animation;
@@ -239,27 +237,27 @@ public class WeaponCapabilityRegistry {
     }
 
 
-    public WeaponCapabilityRegistry withStyleConditions(Function<LivingEntityPatch<?>, Style> styleProvider) {
+    public WeaponCapabilityBuilder withStyleConditions(Function<LivingEntityPatch<?>, Style> styleProvider) {
         this.builder.styleProvider(styleProvider);
         return this;
     }
 
-    public WeaponCapabilityRegistry withOffHandPredict(Function<LivingEntityPatch<?>, Boolean> predicator) {
+    public WeaponCapabilityBuilder withOffHandPredict(Function<LivingEntityPatch<?>, Boolean> predicator) {
         this.builder.weaponCombinationPredicator(predicator);
         return this;
     }
 
-    public WeaponCapabilityRegistry withLivingMotion(LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
+    public WeaponCapabilityBuilder withLivingMotion(LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
         this.builder.livingMotionModifier(this.currentStyle, livingMotion, animation);
         return this;
     }
 
-    public WeaponCapabilityRegistry withLivingMotion(Style style, LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
+    public WeaponCapabilityBuilder withLivingMotion(Style style, LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
         this.builder.livingMotionModifier(style, livingMotion, animation);
         return this;
     }
 
-    public WeaponCapabilityRegistry forEachMotion(Object... pairs) {
+    public WeaponCapabilityBuilder forEachMotion(Object... pairs) {
         if (pairs.length % 2 != 0) {
             throw new IllegalArgumentException("forEachMotion must have an even number of arguments (Motion/Animation pairs)!");
         }
@@ -274,7 +272,7 @@ public class WeaponCapabilityRegistry {
         this.currentMotionsPair = pairs;
         return this;
     }
-    public WeaponCapabilityRegistry forEachMotion(Style style, Object... pairs) {
+    public WeaponCapabilityBuilder forEachMotion(Style style, Object... pairs) {
         if (pairs.length % 2 != 0) {
             throw new IllegalArgumentException("forEachMotion must have an even number of arguments (Motion/Animation pairs)!");
         }
@@ -291,7 +289,7 @@ public class WeaponCapabilityRegistry {
     }
 
 
-    public WeaponCapabilityRegistry withReach(float reach) {
+    public WeaponCapabilityBuilder withReach(float reach) {
         this.builder.reach(reach);
         return this;
     }

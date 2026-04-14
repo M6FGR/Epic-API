@@ -1,6 +1,6 @@
 package M6FGR.epic_api.mixins.epicfight;
 
-import M6FGR.epic_api.api.input.EpicAPIIntputAction;
+import M6FGR.epic_api.input.EpicAPIIntputAction;
 import M6FGR.epic_api.skills.EpicAPISkillSlots;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.player.LocalPlayer;

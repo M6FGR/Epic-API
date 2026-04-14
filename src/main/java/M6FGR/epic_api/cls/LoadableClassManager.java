@@ -1,4 +1,4 @@
-package M6FGR.epic_api.api.cls;
+package M6FGR.epic_api.cls;
 
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModFileInfo;
@@ -12,10 +12,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class LoadableInstance {
+class LoadableClassManager {
     public static final Logger LOGGER = LogManager.getLogger("ILoadableClass");
     public static final List<Class<? extends ILoadableClass>> LOADED_CLASSES = new ArrayList<>();
-    // to specify classes that had an error loading
+    // to specify classes that had an error loading, we add a boolean as a firewall
     public static boolean LOADED = false;
 
     public static void checkUnloaded(String modId) {
@@ -39,13 +39,17 @@ class LoadableInstance {
                     }
 
                     try {
-                        Class<?> cls = Class.forName(className);
-                        // Ensure it's not the interface itself or an abstract class
-                        if (!loadedNames.contains(cls.getName()) && !LOADED) {
-                            LOGGER.error("Class: [{}] was never loaded!", className);
+                        // Used this forName() instead, it's safer and doesn't crash on a dedicated server
+                        Class<?> cls = Class.forName(className, false, LoadableClassManager.class.getClassLoader());
+
+                        if (ILoadableClass.class.isAssignableFrom(cls) && isClass(cls)) {
+                            if (!loadedNames.contains(cls.getName()) && !LOADED) {
+                                LOGGER.error("Class: [{}] is never loaded", className);
+                            }
                         }
-                    } catch (ClassNotFoundException ignored) {
-                        // This happens if a class has missing dependencies; safe to skip.
+                    } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
+                        // NoClassDefFoundError is common on servers for client classes,
+                        // catching it here prevents the crash.
                     }
                 });
     }
@@ -53,6 +57,4 @@ class LoadableInstance {
     public static boolean isClass(Class<?> clazz) {
         return !clazz.isInterface() && !clazz.isEnum() && !clazz.isAnnotation();
     }
-
-
 }

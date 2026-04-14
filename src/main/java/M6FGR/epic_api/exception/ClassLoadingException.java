@@ -1,4 +1,4 @@
-package M6FGR.epic_api.api.exception;
+package M6FGR.epic_api.exception;
 
 public class ClassLoadingException extends RuntimeException {
     private final String message;

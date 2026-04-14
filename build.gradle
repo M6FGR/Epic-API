@@ -54,7 +54,6 @@ neoForge {
 
         server {
             server()
-            programArgument '--nogui'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
 
@@ -84,10 +83,11 @@ neoForge {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    // 21.16.1
-    implementation "curse.maven:epic-fight-mod-405076:7830180"
-    // 21.16.1 sources (raw code)
-    compileOnlyApi "local:epicfight:21.16.1:sources"
+    // 21.16.2
+    implementation "curse.maven:epic-fight-mod-405076:7878012"
+    // 21.16.2 sources (raw code)
+    compileOnlyApi "local:epicfight:21.16.2:sources"
+
     // to apply skins
     implementation "local:skinrestorer:2.7.0"
 }

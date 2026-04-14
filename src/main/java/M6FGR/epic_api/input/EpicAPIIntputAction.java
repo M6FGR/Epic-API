@@ -1,12 +1,14 @@
-package M6FGR.epic_api.api.input;
+package M6FGR.epic_api.input;
 
 import M6FGR.epic_api.gameassets.EpicAPIKeyMappings;
 import net.minecraft.client.KeyMapping;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.input.action.InputAction;
 import yesman.epicfight.api.client.input.controller.ControllerBinding;
+import yesman.epicfight.api.utils.side.ClientOnly;
 
 import java.util.Optional;
+@ClientOnly
 public enum EpicAPIIntputAction implements InputAction {
     HEAVY_ATTACK;
     public @NotNull KeyMapping keyMapping() {

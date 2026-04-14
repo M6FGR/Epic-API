@@ -1,6 +1,6 @@
 package M6FGR.epic_api.gameassets;
 
-import M6FGR.epic_api.api.cls.ILoadableClass;
+import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.main.EpicAPI;
 import M6FGR.epic_api.skills.common.HeavyAttack;
 import net.neoforged.bus.api.IEventBus;
@@ -18,7 +18,6 @@ public class EpicAPISkills implements ILoadableClass {
 
         HEAVY_ATTACKS = SKILLS.register("heavy_attack", key -> HeavyAttack.createHeavyAttackBuilder().build(key));
     }
-
 
     @Override
     public void onModConstructor(IEventBus bus) {

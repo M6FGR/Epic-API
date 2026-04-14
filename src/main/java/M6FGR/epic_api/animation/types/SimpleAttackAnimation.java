@@ -1,4 +1,4 @@
-package M6FGR.epic_api.api.animation.types;
+package M6FGR.epic_api.animation.types;
 
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.phys.Vec3;
@@ -62,10 +62,9 @@ public class SimpleAttackAnimation extends AttackAnimation {
     }
 
     // FPS Calculation.
-    public SimpleAttackAnimation(float transitionTime, float antic, int preDelayFrame, int contactFrame, float recovery, String trailJoint, TrailColor trailColor, @Nullable Collider collider, Joint colliderJoint, AnimationManager.AnimationAccessor<? extends SimpleAttackAnimation> accessor, AssetAccessor<? extends Armature> armature) {
+    public SimpleAttackAnimation(float transitionTime, float antic, int preDelayFrame, int contactFrame, float recovery, float basisSpeed, @Nullable Collider collider, Joint colliderJoint, AnimationManager.AnimationAccessor<? extends SimpleAttackAnimation> accessor, AssetAccessor<? extends Armature> armature) {
         super(transitionTime, antic, (float) preDelayFrame / 60, (float) contactFrame / 60, recovery, collider, colliderJoint, accessor, armature);
-        this.addTrail(trailJoint, trailColor, (float) preDelayFrame / 60, (float) contactFrame / 60);
-        this.addCommonProperties();
+        this.addProperty(AnimationProperty.AttackAnimationProperty.BASIS_ATTACK_SPEED, basisSpeed);
         this.addProperty(AnimationProperty.StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.COMBO_ATTACK_DIRECTION_MODIFIER);
     }
 
@@ -141,7 +140,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
             List<TrailInfo> activeTrails = new ArrayList<>();
             for (TrailDefinition def : this.trailDefinitions) {
                 activeTrails.add(TrailInfo.builder()
-                        .time(def.startDelay, def.endDelay)
+                        .time(def.startDelay(), def.endDelay())
                         .joint(def.joint())
                         .r(def.color().r).g(def.color().g).b(def.color().b)
                         .startPos(new Vec3(0, 0, 0))

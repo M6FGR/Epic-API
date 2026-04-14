@@ -1,6 +1,6 @@
 package M6FGR.epic_api.skills.common;
 
-import M6FGR.epic_api.api.builders.epicfight.WeaponCapabilityBuilder;
+import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import net.minecraft.nbt.CompoundTag;

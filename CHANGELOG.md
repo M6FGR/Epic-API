@@ -12,7 +12,7 @@ _previous versions __[2.1.13 and below]__ didn't have update logs sadly, so only
 ### Added:
 - New Interface: `IEventHook`, used for events that extend [Event](https://github.com/Antikythera-Studios/epicfight/blob/1.21.1/neoforge/src/main/java/yesman/epicfight/api/event/Event.java), **more info is written in the class.**
 - New Annotation: `@Compatibility`, used to load a class if a specific mod-id was present, __more info is written in the class.__
-- New classes for [Minecraft Builders](src/main/java/M6FGR/epic_api/builders/minecraft) to ease the vanilla registries:
+- New [Minecraft Builders](src/main/java/M6FGR/epic_api/builders/minecraft) to ease the vanilla registries:
 [[CommandsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/CommandsBuilder.java)]
 [[GameRulesBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/GameRulesBuilder.java)]
 [[ItemsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/ItemsBuilder.java)]

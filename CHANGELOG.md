@@ -1,4 +1,4 @@
-_previous versions __[2.1.13 and below]__ didn't have update logs sadly, so only 21.1.4 and above will have update logs!_
+_previous versions __[2.1.13 and below]__ didn't have update logs sadly, so only 21.2.1 and above will have update logs!_
 
 ### [21.2.1]
 

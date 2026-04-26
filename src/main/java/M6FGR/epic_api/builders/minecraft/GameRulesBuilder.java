@@ -1,6 +1,7 @@
 package M6FGR.epic_api.builders.minecraft;
 
 import M6FGR.epic_api.cls.ILoadableClass;
+import M6FGR.epic_api.main.EpicAPI;
 import com.mojang.brigadier.context.CommandContext;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
@@ -12,36 +13,37 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameRules.BooleanValue;
+import net.minecraft.world.level.GameRules.IntegerValue;
 import net.minecraft.world.level.GameRules.Value;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
 import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.server.command.EnumArgument;
-import org.jetbrains.annotations.ApiStatus.Experimental;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.function.BiConsumer;
 
-@Experimental
 public class GameRulesBuilder implements ILoadableClass {
-    private static final ResourceLocation PACKET_ID = ResourceLocation.fromNamespaceAndPath("efa", "gamerule_sync");
+    private static final ResourceLocation PACKET_ID = EpicAPI.identifier("gamerule_sync");
 
     // Non-Synchronized methods (by default)
     public static <E extends Enum<E>> GameRules.Key<EnumValue<E>> newEnum(String name, GameRules.Category category, E defaultValue) {
-        return GameRules.register(name, category, EnumValue.create(defaultValue));
+        return newEnum(name, category, defaultValue, false);
     }
 
     public static GameRules.Key<GameRules.BooleanValue> newBoolean(String name, GameRules.Category category, boolean defaultValue) {
-        return GameRules.register(name, category, GameRules.BooleanValue.create(defaultValue));
+        return newBoolean(name, category, defaultValue, false);
     }
 
     public static GameRules.Key<GameRules.IntegerValue> newInteger(String name, GameRules.Category category, int defaultValue) {
-        return GameRules.register(name, category, GameRules.IntegerValue.create(defaultValue));
+        return newInteger(name, category, defaultValue, false);
     }
 
-    // Synchronizable methods
+    // Synchronized methods
     public static GameRules.Key<GameRules.BooleanValue> newBoolean(String name, GameRules.Category category, boolean defaultValue, boolean synchronised) {
         if (synchronised) {
             return GameRules.register(name, category, GameRules.BooleanValue.create(defaultValue, (server, booleanValue) -> {
@@ -104,12 +106,13 @@ public class GameRulesBuilder implements ILoadableClass {
                 if (mc.level != null) {
                     GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
                         @Override
+                        @ParametersAreNonnullByDefault
                         public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
                             if (key.toString().equals(payload.ruleName())) {
                                 T rule = mc.level.getGameRules().getRule(key);
                                 switch (rule) {
-                                    case GameRules.BooleanValue bool -> bool.set(payload.value() != 0, null);
-                                    case GameRules.IntegerValue intRule -> intRule.set(payload.value(), null);
+                                    case BooleanValue bool -> bool.set(payload.value() != 0, null);
+                                    case IntegerValue intRule -> intRule.set(payload.value(), null);
                                     case EnumValue<?> enumRule -> enumRule.setOrdinal(payload.value());
                                     default -> {
                                     }
@@ -138,6 +141,8 @@ public class GameRulesBuilder implements ILoadableClass {
     @Override
     public void onModConstructor(IEventBus modBus) {
         modBus.addListener(this::registerNetworking);
+        EpicAPI.debug("Registered SPGameRuleSync Packet.");
+
     }
 
     public static class EnumValue<E extends Enum<E>> extends Value<EnumValue<E>> {
@@ -177,11 +182,7 @@ public class GameRulesBuilder implements ILoadableClass {
 
         @Override
         protected void deserialize(String s) {
-            try {
-                String normalized = this.toCamelCase(s).replaceAll("_", "");
-                this.value = Enum.valueOf(this.enumClass, normalized);
-            } catch (Exception ignored) {
-            }
+            this.value = Enum.valueOf(this.enumClass, this.value.name());
         }
 
         @Override
@@ -191,7 +192,7 @@ public class GameRulesBuilder implements ILoadableClass {
 
         @Override
         public @NotNull String serialize() {
-            return this.toCamelCase(this.value.name());
+            return this.value.name();
         }
 
         @Override
@@ -213,16 +214,6 @@ public class GameRulesBuilder implements ILoadableClass {
         public void setFrom(EnumValue<E> other, @Nullable MinecraftServer server) {
             this.value = other.value;
             this.onChanged(server);
-        }
-
-        private String toCamelCase(String input) {
-            if (input == null || input.isEmpty()) return "";
-            String[] parts = input.toLowerCase().split("_");
-            StringBuilder sb = new StringBuilder(parts[0]);
-            for (int i = 1; i < parts.length; i++) {
-                sb.append(Character.toUpperCase(parts[i].charAt(0))).append(parts[i].substring(1));
-            }
-            return sb.toString();
         }
     }
 }

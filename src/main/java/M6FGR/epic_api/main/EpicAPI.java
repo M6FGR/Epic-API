@@ -4,7 +4,7 @@ import M6FGR.epic_api.builders.minecraft.GameRulesBuilder;
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.events.IEventHook;
 import M6FGR.epic_api.events.entity.EntityPatchEventHook;
-import M6FGR.epic_api.events.item.ExCapCapabilityRegistryEventHook;
+import M6FGR.epic_api.events.item.MoveSetCapabilityRegistryEventHook;
 import M6FGR.epic_api.gameassets.EpicAPIKeyMappings;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.gameassets.EpicAPISkills;
@@ -90,7 +90,7 @@ public class EpicAPI {
         // these events are fired in the common setup event, so we can fire it here?
        event.enqueueWork(() ->
                IEventHook.fire(
-                       ExCapCapabilityRegistryEventHook.class,
+                       MoveSetCapabilityRegistryEventHook.class,
                        EntityPatchEventHook.class
                ));
     }

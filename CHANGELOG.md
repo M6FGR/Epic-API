@@ -17,3 +17,13 @@ _previous versions __[2.1.13 and below]__ didn't have update logs sadly, so only
 [[GameRulesBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/GameRulesBuilder.java)]
 [[ItemsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/ItemsBuilder.java)]
 - New Event [EntityPatchEventHook](src/main/java/M6FGR/epic_api/events/entity/EntityPatchEventHook.java) for ease of registering entity patches.
+
+### [21.2.2]
+
+### Fixes:
+- Fixed issue [ILoadableClass](src/main/java/M6FGR/epic_api/cls/ILoadableClass.java) crashes on a dedicated server if the class should be client-sided. [[Commit]](https://github.com/M6FGR/Epic-API/commit/865b6b4e9089c9e46f1b96bac3bf3092044337b8)
+- Fixed issue [MoveSetCapabilityRegistryEventHook](src/main/java/M6FGR/epic_api/events/item/MoveSetCapabilityRegistryEventHook.java) only registers one capability.
+
+### Added:
+- [KeyMappingsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/KeyMappingsBuilder.java), ease of code readability and registry for keymappings.
+- [KeyCodes](src/main/java/M6FGR/epic_api/input/KeyCodes.java), now you can know which keycode is the one! (not to note InputConstants, has the same thing)

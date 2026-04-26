@@ -22,6 +22,6 @@ public class WeaponTypeReloadListenerMixin {
     )
     private static void injectHeavyCombos(ResourceLocation rl, CompoundTag tag, ExtraEntryProvider extraEntryProvider, CallbackInfoReturnable<WeaponCapability.Builder> cir) {
         // make HeavyAttack datapack friendly too!
-        WeaponCapabilityBuilder.builder().registerHeavyComboFromTag(rl, tag, extraEntryProvider);
+        WeaponCapabilityBuilder.builder().registerHeavyComboFromTag(rl, tag); // removed ExtraEntryProvider usage, it's deprecated!
     }
 }

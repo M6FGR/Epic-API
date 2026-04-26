@@ -30,7 +30,7 @@ base {
 }
 
 java {
-    withSourcesJar() // Creates a -sources.jar so others can see your code
+    withSourcesJar() // Creates a -sources.jar so others can see the raw code
 }
 
 // Ensure the jar is published in a way that other developers can use
@@ -83,13 +83,14 @@ neoForge {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    // 21.16.2
-    implementation "curse.maven:epic-fight-mod-405076:7878012"
-    // 21.16.2 sources (raw code)
-    compileOnlyApi "local:epicfight:21.16.2:sources"
+    // the (:) represents (-) in the file's name, so we do epicfight:00.00:sources
+    // 21.16.3
+    implementation "curse.maven:epic-fight-mod-405076:7919295"
+    // 21.16.3 sources (raw code)
+    compileOnlyApi "local:epicfight:21.16.3:sources"
 
     // to apply skins
-    implementation "local:skinrestorer:2.7.0"
+    //implementation "local:skinrestorer:2.7.0"
 }
 
 // Fixed resource processing - This replaces the broken generateModMetadata task

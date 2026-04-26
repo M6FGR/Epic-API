@@ -33,7 +33,6 @@ public class EpicAPI {
                 // Assets registry
                 EpicAPISkills.class,
                 EpicAPISkillDataKeys.class,
-                EpicAPIGameRules.class,
                 // Events
                 EntityPatchBuilderRegistryEvent.class,
                 MoveSetBuilderRegistryEvent.class,

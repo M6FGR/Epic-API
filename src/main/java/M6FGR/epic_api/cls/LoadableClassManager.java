@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-class LoadableClassManager {
+final class LoadableClassManager {
     public static final Logger LOGGER = LogManager.getLogger("ILoadableClass");
     public static final List<Class<? extends ILoadableClass>> LOADED_CLASSES = new ArrayList<>();
     // to specify classes that had an error loading, we add a boolean as a firewall

@@ -14,8 +14,10 @@ import java.lang.annotation.*;
  *
  * <pre>
  * {@code
- * @Compatibility(forModId = "examplemod", clientSide = true)
- * public class ExampleModCompatibility implements ILoadableClass { ... }
+ * @Compatibility(modid = "examplemod", clientSide = true, printWarns = false)
+ * public class ExampleModCompatibility implements ILoadableClass {
+ *      ...
+ * }
  * }
  * </pre>
  *
@@ -24,6 +26,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface Compatibility {
+
     /**
      * The unique Mod ID required for this class to load.
      * If {@link ModList#isLoaded(String)} returns {@code false},

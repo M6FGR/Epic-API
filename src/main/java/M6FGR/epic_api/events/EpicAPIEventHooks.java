@@ -1,7 +1,7 @@
 package M6FGR.epic_api.events;
 
 import M6FGR.epic_api.events.entity.EntityPatchEventHook;
-import M6FGR.epic_api.events.item.ExCapCapabilityRegistryEventHook;
+import M6FGR.epic_api.events.item.MoveSetCapabilityRegistryEventHook;
 import yesman.epicfight.api.event.EventHook;
 
 public class EpicAPIEventHooks {
@@ -14,7 +14,7 @@ public class EpicAPIEventHooks {
         ExCapBuilderCreationEvent
            into 1 event
         */
-        public static final EventHook<ExCapCapabilityRegistryEventHook> MOVE_SET_CAPABILITY = EventHook.createEventHook();
+        public static final EventHook<MoveSetCapabilityRegistryEventHook> MOVE_SET_CAPABILITY = EventHook.createEventHook();
 
         /* Combines:
            EntityPatchRegistryEvent

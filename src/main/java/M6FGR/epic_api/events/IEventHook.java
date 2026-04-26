@@ -3,7 +3,8 @@ package M6FGR.epic_api.events;
 import M6FGR.epic_api.main.EpicAPI;
 import org.jetbrains.annotations.ApiStatus.Experimental;
 
-import java.util.NoSuchElementException;
+import java.lang.reflect.Constructor;
+
 
 /**
  * A lightweight event system hook that allows for dynamic event execution.
@@ -18,6 +19,8 @@ public interface IEventHook {
      * This method is called automatically after the event class is instantiated.
      */
     void post();
+    void postClient();
+
 
     /**
      * Dynamically instantiates and fires one or more event classes.
@@ -28,18 +31,20 @@ public interface IEventHook {
     static void fire(Class<? extends IEventHook>... eventClasses) {
         for (Class<? extends IEventHook> eventCls : eventClasses) {
             try {
-                // Uses reflection to create a new instance of the event class
-                // ensuring that events are isolated and fresh each time they fire.
-                IEventHook event = eventCls.getDeclaredConstructor().newInstance();
-                // Executes the defined event logic
+                Constructor<? extends IEventHook> constructor = eventCls.getDeclaredConstructor();
+                constructor.setAccessible(true);
+                IEventHook event = constructor.newInstance();
                 event.post();
-            } catch (NoSuchElementException noCons) {
-                EpicAPI.LOGGER.error("Failed to fire event [{}], it doesn't have a public constructor!", eventCls.getSimpleName());
+                if (EpicAPI.isClient()) {
+                    event.postClient();
+                }
+                EpicAPI.debug("Fired [{}]", eventCls.getSimpleName());
+            } catch (NoSuchMethodException e) {
+                EpicAPI.err("Failed to fire event [{}], no public constructor found!", eventCls.getSimpleName());
             } catch (Exception e) {
-                // Catches instantiation errors (e.g., missing constructor)
-                // to prevent the API from crashing the game when an event fails.
-                EpicAPI.LOGGER.error("Failed to fire event [{}], {}", eventCls.getSimpleName(), e.getMessage());
+                EpicAPI.err("Failed to fire event [{}]: {}", eventCls.getSimpleName(), e.getMessage());
             }
         }
     }
+
 }

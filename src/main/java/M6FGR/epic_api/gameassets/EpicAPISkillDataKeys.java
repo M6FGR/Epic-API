@@ -21,5 +21,6 @@ public class EpicAPISkillDataKeys implements ILoadableClass {
     @Override
     public void onModConstructor(IEventBus modBus) {
         SKILL_DATA_KEYS.register(modBus);
+        EpicAPI.debug("Registered EpicAPI Skill Data Keys.");
     }
 }

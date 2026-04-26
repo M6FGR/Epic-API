@@ -67,7 +67,7 @@ public class MoveSetBuilder {
         }
     }
 
-    private void finalizePreviousStyle() {
+    private void addMoveSetFromLastCapability() {
         if (lastActiveBuilder != null && lastActiveStyle != null && lastActiveID != null) {
             this.weaponCapability.addMoveSet(lastActiveStyle, lastActiveBuilder);
             this.exCapData.addMoveset(lastActiveStyle, lastActiveID);
@@ -99,7 +99,7 @@ public class MoveSetBuilder {
     }
 
     public MoveSetBuilder withChild(Style style, ResourceLocation id, @Nullable Skill innate, ConditionalEntry cond) {
-        finalizePreviousStyle();
+        this.addMoveSetFromLastCapability();
 
         MoveSet.MoveSetBuilder child = MoveSet.builder().identifier(id).parent(this.motherID).addComboAttacks(this.currentCombo).setPassiveSkill(this.currentPassive).addInnateSkill((stack, patch) -> innate);
 
@@ -123,7 +123,7 @@ public class MoveSetBuilder {
             ConditionalEntry cond,
             AnimationManager.AnimationAccessor<? extends AttackAnimation>... combo
     ) {
-        finalizePreviousStyle();
+        this.addMoveSetFromLastCapability();
 
         MoveSet.MoveSetBuilder child = MoveSet.builder().identifier(id).parent(this.motherID).addInnateSkill((stack, patch) -> innate).setPassiveSkill(pass).addComboAttacks(combo);
 
@@ -180,20 +180,22 @@ public class MoveSetBuilder {
     @SafeVarargs
     public final MoveSetBuilder withHeavyCombo(AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
         if (this.lastActiveStyle != null && this.currentCategory != null) {
-            WeaponCapabilityBuilder.registerHeavyCombo(this.currentCategory, this.lastActiveStyle, heavy);
+            WeaponCapabilityBuilder.putHeavyCombo(this.currentCategory, this.lastActiveStyle, heavy);
         }
         return this;
     }
     @SafeVarargs
     public final MoveSetBuilder withHeavyCombo(Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... heavy) {
         if (this.lastActiveStyle != null && this.currentCategory != null) {
-            WeaponCapabilityBuilder.registerHeavyCombo(this.currentCategory, style, heavy);
+            WeaponCapabilityBuilder.putHeavyCombo(this.currentCategory, style, heavy);
         }
         return this;
     }
 
+
+
     public MoveSetEntry build(ResourceLocation registryID) {
-        finalizePreviousStyle();
+        this.addMoveSetFromLastCapability();
         this.dataEntry = new ExCapDataEntry(registryID, this.exCapData);
         this.builderEntry = new BuilderEntry(registryID, this.weaponCapability);
         this.moveSetEntry = new MoveSetEntry(this.motherID, this.motherBuilder);

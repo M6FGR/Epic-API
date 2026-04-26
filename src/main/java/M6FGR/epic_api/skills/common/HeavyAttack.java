@@ -57,7 +57,7 @@ public class HeavyAttack extends Skill {
 
     /**
      * Standard Builder Creator
-    */
+     */
     public static SkillBuilder<?> createHeavyAttackBuilder() {
         return new SkillBuilder<>(HeavyAttack::new)
                 .setCategory(EpicAPISkillCategories.HEAVY_ATTACK)
@@ -71,10 +71,11 @@ public class HeavyAttack extends Skill {
 
     @Override
     public void loadDatapackParameters(CompoundTag parameters) {
+        // Attack consumptions
         this.heavyAttackConsumption = parameters.getFloat("heavy_attack_consumption");
         this.heavyDashAttackConsumption = parameters.getFloat("heavy_dash_consumption");
         this.heavyAirAttackConsumption = parameters.getFloat("heavy_airslash_consumption");
-
+        // Attributes multipliers
         this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5f;
         this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0f;
         this.armorNegation = parameters.contains("armor_negation") ? parameters.getFloat("armor_negation") : 15.0f;
@@ -95,11 +96,11 @@ public class HeavyAttack extends Skill {
 
         if (!EpicFightEventHooks.Player.COMBO_ATTACK.post(new ComboAttackEvent(executor)).isCanceled()) {
             CapabilityItem cap = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-            AnimationManager.AnimationAccessor<? extends AttackAnimation> attackMotion = null;
+            AnimationManager.AnimationAccessor<? extends AttackAnimation> attackMotion;
             ServerPlayer player = executor.getOriginal();
             SkillDataManager dataManager = skillContainer.getDataManager();
             int comboCounter = dataManager.getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER);
-            Vec3 blocksToDelta = this.cubicVec3ToDelta(player.getDeltaMovement());
+            Vec3 blocksToDelta = this.deltaToBlocks(player.getDeltaMovement());
             boolean dashAttack = player.isSprinting();
             boolean airAttack = !player.isInWater() && !player.onGround() && blocksToDelta.y() > this.MIN_ATTACK_Y && !player.getBlockStateOn().is(Block.byItem(Items.DIRT_PATH));
 
@@ -141,7 +142,7 @@ public class HeavyAttack extends Skill {
     }
 
 
-    private Vec3 cubicVec3ToDelta(Vec3 delta) {
+    private Vec3 deltaToBlocks(Vec3 delta) {
         double dx = delta.x * 2.12453;
         double dz = delta.z * 2.12453;
         double dy = 0;
@@ -156,7 +157,7 @@ public class HeavyAttack extends Skill {
 
     private void applyWeaponScaling(AttackAnimation animation) {
         for (AttackAnimation.Phase phase : animation.phases) {
-            // in case of the multiply number is below 1, we add, so it doesn't decrease the damage nor the impact
+            // if the multiply number is below 1, we add, so it doesn't decrease the damage nor the impact
             phase.addProperty(AnimationProperty.AttackPhaseProperty.DAMAGE_MODIFIER, this.damageMultiplier < 1 ? ValueModifier.adder(this.damageMultiplier) : ValueModifier.multiplier(this.damageMultiplier));
             phase.addProperty(AnimationProperty.AttackPhaseProperty.IMPACT_MODIFIER, this.impactMultiplier < 1 ? ValueModifier.adder(this.impactMultiplier) : ValueModifier.multiplier(this.impactMultiplier));
             phase.addProperty(AnimationProperty.AttackPhaseProperty.ARMOR_NEGATION_MODIFIER, ValueModifier.adder(this.armorNegation));
@@ -173,7 +174,7 @@ public class HeavyAttack extends Skill {
     }
 
     @Nullable
-    public List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> applyMotionsForMaps(PlayerPatch<?> playerpatch, CapabilityItem itemCapability) {
+    private List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> applyMotionsForMaps(PlayerPatch<?> playerpatch, CapabilityItem itemCapability) {
         WeaponCategory currentCategory = itemCapability.getWeaponCategory();
         Style currentStyle = itemCapability.getStyle(playerpatch);
 
@@ -207,4 +208,5 @@ public class HeavyAttack extends Skill {
                 ? new SPAnimatorControl(AbstractAnimatorControl.Action.PLAY, attackMotion, skillContainer.getExecutor(), 0.0F)
                 : new SPAnimatorControl(AbstractAnimatorControl.Action.PLAY_CLIENT, attackMotion, skillContainer.getExecutor(), 0.0F, AbstractAnimatorControl.Layer.COMPOSITE_LAYER, AbstractAnimatorControl.Priority.HIGHEST);
     }
+
 }

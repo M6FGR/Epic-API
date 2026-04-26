@@ -6,9 +6,9 @@ import M6FGR.epic_api.animation.types.SimpleAttackAnimation.TrailPreset;
 import M6FGR.epic_api.animation.types.SimpleMovementAnimation;
 import M6FGR.epic_api.animation.types.SimpleStaticAnimation;
 import M6FGR.epic_api.animation.types.SimpleStaticAnimation.JointMasks;
-import M6FGR.epic_api.builders.epicfight.ArmatureRegistrar;
-import M6FGR.epic_api.builders.epicfight.ArmatureRegistrar.ArmatureType;
-import M6FGR.epic_api.builders.epicfight.EntityPatchRegistrar;
+import M6FGR.epic_api.builders.epicfight.ArmatureBuilder;
+import M6FGR.epic_api.builders.epicfight.ArmatureBuilder.ArmatureType;
+import M6FGR.epic_api.builders.epicfight.EntityPatchBuilder;
 import M6FGR.epic_api.builders.epicfight.MeshBuilder;
 import M6FGR.epic_api.builders.epicfight.MeshBuilder.MeshType;
 import M6FGR.epic_api.builders.epicfight.MoveSetBuilder;
@@ -16,9 +16,10 @@ import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
 import M6FGR.epic_api.builders.minecraft.GameRulesBuilder;
 import M6FGR.epic_api.builders.minecraft.GameRulesBuilder.EnumValue;
 import M6FGR.epic_api.builders.minecraft.ItemsBuilder;
+import M6FGR.epic_api.cls.Compatibility;
+import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.events.EpicAPIEventHooks;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.animal.IronGolem;
@@ -36,6 +37,8 @@ import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.client.animation.Layer;
 import yesman.epicfight.api.client.model.Meshes;
+import yesman.epicfight.api.client.model.Meshes.MeshAccessor;
+import yesman.epicfight.api.client.model.SkinnedMesh;
 import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.ex_cap.modules.assets.MainConditionals;
 import yesman.epicfight.client.mesh.HumanoidMesh;
@@ -61,43 +64,46 @@ import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import java.util.function.Function;
 // This class shows how this API is used, no more!
 class EpicAPIPlaceHolders {
-    public static class Armature {
+    
+    private static class Armature {
         // First is parsedPath(modid:path)
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_PP = ArmatureRegistrar.newEntityArmature(EntityType.ZOMBIE, "epicfight:entity/biped", HumanoidArmature::new);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_PP = ArmatureBuilder.newEntityArmature(EntityType.ZOMBIE, "epicfight:entity/biped", HumanoidArmature::new);
         // Second is normal path(modid, path)
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NP = ArmatureRegistrar.newEntityArmature(EntityType.ZOMBIE, "epicfight", "entity/biped", HumanoidArmature::new);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NP = ArmatureBuilder.newEntityArmature(EntityType.ZOMBIE, "epicfight", "entity/biped", HumanoidArmature::new);
         // Third is ResourceLocation (ResourceLocation.fromNamespaceAndPath(modid, path)
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_RL = ArmatureRegistrar.newEntityArmature(EntityType.ZOMBIE, EpicFight.identifier("entity/biped"), HumanoidArmature::new);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_RL = ArmatureBuilder.newEntityArmature(EntityType.ZOMBIE, EpicFight.identifier("entity/biped"), HumanoidArmature::new);
         // Needs to be posted via FMLCommonSetupEvent
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NO_ENTITY = ArmatureRegistrar.newArmature("epicfight:entity/biped", HumanoidArmature::new);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NO_ENTITY = ArmatureBuilder.newArmature("epicfight:entity/biped", HumanoidArmature::new);
         // or if you want to, you could use ArmatureType for easier registry, as so:
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_EHUMANOID = ArmatureRegistrar.newArmature("epicfight:entity/biped", ArmatureType.HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_EHUMANOID = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureType.HUMANOID_ARMATURE);
 
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_NON_HUMANOID = ArmatureRegistrar.newArmature("epicfight:entity/wither", ArmatureType.NON_HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_NON_HUMANOID = ArmatureBuilder.newArmature("epicfight:entity/wither", ArmatureType.NON_HUMANOID_ARMATURE);
 
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_CUSTOM = ArmatureRegistrar.newArmature("epicfight:entity/piglin", ArmatureType.of(PiglinArmature::new));
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_CUSTOM = ArmatureBuilder.newArmature("epicfight:entity/piglin", ArmatureType.of(PiglinArmature::new));
     }
 
-    public static class Mesh {
+    private static class Mesh {
         // Same thing as the armature path arguments, it accepts 3 arguments
         // It accepts either MeshType or MeshConstructors as exampled:
 
         // MeshType is holding 4 types of mesh types: (SkinnedMesh, ClassicMesh, CompositeMesh, HumanoidMesh)
         public static final Meshes.MeshAccessor<HumanoidMesh> PLACEHOLDER_MESH_E = MeshBuilder.newMesh("epicfight:entity/biped", MeshType.HUMANOID_MESH);
         // Or if you couldn't find what you wish for, you could use the constructor as so:
-        public static final Meshes.MeshAccessor<HumanoidMesh> PLACEHOLDER_MESH = MeshBuilder.newMesh("epicfight:entity/wither", MeshType.of(loader -> loader.loadSkinnedMesh(WitherMesh::new)));
+        public static final Meshes.MeshAccessor<WitherMesh> PLACEHOLDER_MESH = MeshBuilder.newMesh("epicfight:entity/wither", MeshType.of(WitherMesh::new));
+        // This automatically detects the mesh type inside the JSON file itself, check JsonAssetLoader#loadMesh()
+        public static final MeshAccessor<SkinnedMesh> PLACEHOLDER_MESH_JSON_LOADER = MeshBuilder.newMesh("epicfight:layer/default_cape", MeshType.MESH_LOADER);
     }
 
-    public static class EntityPatch  {
-        public static EntityPatchRegistrar<Zombie> HUMANOID_PATCH;
-        public static EntityPatchRegistrar<IronGolem> NON_HUMANOID_PATCH;
+    private static class EntityPatch {
+        public static EntityPatchBuilder<Zombie> HUMANOID_PATCH;
+        public static EntityPatchBuilder<IronGolem> NON_HUMANOID_PATCH;
 
 
         // you can either use ILoadableClass or call this in the modCommonEvents in your main class:
         public void registerPatches() {
             // NEVER initialize them outside if you're going to use ILoadableClass
-            HUMANOID_PATCH = EntityPatchRegistrar.get().newEntityPatch(EntityType.ZOMBIE, ZombiePatch::new, (context, type) -> new PHumanoidRenderer<>(Mesh.PLACEHOLDER_MESH_E, context, type));
-            NON_HUMANOID_PATCH = EntityPatchRegistrar.get().newEntityPatch(EntityType.IRON_GOLEM, IronGolemPatch::new, PIronGolemRenderer::new);
+            HUMANOID_PATCH = EntityPatchBuilder.get().newEntityPatch(EntityType.ZOMBIE, ZombiePatch::new, (context, type) -> new PHumanoidRenderer<>(Mesh.PLACEHOLDER_MESH_E, context, type));
+            NON_HUMANOID_PATCH = EntityPatchBuilder.get().newEntityPatch(EntityType.IRON_GOLEM, IronGolemPatch::new, PIronGolemRenderer::new);
             // critical!, use Epic-API's event hooks to work, not epic fight's!
             EpicAPIEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
                 event.registerFrom(HUMANOID_PATCH);
@@ -108,7 +114,7 @@ class EpicAPIPlaceHolders {
     }
 
 
-    public static class Items {
+    private static class Items {
         private static final DeferredRegister<Item> ITEM_REGISTRY = DeferredRegister.create(Registries.ITEM, "modid");
 
         public static final DeferredHolder<Item, Item> PLACEHOLDER_ITEM = ItemsBuilder.newItem("item", Item::new, ITEM_REGISTRY);
@@ -117,7 +123,7 @@ class EpicAPIPlaceHolders {
     }
 
 
-    public static class GameRules {
+    private static class GameRules {
         // as following, this is how simple it is to register gamerules:
 
         // non-synchronized is a gamerule applies to the client only (executor-only), e.g -> /gamerule setResolution Resolution.FULL_HD
@@ -142,7 +148,7 @@ class EpicAPIPlaceHolders {
         }
     }
 
-    public static class Animation {
+    private static class Animation {
         public static AnimationManager.AnimationAccessor<SimpleStaticAnimation> PLACEHOLDER_IDLE;
         public static AnimationManager.AnimationAccessor<SimpleMovementAnimation> PLACEHOLDER_WALK;
         public static AnimationManager.AnimationAccessor<SimpleAttackAnimation> PLACEHOLDER_ATTACK;
@@ -203,7 +209,21 @@ class EpicAPIPlaceHolders {
         }
     }
 
-    public static class CapabilityPresets {
+    @Compatibility(modid = "example_mod", clientSide = true, printWarns = true)
+    // MUST implement ILoadableClass and loaded in the mod constructor!
+    private static class CompatibilityClass implements ILoadableClass {
+        /*
+         You here do the compatibility code, Based on the params in the annotation:
+         it will load if the mod-id was found via ModList#isLoaded
+         it will load if the environment was client sided
+         it will print warning if the target mod wasn't loaded, or the mod is loaded on a dedicated server
+
+         Also, param#printWarns is optional, it's mostly for debugs and when the class was loaded
+
+        */
+    }
+
+    private static class CapabilityPresets {
 
         public static final Function<Item, WeaponCapability.Builder> EXAMPLE_EFM = item ->
                 WeaponCapabilityBuilder.builder()
@@ -231,13 +251,6 @@ class EpicAPIPlaceHolders {
                                 Animations.LONGSWORD_AUTO1,
                                 Animations.LONGSWORD_AUTO2,
                                 Animations.LONGSWORD_AUTO3,
-                                Animations.LONGSWORD_DASH,
-                                Animations.LONGSWORD_AIR_SLASH
-                        )
-                        .withNewHeavyCombo(
-                                Animations.LONGSWORD_LIECHTENAUER_AUTO1,
-                                Animations.LONGSWORD_LIECHTENAUER_AUTO2,
-                                Animations.LONGSWORD_LIECHTENAUER_AUTO3,
                                 Animations.LONGSWORD_DASH,
                                 Animations.LONGSWORD_AIR_SLASH
                         )
@@ -273,7 +286,7 @@ class EpicAPIPlaceHolders {
                         .build();
         // post in FMLCommonSetupEvent
         private void registerCapability() {
-            EpicFightEventHooks.Registry.WEAPON_CAPABILITY_PRESET.registerEvent(event -> event.getTypeEntry().put(ResourceLocation.fromNamespaceAndPath("example", "weapon"), EXAMPLE_EFM));
+            EpicFightEventHooks.Registry.WEAPON_CAPABILITY_PRESET.registerEvent(event -> event.getTypeEntry().put(EpicAPI.identifier("example_weapon"), EXAMPLE_EFM));
         }
 
 
@@ -286,7 +299,7 @@ class EpicAPIPlaceHolders {
             this.EXAMPLE_EXCAP = MoveSetBuilder.builder()
                     .newMoveSet(
                             CapabilityItem.Styles.TWO_HAND,
-                            EpicFight.identifier("example_2h"),
+                            EpicAPI.identifier("example_2h"),
                             CapabilityItem.WeaponCategories.LONGSWORD,
                             ColliderPreset.LONGSWORD,
                             EpicFightSounds.WHOOSH_ROD.get(),
@@ -300,14 +313,6 @@ class EpicAPIPlaceHolders {
                             Animations.SWORD_AUTO2,
                             Animations.SWORD_DASH,
                             Animations.SWORD_AIR_SLASH
-                    )
-                    .withHeavyCombo(
-                            CapabilityItem.Styles.TWO_HAND,
-                            Animations.LONGSWORD_LIECHTENAUER_AUTO1,
-                            Animations.LONGSWORD_LIECHTENAUER_AUTO2,
-                            Animations.LONGSWORD_LIECHTENAUER_AUTO3,
-                            Animations.LONGSWORD_DASH,
-                            Animations.LONGSWORD_AIR_SLASH
                     )
                     .forEachMotion(
                             LivingMotions.IDLE, yesman.epicfight.gameasset.Animations.BIPED_IDLE,
@@ -328,8 +333,9 @@ class EpicAPIPlaceHolders {
                             Animations.SWORD_AIR_SLASH
                     ).withDefaultBipedMotions();
             EpicAPIEventHooks.Registry.MOVE_SET_CAPABILITY.registerEvent(event -> {
-                event.register(ResourceLocation.fromNamespaceAndPath("epic_api", "example_excap"), this.EXAMPLE_EXCAP);
+                event.register(EpicAPI.identifier("example_excap"), this.EXAMPLE_EXCAP);
             });
         }
+
     }
 }

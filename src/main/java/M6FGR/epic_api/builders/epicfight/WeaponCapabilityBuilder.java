@@ -8,6 +8,7 @@ import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
+import org.jetbrains.annotations.ApiStatus.Internal;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
@@ -24,7 +25,6 @@ import yesman.epicfight.world.capabilities.item.CapabilityItem;
 import yesman.epicfight.world.capabilities.item.Style;
 import yesman.epicfight.world.capabilities.item.WeaponCapability;
 import yesman.epicfight.world.capabilities.item.WeaponCategory;
-import yesman.epicfight.world.capabilities.provider.ExtraEntryProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -79,13 +79,14 @@ public class WeaponCapabilityBuilder {
     }
 
     @SafeVarargs
-    static void registerHeavyCombo(WeaponCategory category, Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... animations) {
+    static void putHeavyCombo(WeaponCategory category, Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... animations) {
         GLOBAL_HEAVY_COMBOS
                 .computeIfAbsent(category, k -> Maps.newHashMap())
                 .put(style, List.of(animations));
     }
-    @SuppressWarnings("removal")
-    public WeaponCapabilityBuilder registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag, @Nullable ExtraEntryProvider extraEntryProvider) {
+    @Internal
+    // Already used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
+    public WeaponCapabilityBuilder registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
         String categoryStr = rootTag.getString("category");
         if (categoryStr.isEmpty()) return this;
 
@@ -102,14 +103,12 @@ public class WeaponCapabilityBuilder {
 
                 for (int i = 0; i < animList.size(); ++i) {
                     String animId = animList.getString(i);
-                    AnimationAccessor<? extends AttackAnimation> animation = (extraEntryProvider == null)
-                            ? AnimationManager.byKey(animId)
-                            : extraEntryProvider.getExtraOrBuiltInAnimation(animId);
+                    AnimationAccessor<? extends AttackAnimation> animation = AnimationManager.byKey(animId);
 
                     if (animation != null) {
                         anims.add(animation);
                     } else {
-                        EpicAPI.LOGGER.warn("Missing animation {} in {}", animId, rl);
+                        EpicAPI.warn("Missing animation {} in {}", animId, rl);
                     }
                 }
 

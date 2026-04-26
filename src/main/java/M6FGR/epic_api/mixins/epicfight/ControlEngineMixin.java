@@ -42,7 +42,7 @@ public abstract class ControlEngineMixin {
     @Shadow private int weaponInnatePressCounter;
 
     @Unique
-    private void maybeHeavyAttack() {
+    private void epicAPI$maybeHeavyAttack() {
         if (!this.playerpatch.isEpicFightMode() || isCurrentHoldingAction(EpicAPIIntputAction.HEAVY_ATTACK)) {
             return;
         }
@@ -55,7 +55,7 @@ public abstract class ControlEngineMixin {
         }
 
         if (shouldPlayAttackAnimation) {
-            if (!InputManager.isBoundToSamePhysicalInput(heavyAttack, EpicFightInputAction.WEAPON_INNATE_SKILL)) {
+            if (!InputManager.isBoundToSamePhysicalInput(heavyAttack, EpicFightInputAction.SWITCH_MODE)) {
                 SkillCastEvent skillCastEvent = this.playerpatch.getSkill(EpicAPISkillSlots.HEAVY_ATTACK).sendCastRequest(this.playerpatch, ControlEngine.getInstance());
 
                 if (skillCastEvent.isExecutable()) {
@@ -84,10 +84,10 @@ public abstract class ControlEngineMixin {
             remap = false,
             method = {"handleEpicFightKeyMappings"}
     )
-    private void handleEFAKeyMappings(CallbackInfo ci) {
+    private void injectHeavyAttack(CallbackInfo ci) {
         if (this.playerpatch != null) {
             InputManager.triggerOnPress(EpicAPIIntputAction.HEAVY_ATTACK, () ->
-                    InputUtils.runKeyboardMouseEvent(EpicAPIIntputAction.HEAVY_ATTACK, this::maybeHeavyAttack));
+                    InputUtils.runKeyboardMouseEvent(EpicAPIIntputAction.HEAVY_ATTACK, this::epicAPI$maybeHeavyAttack));
         }
 
     }

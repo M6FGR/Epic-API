@@ -3,18 +3,17 @@ package M6FGR.epic_api.builders.minecraft;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
-import org.jetbrains.annotations.ApiStatus.Experimental;
 
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
-@Experimental
+
 public class ItemsBuilder {
     /**
      * Registers a new item with easy property manipulation.
      * @param itemId Unique identifier for the item.
      * @param constructor The constructor reference (e.g., MyItem::new).
      * @param propertyModifier A lambda to adjust item properties (e.g., p -> p.stacksTo(1)).
-     * @param itemRegistry the DeferredRegistry in your items class.
+     * @param itemRegistry the DeferredRegistry in your item class.
      */
     public static <T extends Item> DeferredHolder<Item, T> newItem(
             String itemId,

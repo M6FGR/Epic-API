@@ -3,7 +3,7 @@ package M6FGR.epic_api.builders.epicfight;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import org.jetbrains.annotations.ApiStatus.Experimental;
+import org.jetbrains.annotations.ApiStatus.Internal;
 import yesman.epicfight.client.renderer.patched.entity.PatchedEntityRenderer;
 import yesman.epicfight.world.capabilities.entitypatch.EntityPatch;
 
@@ -11,26 +11,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 @SuppressWarnings("unchecked")
-@Experimental
-public class EntityPatchRegistrar<T extends Entity>  {
-    private static final EntityPatchRegistrar<Entity> INS = new EntityPatchRegistrar<>();
+public class EntityPatchBuilder<T extends Entity>  {
+    private static final EntityPatchBuilder<Entity> INS = new EntityPatchBuilder<>();
     private final List<FullPatchEntry<?>> entries = new ArrayList<>();
 
-    private EntityPatchRegistrar() {}
+    private EntityPatchBuilder() {}
 
-    public static <E extends Entity> EntityPatchRegistrar<E> get() {
-        return (EntityPatchRegistrar<E>) INS;
+    public static <E extends Entity> EntityPatchBuilder<E> get() {
+        return (EntityPatchBuilder<E>) INS;
     }
 
-    public <E extends T> EntityPatchRegistrar<E> newEntityPatch(
+    public <E extends T> EntityPatchBuilder<E> newEntityPatch(
             EntityType<E> type,
             Function<E, EntityPatch<E>> patch,
-            RendererFactory renderer
+            PRendererConstructor pRendererConstructor
     ) {
-        this.entries.add(new FullPatchEntry<>(type, patch, renderer));
-        return (EntityPatchRegistrar<E>) this;
+        this.entries.add(new FullPatchEntry<>(type, patch, pRendererConstructor));
+        return (EntityPatchBuilder<E>) this;
     }
 
+    @Internal
     public List<FullPatchEntry<?>> getEntries() {
         return this.entries;
     }
@@ -38,11 +38,11 @@ public class EntityPatchRegistrar<T extends Entity>  {
     public record FullPatchEntry<E extends Entity>(
             EntityType<E> type,
             Function<E, EntityPatch<E>> patchConstructor,
-            RendererFactory rendererFactory
+            PRendererConstructor pRendererConstructor
     ) {}
 
     @FunctionalInterface
-    public interface RendererFactory {
+    public interface PRendererConstructor {
         PatchedEntityRenderer<?, ?, ?, ?> create(EntityRendererProvider.Context context, EntityType<?> type);
     }
 

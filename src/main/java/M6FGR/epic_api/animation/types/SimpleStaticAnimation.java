@@ -48,10 +48,13 @@ public class SimpleStaticAnimation extends StaticAnimation {
 
     public enum JointMasks {
         ROOT_UPPER_JOINTS(() -> joints(
-                Armatures.BIPED.get().rootJoint, Armatures.BIPED.get().torso,
-                Armatures.BIPED.get().chest, Armatures.BIPED.get().head,
+                Armatures.BIPED.get().torso,
+                Armatures.BIPED.get().chest,
+                Armatures.BIPED.get().head,
+                // right arms
                 Armatures.BIPED.get().shoulderR, Armatures.BIPED.get().armR,
                 Armatures.BIPED.get().handR, Armatures.BIPED.get().toolR,
+                // left arms
                 Armatures.BIPED.get().shoulderL, Armatures.BIPED.get().armL,
                 Armatures.BIPED.get().handL, Armatures.BIPED.get().toolL
         )),

@@ -15,9 +15,10 @@ import net.neoforged.neoforge.common.NeoForge;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import static M6FGR.epic_api.cls.LoadableClassManager.*;
-
-
+import static M6FGR.epic_api.cls.LoadableClassManager.LOADED;
+import static M6FGR.epic_api.cls.LoadableClassManager.LOADED_CLASSES;
+import static M6FGR.epic_api.cls.LoadableClassManager.LOGGER;
+import static M6FGR.epic_api.cls.LoadableClassManager.isClass;
 
 public interface ILoadableClass {
     static void loadClass(IEventBus bus, Class<? extends ILoadableClass> loadableClass) {
@@ -28,10 +29,6 @@ public interface ILoadableClass {
 
         if (LOADED_CLASSES.contains(loadableClass)) {
             throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is already loaded!");
-        }
-
-        if (!hasAnyImplementation(loadableClass)) {
-            throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is unused! It does not override any hooks.");
         }
 
         try {
@@ -47,7 +44,7 @@ public interface ILoadableClass {
                 // 1. Side Check (Always exit early if we're on a server, and it's a client class)
                 if (compatibilityAnn.clientSide() && FMLLoader.getDist().isDedicatedServer()) {
                     if (compatibilityAnn.printWarns()) {
-                        LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: on Dedicated Server.", simpleClassName);
+                        LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
                     }
                     return;
                 }
@@ -69,16 +66,21 @@ public interface ILoadableClass {
             constructor.setAccessible(true);
             ILoadableClass loadableIns = constructor.newInstance();
             if (loadableIns.shouldLoad()) {
-                loadableIns.onModConstructor(bus);
-                loadableIns.onNeoForgeConstructor(NeoForge.EVENT_BUS);
-                bus.addListener(loadableIns::onModCommonEvents);
-
-                if (FMLLoader.getDist().isClient()) {
-                    loadableIns.onModClientConstructor(bus);
-                    loadableIns.onNeoForgeClientConstructor(NeoForge.EVENT_BUS);
-                    bus.addListener(loadableIns::onModClientEvents);
+                // look for methods first before loading!
+                if (!hasAnyImplementation(loadableClass)) {
+                    throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is unused! It does not override any hooks.");
                 } else {
-                    bus.addListener(loadableIns::onModServerEvents);
+                    loadableIns.onModConstructor(bus);
+                    loadableIns.onNeoForgeConstructor(NeoForge.EVENT_BUS);
+                    bus.addListener(loadableIns::onModCommonEvents);
+
+                    if (FMLLoader.getDist().isClient()) {
+                        loadableIns.onModClientConstructor(bus);
+                        loadableIns.onNeoForgeClientConstructor(NeoForge.EVENT_BUS);
+                        bus.addListener(loadableIns::onModClientEvents);
+                    } else {
+                        bus.addListener(loadableIns::onModServerEvents);
+                    }
                 }
                 LOADED_CLASSES.add(loadableClass);
 
@@ -90,27 +92,26 @@ public interface ILoadableClass {
                 LOGGER.debug("Class [{}] was instantiated but shouldLoad() returned false.", simpleClassName);
             }
         } catch (Exception e) {
-            EpicAPI.LOGGER.error("Failed to load Class [" + loadableClass.getName() + "]", e);
+            EpicAPI.err("Failed to load Class [{}], {}", loadableClass.getName(), e);
         } finally {
             LOADED = true;
         }
     }
 
     private static boolean hasAnyImplementation(Class<? extends ILoadableClass> cls) {
-        String[] actionMethods = {
-                "onModConstructor", "onModClientConstructor", "onNeoForgeConstructor",
-                "onNeoForgeClientConstructor", "onModCommonEvents", "onModClientEvents",
-                "onModServerEvents", "shouldLoad"
-        };
+        Method[] declaredMethods = cls.getDeclaredMethods();
+        for (Method m : declaredMethods) {
+            String methodName = m.getName();
 
-        for (Method m : ILoadableClass.class.getDeclaredMethods()) {
-            for (String target : actionMethods) {
-                if (m.getName().equals(target)) {
-                    try {
-                        cls.getDeclaredMethod(m.getName(), m.getParameterTypes());
-                        return true;
-                    } catch (NoSuchMethodException ignored) {}
-                }
+            if (methodName.equals("onModConstructor") ||
+                    methodName.equals("onModClientConstructor") ||
+                    methodName.equals("onNeoForgeConstructor") ||
+                    methodName.equals("onNeoForgeClientConstructor") ||
+                    methodName.equals("onModCommonEvents") ||
+                    methodName.equals("onModClientEvents") ||
+                    methodName.equals("onModServerEvents") ||
+                    methodName.equals("shouldLoad")) {
+                return true;
             }
         }
         return false;
@@ -121,6 +122,7 @@ public interface ILoadableClass {
         if (loadableClasses.length == 1) {
             LOGGER.warn("Class [{}] is loaded via loadClasses() method, use loadClass() instead.", loadableClasses[0].getSimpleName());
         }
+
         for (Class<? extends ILoadableClass> cls : loadableClasses) {
             loadClass(bus, cls);
         }

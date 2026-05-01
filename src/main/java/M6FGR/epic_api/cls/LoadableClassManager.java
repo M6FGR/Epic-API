@@ -16,41 +16,38 @@ final class LoadableClassManager {
     public static final Logger LOGGER = LogManager.getLogger("ILoadableClass");
     public static final List<Class<? extends ILoadableClass>> LOADED_CLASSES = new ArrayList<>();
     // to specify classes that had an error loading, we add a boolean as a firewall
-    public static boolean LOADED = false;
+    public static boolean LOADED;
 
+
+
+    // in case you forgot to load a class, this will help
     public static void checkUnloaded(String modId) {
+        // it gets the package from the mod-id, as so:
         IModFileInfo modFile = ModList.get().getModFileById(modId);
         if (modFile == null) return;
 
+        // then it gets the scan result from the file, and the class type of ILoadableClass
         ModFileScanData scanData = modFile.getFile().getScanResult();
-        Type iLoadableClassType = Type.getType(ILoadableClass.class);
+        Type loadableClsType = Type.getType(ILoadableClass.class);
 
+        // we stream the list from a Class<?> to a String (names), so it's easier to search
         Set<String> loadedNames = LOADED_CLASSES.stream()
                 .map(Class::getName)
                 .collect(Collectors.toSet());
 
+        // using the scan data, we scan the package based on the mod-id here
         scanData.getClasses().stream()
-                .filter(data -> data.interfaces().contains(iLoadableClassType))
+                // ONLY give is classes that implements ILoadableClass
+                .filter(data -> data.interfaces().contains(loadableClsType))
                 .forEach(data -> {
+                    // if found, we get its name
                     String className = data.clazz().getClassName();
 
                     if (loadedNames.contains(className)) {
-                        return; // Skip: We already loaded this one.
+                        return; // skip, we already loaded this one
                     }
-
-                    try {
-                        // Used this forName() instead, it's safer and doesn't crash on a dedicated server
-                        Class<?> cls = Class.forName(className, false, LoadableClassManager.class.getClassLoader());
-
-                        if (ILoadableClass.class.isAssignableFrom(cls) && isClass(cls)) {
-                            if (!loadedNames.contains(cls.getName()) && !LOADED) {
-                                LOGGER.error("Class: [{}] is never loaded", className);
-                            }
-                        }
-                    } catch (ClassNotFoundException | NoClassDefFoundError ignored) {
-                        // NoClassDefFoundError is common on servers for client classes,
-                        // catching it here prevents the crash.
-                    }
+                    // in case the guard-wall above didn't work, we print out what's forgotten
+                    LOGGER.warn("Class [{}] is never loaded!", className);
                 });
     }
 

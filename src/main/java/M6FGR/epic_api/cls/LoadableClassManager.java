@@ -24,7 +24,8 @@ final class LoadableClassManager {
     public static void checkUnloaded(String modId) {
         // it gets the package from the mod-id, as so:
         IModFileInfo modFile = ModList.get().getModFileById(modId);
-        if (modFile == null) return;
+        if (modFile == null)
+            return;
 
         // then it gets the scan result from the file, and the class type of ILoadableClass
         ModFileScanData scanData = modFile.getFile().getScanResult();

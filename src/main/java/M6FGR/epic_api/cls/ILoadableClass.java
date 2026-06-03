@@ -98,6 +98,7 @@ public interface ILoadableClass {
             } catch (NoSuchMethodException noCons) {
                 EpicAPI.err("Failed to load Class [{}], no public constructor!", loadableClass.getSimpleName());
                 noCons.printStackTrace();
+
             } catch (Exception e) {
                 EpicAPI.err("Failed to load Class [{}], {}", loadableClass.getName(), e);
                 e.printStackTrace();

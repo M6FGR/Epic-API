@@ -19,7 +19,7 @@ public class EpicAPIKeyMappings implements ILoadableClass {
     private static final List<KeyMapping> KEY_MAPPINGS = new ArrayList<>();
     public static final KeyMapping HEAVY_ATTACK = newCombatKeyMapping(
             EpicAPIComponents.HEAVY_ATTACK,
-            InputType.MOUSE,
+            InputType.KEYBOARD,
             KeyCodes.KEY_Y,
             LangKeys.KEY_COMBAT
     );

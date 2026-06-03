@@ -15,19 +15,15 @@ import net.minecraftforge.fml.loading.FMLLoader;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import static M6FGR.epic_api.cls.LoadableClassManager.LOADED;
-import static M6FGR.epic_api.cls.LoadableClassManager.LOADED_CLASSES;
-import static M6FGR.epic_api.cls.LoadableClassManager.LOGGER;
-import static M6FGR.epic_api.cls.LoadableClassManager.isClass;
 
 public interface ILoadableClass {
     static void loadClass(IEventBus bus, Class<? extends ILoadableClass> loadableClass) {
-        if (!isClass(loadableClass)) {
-            LOGGER.error("Cannot load [{}]: not a class!", loadableClass.getName());
+        if (!LoadableClassManager.isClass(loadableClass)) {
+            LoadableClassManager.LOGGER.error("Cannot load [{}]: not a class!", loadableClass.getName());
             return;
         }
 
-        if (LOADED_CLASSES.contains(loadableClass)) {
+        if (LoadableClassManager.LOADED_CLASSES.contains(loadableClass)) {
             throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is already loaded!");
         }
 
@@ -44,7 +40,7 @@ public interface ILoadableClass {
                 // 1. Side Check (Always exit early if we're on a server, and it's a client class)
                 if (compatibilityAnn.clientSide() && FMLLoader.getDist().isDedicatedServer()) {
                     if (compatibilityAnn.printWarns()) {
-                        LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
+                        LoadableClassManager.LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
                     }
                     return;
                 }
@@ -52,48 +48,41 @@ public interface ILoadableClass {
                 // 2. Presence Check (Always exit if the mod is missing)
                 if (!ModList.get().isLoaded(targetModId)) {
                     if (compatibilityAnn.printWarns()) {
-                        LOGGER.info("Compatibility class [{}] is skipped: Requires mod '{}' which is not present.",
+                        LoadableClassManager.LOGGER.info("Compatibility class [{}] is skipped: Requires mod '{}' which is not present.",
                                 simpleClassName, targetModId);
                     }
                     return;
                 }
 
-                LOGGER.info("Loaded Compatibility Class [{}] for ({})", simpleClassName, modDisplayName);
+                LoadableClassManager.LOGGER.info("Loaded Compatibility Class [{}] for ({})", simpleClassName, modDisplayName);
             }
 
             // Runs for both regular and verified compat classes
             Constructor<? extends ILoadableClass> constructor = loadableClass.getDeclaredConstructor();
             constructor.setAccessible(true);
             ILoadableClass loadableIns = constructor.newInstance();
-            if (loadableIns.shouldLoad()) {
-                if (!hasAnyImplementation(loadableClass)) {
-                    throw new ClassLoadingException("Class [" + loadableClass.getName() + "] is unused! It does not override any hooks.");
-                } else {
-                    loadableIns.onModConstructor(bus);
-                    loadableIns.onNeoForgeConstructor(MinecraftForge.EVENT_BUS);
-                    bus.addListener(loadableIns::onModCommonEvents);
 
-                    if (EpicAPI.isClient()) {
-                        loadableIns.onModClientConstructor(bus);
-                        loadableIns.onNeoForgeClientConstructor(MinecraftForge.EVENT_BUS);
-                        bus.addListener(loadableIns::onModClientEvents);
-                    } else {
-                        bus.addListener(loadableIns::onModServerEvents);
-                    }
-                }
-                LOADED_CLASSES.add(loadableClass);
+            loadableIns.onModConstructor(bus);
+            loadableIns.onNeoForgeConstructor(MinecraftForge.EVENT_BUS);
+            bus.addListener(loadableIns::onModCommonEvents);
 
-                // Only print the generic "Loaded Class" log if it wasn't already handled by the Compat log above
-                if (compatibilityAnn == null) {
-                    LOGGER.info("Loaded Class: [{}]", simpleClassName);
-                }
+            if (EpicAPI.isClient()) {
+                loadableIns.onModClientConstructor(bus);
+                loadableIns.onNeoForgeClientConstructor(MinecraftForge.EVENT_BUS);
+                bus.addListener(loadableIns::onModClientEvents);
             } else {
-                LOGGER.debug("Class [{}] was instantiated but shouldLoad() returned false.", simpleClassName);
+                bus.addListener(loadableIns::onModServerEvents);
+            }
+            LoadableClassManager.LOADED_CLASSES.add(loadableClass);
+
+            // Only print the generic "Loaded Class" log if it wasn't already handled by the Compat log above
+            if (compatibilityAnn == null) {
+                LoadableClassManager.LOGGER.info("Loaded Class: [{}]", simpleClassName);
             }
         } catch (Exception e) {
             EpicAPI.err("Failed to load Class [{}], {}", loadableClass.getName(), e);
         } finally {
-            LOADED = true;
+            LoadableClassManager.LOADED = true;
         }
     }
 
@@ -120,7 +109,7 @@ public interface ILoadableClass {
     @SafeVarargs
     static void loadClasses(IEventBus bus, Class<? extends ILoadableClass>... loadableClasses) {
         if (loadableClasses.length == 1) {
-            LOGGER.warn("Class [{}] is loaded via loadClasses() method, use loadClass() instead.", loadableClasses[0].getSimpleName());
+            LoadableClassManager.LOGGER.warn("Class [{}] is loaded via loadClasses() method, use loadClass() instead.", loadableClasses[0].getSimpleName());
         }
 
         for (Class<? extends ILoadableClass> cls : loadableClasses) {
@@ -152,7 +141,4 @@ public interface ILoadableClass {
 
     /** Use to register listeners to the FMLDedicatedServerSetupEvent. Registered as a listener. */
     default void onModServerEvents(FMLDedicatedServerSetupEvent serverEvent) {}
-
-    /** Use to load a class under specific Conditions. */
-    default boolean shouldLoad() { return true; }
 }

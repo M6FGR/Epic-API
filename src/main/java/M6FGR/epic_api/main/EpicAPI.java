@@ -2,7 +2,6 @@ package M6FGR.epic_api.main;
 
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.events.entity.EntityPatchBuilderRegistryEvent;
-import M6FGR.epic_api.events.item.MoveSetBuilderRegistryEvent;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.gameassets.EpicAPISkills;
 import M6FGR.epic_api.input.EpicAPIIntputAction;
@@ -13,6 +12,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.apache.logging.log4j.LogManager;
@@ -35,7 +35,6 @@ public class EpicAPI {
                 EpicAPISkillDataKeys.class,
                 // Events
                 EntityPatchBuilderRegistryEvent.class,
-                MoveSetBuilderRegistryEvent.class,
                 // Network
                 EpicAPINetworkManager.class
         );
@@ -45,6 +44,10 @@ public class EpicAPI {
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
+    }
+
+    private void commonEvents(FMLCommonSetupEvent event) {
+        EntityPatchBuilderRegistryEvent entityPatchBuilderRegistryEvent = new EntityPatchBuilderRegistryEvent();
     }
 
     // Logger helpers

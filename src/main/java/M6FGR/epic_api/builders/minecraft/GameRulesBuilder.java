@@ -66,7 +66,7 @@ public class GameRulesBuilder {
     // Syncing the commands
     private static void broadcastToServer(String name, int value) {
         SPGameRuleSync payload = new SPGameRuleSync(name, value);
-        EpicAPINetworkManager.receive(payload);
+        EpicAPINetworkManager.sendTo(payload, Distribute.ALL_CLIENTS);
     }
 
 

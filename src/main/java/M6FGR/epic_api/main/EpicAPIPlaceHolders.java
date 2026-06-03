@@ -11,7 +11,6 @@ import M6FGR.epic_api.builders.epicfight.ArmatureBuilder.ArmatureType;
 import M6FGR.epic_api.builders.epicfight.EntityPatchBuilder;
 import M6FGR.epic_api.builders.epicfight.MeshBuilder;
 import M6FGR.epic_api.builders.epicfight.MeshBuilder.MeshType;
-import M6FGR.epic_api.builders.epicfight.MoveSetBuilder;
 import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
 import M6FGR.epic_api.builders.minecraft.GameRulesBuilder;
 import M6FGR.epic_api.builders.minecraft.GameRulesBuilder.EnumValue;
@@ -19,12 +18,9 @@ import M6FGR.epic_api.builders.minecraft.ItemsBuilder;
 import M6FGR.epic_api.cls.Compatibility;
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.events.entity.EntityPatchBuilderRegistryEvent;
-import M6FGR.epic_api.events.item.MoveSetBuilderRegistryEvent;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.animal.IronGolem;
-import net.minecraft.world.entity.monster.Zombie;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.GameRules.BooleanValue;
 import net.minecraft.world.level.GameRules.Category;
@@ -50,7 +46,6 @@ import yesman.epicfight.gameasset.Armatures.ArmatureAccessor;
 import yesman.epicfight.gameasset.ColliderPreset;
 import yesman.epicfight.gameasset.EpicFightSkills;
 import yesman.epicfight.gameasset.EpicFightSounds;
-import yesman.epicfight.gameasset.ex_cap.MainConditionals;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.model.armature.HumanoidArmature;
 import yesman.epicfight.model.armature.PiglinArmature;
@@ -60,7 +55,6 @@ import yesman.epicfight.world.capabilities.entitypatch.mob.IronGolemPatch;
 import yesman.epicfight.world.capabilities.entitypatch.mob.ZombiePatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.item.CapabilityItem;
-import yesman.epicfight.world.capabilities.item.WeaponCapability;
 
 import java.util.function.Function;
 // This class shows how this API is used, no more!
@@ -76,9 +70,9 @@ class EpicAPIPlaceHolders {
         // Needs to be posted via FMLCommonSetupEvent
         public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NO_ENTITY = ArmatureBuilder.newArmature("epicfight:entity/biped", HumanoidArmature::new);
         // or if you want to, you could use ArmatureType for easier registry, as so:
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_EHUMANOID = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureType.HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_EHUMANOID = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureType.HUMANOID);
 
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_NON_HUMANOID = ArmatureBuilder.newArmature("epicfight:entity/wither", ArmatureType.NON_HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_NON_HUMANOID = ArmatureBuilder.newArmature("epicfight:entity/wither", ArmatureType.WITHER);
 
         public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NE_CUSTOM = ArmatureBuilder.newArmature("epicfight:entity/piglin", ArmatureType.of(PiglinArmature::new));
     }
@@ -95,12 +89,14 @@ class EpicAPIPlaceHolders {
         public static final MeshAccessor<SkinnedMesh> PLACEHOLDER_MESH_JSON_LOADER = MeshBuilder.newMesh("epicfight:layer/default_cape", MeshType.MESH_LOADER);
     }
 
+  //@EventBusSubscriber(modid = "yourmodid", bus = Bus.MOD)
     private static class EntityPatch {
-        public static EntityPatchBuilder<Zombie> HUMANOID_PATCH = EntityPatchBuilder.get().newEntityPatch(EntityType.ZOMBIE, ZombiePatch::new, (context, type) -> new PHumanoidRenderer<>(Mesh.PLACEHOLDER_MESH_E, context, type));
+        public static EntityPatchBuilder HUMANOID_PATCH = EntityPatchBuilder.newEntityPatch(EntityType.ZOMBIE, ZombiePatch::new, (context, type) -> new PHumanoidRenderer<>(Mesh.PLACEHOLDER_MESH_E, context, type));
 
-        public static EntityPatchBuilder<IronGolem> NON_HUMANOID_PATCH = EntityPatchBuilder.get().newEntityPatch(EntityType.IRON_GOLEM, IronGolemPatch::new, PIronGolemRenderer::new);
+        public static EntityPatchBuilder NON_HUMANOID_PATCH = EntityPatchBuilder.newEntityPatch(EntityType.IRON_GOLEM, IronGolemPatch::new, PIronGolemRenderer::new);
 
 
+      //@SubscribeEvent
         public static void registerPatches(EntityPatchBuilderRegistryEvent event) {
             event.registerFrom(HUMANOID_PATCH);
             event.registerFrom(NON_HUMANOID_PATCH);
@@ -147,6 +143,7 @@ class EpicAPIPlaceHolders {
         public static AnimationManager.AnimationAccessor<SimpleStaticAnimation> PLACEHOLDER_IDLE;
         public static AnimationManager.AnimationAccessor<SimpleMovementAnimation> PLACEHOLDER_WALK;
         public static AnimationManager.AnimationAccessor<SimpleAttackAnimation> PLACEHOLDER_ATTACK;
+
         private void registerAnimations(AnimationManager.AnimationRegistryEvent event) {
             event.newBuilder("example", Animation::build);
         }
@@ -204,7 +201,7 @@ class EpicAPIPlaceHolders {
         }
     }
 
-    @Compatibility(modid = "example_mod", clientSide = true, printWarns = true)
+    @Compatibility(modid = "example_mod", clientSide = false)
     // MUST implement ILoadableClass and loaded in the mod constructor!
     private static class CompatibilityClass implements ILoadableClass {
         /* You here do the compatibility code, Based on the params in the annotation:
@@ -212,15 +209,9 @@ class EpicAPIPlaceHolders {
          it will load if the environment was client sided
          it will print warning if the target mod wasn't loaded, or the mod is loaded on a dedicated server
 
-        Also, param#printWarns is optional, it's mostly for debugs and when the class was loaded
+         Also, param#printWarns is optional, it's mostly for debugs and when the class was loaded
         */
 
-
-        // not loading the class, it's a placeholder
-        @Override
-        public boolean shouldLoad() {
-            return false;
-        }
     }
 
     private static class CapabilityPresets {
@@ -289,51 +280,7 @@ class EpicAPIPlaceHolders {
             event.getTypeEntry().put(EpicAPI.identifier("example_preset"), EXAMPLE_EFM);
         }
 
-
-        // making is static final will cause a NullPointerException!, initialize it inside the registry method!
-        private static MoveSetBuilder EXAMPLE_EXCAP;
-
-
-        // post in FMLCommonSetupEvent
-        public static void registerMoveSet(MoveSetBuilderRegistryEvent event) {
-            EXAMPLE_EXCAP = MoveSetBuilder.builder()
-                    .newMoveSet(
-                            CapabilityItem.Styles.TWO_HAND,
-                            EpicAPI.identifier("example_2h"),
-                            CapabilityItem.WeaponCategories.LONGSWORD,
-                            ColliderPreset.LONGSWORD,
-                            EpicFightSounds.WHOOSH_ROD.get(),
-                            EpicFightSounds.BLUNT_HIT_HARD.get(),
-                            EpicFightParticles.HIT_BLUNT.get(),
-                            false,
-                            null,
-                            EpicFightSkills.SWEEPING_EDGE,
-                            MainConditionals.DEFAULT_2H_WIELD_STYLE,
-                            Animations.SWORD_AUTO1,
-                            Animations.SWORD_AUTO2,
-                            Animations.SWORD_DASH,
-                            Animations.SWORD_AIR_SLASH
-                    )
-                    .forEachMotion(
-                            LivingMotions.IDLE, yesman.epicfight.gameasset.Animations.BIPED_IDLE,
-                            LivingMotions.WALK, yesman.epicfight.gameasset.Animations.BIPED_WALK,
-                            LivingMotions.RUN, yesman.epicfight.gameasset.Animations.BIPED_RUN_LONGSWORD
-                    )
-                    // child gets the motions from above
-                    .withChildMoveSet(
-                            CapabilityItem.Styles.ONE_HAND,
-                            EpicAPI.identifier("example_1h"),
-                            EpicFightSkills.SWEEPING_EDGE,
-                            null,
-                            MainConditionals.SHIELD_OFFHAND,
-                            Animations.SWORD_AUTO1,
-                            Animations.SWORD_AUTO2,
-                            Animations.SWORD_AUTO3,
-                            Animations.SWORD_DASH,
-                            Animations.SWORD_AIR_SLASH
-                    ).withDefaultBipedMotions();
-            event.register(EpicAPI.identifier("example_moveset_capability"), EXAMPLE_EXCAP);
-        }
+        // Ex-Cap was removed in 1.20.1, it's now exclusive for 1.21.1 only
 
     }
 }

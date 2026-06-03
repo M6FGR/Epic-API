@@ -26,7 +26,7 @@ final class LoadableClassManager {
         Type iLoadableClassType = Type.getType(ILoadableClass.class);
 
         Set<String> loadedNames = LOADED_CLASSES.stream()
-                .map(Class::getName)
+                .map(Class::getSimpleName)
                 .collect(Collectors.toSet());
 
         scanData.getClasses().stream()
@@ -40,7 +40,8 @@ final class LoadableClassManager {
 
                     try {
                         // Used this forName() instead, it's safer and doesn't crash on a dedicated server
-                        Class<?> cls = Class.forName(className, false, LoadableClassManager.class.getClassLoader());
+                        @SuppressWarnings("unchecked")
+                        Class<? extends ILoadableClass> cls = (Class<? extends ILoadableClass>) Class.forName(className, false, LoadableClassManager.class.getClassLoader());
 
                         if (ILoadableClass.class.isAssignableFrom(cls) && isClass(cls)) {
                             if (!loadedNames.contains(cls.getName()) && !LOADED) {

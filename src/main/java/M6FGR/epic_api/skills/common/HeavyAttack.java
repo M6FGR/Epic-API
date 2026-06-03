@@ -2,6 +2,7 @@ package M6FGR.epic_api.skills.common;
 
 import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
+import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.server.level.ServerPlayer;
@@ -67,7 +68,7 @@ public class HeavyAttack extends Skill {
     @SuppressWarnings("unchecked")
     public static SkillBuilder<HeavyAttack> createHeavyAttackBuilder() {
         return new SkillBuilder()
-                .setCategory(SkillCategories.BASIC_ATTACK)
+                .setCategory(EpicAPISkillCategories.HEAVY_ATTACK)
                 .setActivateType(ActivateType.ONE_SHOT)
                 .setResource(Resource.NONE);
     }
@@ -132,7 +133,7 @@ public class HeavyAttack extends Skill {
                 this.applyWeaponScaling(attackMotion.get());
 
                 setHeavyCounter(Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
-                executor.getAnimator().playAnimation(attackMotion, 0.0F);
+                executor.playAnimationSynchronized(attackMotion, 0.0F);
                 executor.getAnimator().getVariables().put(HEAVY_COMBO, attackMotion, true);
 
                 boolean stiffAttack = EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(player.level());
@@ -169,7 +170,7 @@ public class HeavyAttack extends Skill {
     @Override
     public void onInitiate(SkillContainer container) {
         container.getExecutor().getEventListener().addEventListener(EventType.ACTION_EVENT_SERVER, EVENT_UUID, (event) -> {
-            int comboCounter = (Integer)container.getDataManager().getDataValue((SkillDataKey) SkillDataKeys.COMBO_COUNTER.get());
+            int comboCounter = container.getDataManager().getDataValue(SkillDataKeys.COMBO_COUNTER.get());
             setHeavyCounter(Causal.ANOTHER_ACTION_ANIMATION, event.getPlayerPatch(), container, event.getAnimation(), comboCounter);
         });
     }

@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
+@SuppressWarnings({"removal", "deprecation"})
 public class WeaponCapabilityBuilder {
     // 1. GLOBAL STORAGE FOR SKILLS
     private static final Map<WeaponCategory, Map<Style, List<AnimationAccessor<? extends AttackAnimation>>>> GLOBAL_HEAVY_COMBOS = Maps.newHashMap();
@@ -59,6 +60,7 @@ public class WeaponCapabilityBuilder {
     }
 
     // Static accessor for HeavyAttack skill
+    @Internal
     public static @Nullable List<AnimationAccessor<? extends AttackAnimation>> getHeavyCombo(WeaponCategory category, Style style) {
         Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> styleMap = GLOBAL_HEAVY_COMBOS.get(category);
         return styleMap != null ? styleMap.get(style) : null;
@@ -78,17 +80,11 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
-    @SafeVarargs
-    static void putHeavyCombo(WeaponCategory category, Style style, AnimationManager.AnimationAccessor<? extends AttackAnimation>... animations) {
-        GLOBAL_HEAVY_COMBOS
-                .computeIfAbsent(category, k -> Maps.newHashMap())
-                .put(style, List.of(animations));
-    }
     @Internal
-    // Already used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
-    public WeaponCapabilityBuilder registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
+    // used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
+    public void registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
         String categoryStr = rootTag.getString("category");
-        if (categoryStr.isEmpty()) return this;
+        if (categoryStr.isEmpty()) return;
 
         WeaponCategory category = WeaponCategory.ENUM_MANAGER.getOrThrow(categoryStr);
 
@@ -120,7 +116,6 @@ public class WeaponCapabilityBuilder {
             }
         }
 
-        return this;
     }
 
     // --- Preset & Style Methods ---

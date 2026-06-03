@@ -13,30 +13,23 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 @SuppressWarnings("unchecked")
-public class EntityPatchBuilder<T extends Entity>  {
-    private static EntityPatchBuilder<?> INS = new EntityPatchBuilder<>();
-    private final List<FullPatchEntry<?>> entries = new ArrayList<>();
+public class EntityPatchBuilder  {
+    private static final List<FullPatchEntry<?>> entries = new ArrayList<>();
+    private static final EntityPatchBuilder instance = new EntityPatchBuilder();
 
-    private EntityPatchBuilder() {
-        INS = this;
-    }
 
-    public static <E extends Entity> EntityPatchBuilder<E> get() {
-        return (EntityPatchBuilder<E>) INS;
-    }
-
-    public <E extends T> EntityPatchBuilder<E> newEntityPatch(
+    public static <E extends Entity> EntityPatchBuilder newEntityPatch(
             EntityType<E> type,
             Supplier<EntityPatch<E>> patchConstructor,
             PRendererConstructor pRendererConstructor
     ) {
-        this.entries.add(new FullPatchEntry<>(type, patchConstructor, pRendererConstructor));
-        return (EntityPatchBuilder<E>) this;
+        entries.add(new FullPatchEntry<>(type, patchConstructor, pRendererConstructor));
+        return instance;
     }
 
     @Internal
     public List<FullPatchEntry<?>> getEntries() {
-        return this.entries;
+        return entries;
     }
 
     public record FullPatchEntry<E extends Entity>(

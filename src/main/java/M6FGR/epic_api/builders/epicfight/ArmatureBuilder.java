@@ -1,6 +1,5 @@
 package M6FGR.epic_api.builders.epicfight;
 
-import M6FGR.epic_api.models.armature.NonHumanoidArmature;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -9,7 +8,16 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.Armatures.ArmatureAccessor;
 import yesman.epicfight.gameasset.Armatures.ArmatureContructor;
+import yesman.epicfight.model.armature.CreeperArmature;
+import yesman.epicfight.model.armature.DragonArmature;
+import yesman.epicfight.model.armature.EndermanArmature;
+import yesman.epicfight.model.armature.HoglinArmature;
 import yesman.epicfight.model.armature.HumanoidArmature;
+import yesman.epicfight.model.armature.IronGolemArmature;
+import yesman.epicfight.model.armature.PiglinArmature;
+import yesman.epicfight.model.armature.RavagerArmature;
+import yesman.epicfight.model.armature.VexArmature;
+import yesman.epicfight.model.armature.WitherArmature;
 
 import javax.annotation.Nullable;
 import java.util.Map;
@@ -86,25 +94,34 @@ public class ArmatureBuilder {
     }
 
     public enum ArmatureType {
-        HUMANOID_ARMATURE(HumanoidArmature::new),
-        NON_HUMANOID_ARMATURE(NonHumanoidArmature::new);
+        HUMANOID(HumanoidArmature::new),
+        VEX(VexArmature::new),
+        RAVAGER(RavagerArmature::new),
+        ENDERMAN(EndermanArmature::new),
+        ENDER_DRAGON(DragonArmature::new),
+        WITHER(WitherArmature::new),
+        CREEPER(CreeperArmature::new),
+        HOGLIN(HoglinArmature::new),
+        PIGLIN(PiglinArmature::new),
+        IRON_GOLEM(IronGolemArmature::new),
+        EMPTY(null);
 
         // Use a specific constructor reference
         private @Nullable ArmatureContructor<? extends Armature> constructor;
 
-        ArmatureType(@Nullable ArmatureContructor<? extends Armature> constructor) {
+       ArmatureType(@Nullable ArmatureContructor<? extends Armature> constructor) {
             this.constructor = constructor;
         }
 
         @SuppressWarnings("unchecked")
-        <AR extends Armature> AR apply(String name, int jointNumber, Joint joint, Map<String, Joint> jointMap) {
+        private <AR extends Armature> AR apply(String name, int jointNumber, Joint joint, Map<String, Joint> jointMap) {
             // We cast the result of the invocation to the generic type AR
             return (AR) this.constructor.invoke(name, jointNumber, joint, jointMap);
         }
 
         public static ArmatureType of(ArmatureContructor<? extends Armature> constructor) {
-            NON_HUMANOID_ARMATURE.constructor = constructor;
-            return NON_HUMANOID_ARMATURE;
+            EMPTY.constructor = constructor;
+            return EMPTY;
         }
     }
 

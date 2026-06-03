@@ -7,6 +7,7 @@ import yesman.epicfight.api.model.Armature;
 
 import java.util.Map;
 // same as HumanoidArmature but with no tools, just a placeholder
+@Deprecated(forRemoval = true)
 public class NonHumanoidArmature extends Armature {
 
     public final Joint

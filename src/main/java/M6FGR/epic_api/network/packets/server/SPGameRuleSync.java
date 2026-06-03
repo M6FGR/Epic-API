@@ -19,17 +19,17 @@ public class SPGameRuleSync {
     }
 
     // Encoder: Writing data to the buffer
-    public static void encode(SPGameRuleSync msg, FriendlyByteBuf buffer) {
+    public static void write(SPGameRuleSync msg, FriendlyByteBuf buffer) {
         buffer.writeUtf(msg.ruleName);
         buffer.writeInt(msg.value);
     }
 
     // Decoder: Reading data from the buffer
-    public static SPGameRuleSync decode(FriendlyByteBuf buffer) {
+    public static SPGameRuleSync read(FriendlyByteBuf buffer) {
         return new SPGameRuleSync(buffer.readUtf(), buffer.readInt());
     }
 
-    // Handler: The logic that runs on the Client
+    // Handler: The logic that runs on the client
     public static void handle(SPGameRuleSync msg, Supplier<Context> ctx) {
         ctx.get().enqueueWork(() -> {
             Minecraft mc = Minecraft.getInstance();
@@ -42,10 +42,10 @@ public class SPGameRuleSync {
                             T rule = mc.level.getGameRules().getRule(key);
                             // Note: Java 17 pattern matching (switch) works, but verify
                             // 1.20.1 Forge is running on a high enough JDK (usually it is).
-                            if (rule instanceof GameRules.BooleanValue bool) {
-                                bool.set(msg.value != 0, null);
-                            } else if (rule instanceof GameRules.IntegerValue intRule) {
-                                intRule.set(msg.value, null);
+                            if (rule instanceof GameRules.BooleanValue boolValue) {
+                                boolValue.set(msg.value != 0, null);
+                            } else if (rule instanceof GameRules.IntegerValue intValue) {
+                                intValue.set(msg.value, null);
                             } else if (rule instanceof EnumValue<?> enumValue) {
                                 enumValue.setOrdinal(msg.value);
                             }

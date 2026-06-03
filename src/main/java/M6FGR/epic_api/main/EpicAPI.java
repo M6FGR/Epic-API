@@ -97,7 +97,6 @@ public class EpicAPI {
 
 
     public static class EnvironmentHelper {
-        // Packaged-visible constructor allows the outer class to instantiate it safely
         private EnvironmentHelper() {}
 
         private final Dist dist = FMLLoader.getDist();

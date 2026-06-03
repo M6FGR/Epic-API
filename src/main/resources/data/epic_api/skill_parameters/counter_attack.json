@@ -1,0 +1,16 @@
+{
+  "stamina_consumption": 10,
+  "normal_counters": {
+    "greatsword": "epicfight:biped/combat/greatsword_dash"
+  },
+  "parry_counters": {
+    "tachi": [
+      "epicfight:biped/skill/rushing_tempo1",
+      "epicfight:biped/skill/rushing_tempo2"
+    ],
+    "longsword": [
+      "epicfight:biped/combat/longsword_auto3",
+      "epicfight:biped/combat/longsword_auto1"
+    ]
+  }
+}

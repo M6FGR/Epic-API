@@ -1,36 +1,33 @@
 package M6FGR.epic_api.builders.minecraft;
 
-import M6FGR.epic_api.main.EpicAPI;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.blaze3d.platform.InputConstants.Type;
 import net.minecraft.client.KeyMapping;
+import org.jetbrains.annotations.ApiStatus.Experimental;
 import yesman.epicfight.client.input.CombatKeyMapping;
-
+@Experimental
 public class KeyMappingsBuilder {
 
-    private KeyMappingsBuilder() {}
-
     public static KeyMapping newKeyMapping(String name, int keyCode, InputType inputType, KeyCategory category) {
-        if (EpicAPI.getEnvHelper().isDedicatedServer()) return null;
-        return new KeyMapping(name, inputType.get(), keyCode, category.get());
+        return new KeyMapping(name, inputType.getInputType(), keyCode, category.get());
     }
 
     public static CombatKeyMapping newCombatKeyMapping(String name, InputType inputType, int keyCode, KeyCategory category) {
-        if (EpicAPI.getEnvHelper().isDedicatedServer()) return null;
-        return new CombatKeyMapping(name, inputType.get(), keyCode, category.get());
+      return new CombatKeyMapping(name, inputType.getInputType(), keyCode, category.get());
     }
 
+
     public enum InputType {
-        KEYBOARD(InputConstants.Type.KEYSYM),
-        SCANCODE(InputConstants.Type.SCANCODE),
-        MOUSE(InputConstants.Type.MOUSE);
+        KEYBOARD(Type.KEYSYM),
+        SCANCODE(Type.SCANCODE),
+        MOUSE(Type.MOUSE);
 
-        private final InputConstants.Type inputType;
-
+        private final Type inputType;
         InputType(InputConstants.Type type) {
             this.inputType = type;
         }
 
-        public InputConstants.Type get() {
+        public Type getInputType() {
             return this.inputType;
         }
     }
@@ -45,7 +42,6 @@ public class KeyMappingsBuilder {
         UI("key.categories.ui"),
         CREATIVE("key.categories.creative"),
         COMBAT("key.categories.combat"),
-
         // EpicFight Categories
         EPICFIGHT_COMBAT("key.epicfight.combat");
 

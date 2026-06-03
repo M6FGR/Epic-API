@@ -1,11 +1,8 @@
 package M6FGR.epic_api.builders.epicfight;
 
-import M6FGR.epic_api.animation.types.SimpleAttackAnimation.TrailColor;
-import M6FGR.epic_api.animation.types.SimpleAttackAnimation.TrailPreset;
 import M6FGR.epic_api.main.EpicAPI;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import io.netty.util.internal.UnstableApi;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.resources.ResourceLocation;
@@ -19,9 +16,7 @@ import yesman.epicfight.api.animation.LivingMotion;
 import yesman.epicfight.api.animation.LivingMotions;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
-import yesman.epicfight.api.client.animation.property.TrailInfo;
 import yesman.epicfight.api.collider.Collider;
-import yesman.epicfight.api.ex_cap.data.Moveset;
 import yesman.epicfight.gameasset.Animations;
 import yesman.epicfight.particle.HitParticleType;
 import yesman.epicfight.skill.Skill;
@@ -36,17 +31,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
-
-// planned for removal and making a more stable version, especially for the new API changes of EFM
-@Deprecated(forRemoval = true)
-// shut up!
-@SuppressWarnings("removal")
 public class WeaponCapabilityBuilder {
+    // 1. GLOBAL STORAGE FOR SKILLS
     private static final Map<WeaponCategory, Map<Style, List<AnimationAccessor<? extends AttackAnimation>>>> GLOBAL_HEAVY_COMBOS = Maps.newHashMap();
 
-    private final Moveset.Builder moveSetBuilder;
-    @UnstableApi
-    private final WeaponCapability.Builder weaponBuilder;
+    private final WeaponCapability.Builder builder;
     protected Collider currentCollider;
     protected WeaponCategory currentCategory;
     protected SoundEvent currentSwingSound;
@@ -56,20 +45,19 @@ public class WeaponCapabilityBuilder {
     protected boolean currentHoldableInOffHand;
     protected Object[] currentMotionsPair;
     protected AnimationAccessor<? extends AttackAnimation>[] currentCombo;
-    protected Style currentStyle = CapabilityItem.Styles.COMMON;
+    private Style currentStyle = CapabilityItem.Styles.COMMON;
 
+    // 2. LOCAL STORAGE FOR BUILDER
     private final Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> localHeavyComboMap = Maps.newHashMap();
 
     private WeaponCapabilityBuilder() {
-        this.weaponBuilder = WeaponCapability.builder();
-        this.moveSetBuilder = Moveset.builder();
+        this.builder = WeaponCapability.builder();
     }
 
     public static WeaponCapabilityBuilder builder() {
         return new WeaponCapabilityBuilder();
     }
 
-    @Internal
     // Static accessor for HeavyAttack skill
     public static @Nullable List<AnimationAccessor<? extends AttackAnimation>> getHeavyCombo(WeaponCategory category, Style style) {
         Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> styleMap = GLOBAL_HEAVY_COMBOS.get(category);
@@ -97,10 +85,10 @@ public class WeaponCapabilityBuilder {
                 .put(style, List.of(animations));
     }
     @Internal
-    // used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
-    public void registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
+    // Already used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
+    public WeaponCapabilityBuilder registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
         String categoryStr = rootTag.getString("category");
-        if (categoryStr.isEmpty()) return;
+        if (categoryStr.isEmpty()) return this;
 
         WeaponCategory category = WeaponCategory.ENUM_MANAGER.getOrThrow(categoryStr);
 
@@ -132,6 +120,7 @@ public class WeaponCapabilityBuilder {
             }
         }
 
+        return this;
     }
 
     // --- Preset & Style Methods ---
@@ -147,7 +136,7 @@ public class WeaponCapabilityBuilder {
         this.currentHitSound = hitSound;
         this.currentHoldableInOffHand = holdableInOffHand;
         this.currentCollider = collider;
-        this.weaponBuilder
+        this.builder
                 .category(category)
                 .collider(collider)
                 .hitSound(hitSound)
@@ -173,7 +162,7 @@ public class WeaponCapabilityBuilder {
         this.currentInnate = innateSkill;
         this.currentPassive = passiveSkill;
         this.currentStyle = style;
-        this.weaponBuilder
+        this.builder
                 .category(currentCategory)
                 .collider(currentCollider)
                 .hitSound(currentHitSound)
@@ -192,57 +181,9 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
-
-
-    public WeaponCapabilityBuilder newTrailPreset(TrailColor trailColor, TrailPreset trailPreset, ResourceLocation swingTexture) {
-        TrailInfo.builder()
-                .r(trailColor.getR())
-                .g(trailColor.getG())
-                .b(trailColor.getB())
-                .startPos(trailPreset.getStartPos())
-                .endPos(trailPreset.getEndPos())
-                .lifetime(trailPreset.getLifetime())
-                .interpolations(trailPreset.getInterpolates())
-                .texture(swingTexture == null ? TrailInfo.GENERIC_TRAIL_TEXTURE : swingTexture)
-                .create();
-
-        return this;
-    }
-
-    public WeaponCapabilityBuilder newTrailPreset(TrailColor trailColor, TrailPreset trailPreset, InteractionHand hand, ResourceLocation swingTexture) {
-        TrailInfo.builder()
-                .r(trailColor.getR())
-                .g(trailColor.getG())
-                .b(trailColor.getB())
-                .startPos(trailPreset.getStartPos())
-                .endPos(trailPreset.getEndPos())
-                .lifetime(trailPreset.getLifetime())
-                .interpolations(trailPreset.getInterpolates())
-                .itemSkinHand(hand)
-                .texture(swingTexture == null ? TrailInfo.GENERIC_TRAIL_TEXTURE : swingTexture)
-                .create();
-
-        return this;
-    }
-
-    public WeaponCapabilityBuilder newTrailPreset(TrailColor trailColor, TrailPreset trailPreset) {
-        TrailInfo.builder()
-                .r(trailColor.getR())
-                .g(trailColor.getG())
-                .b(trailColor.getB())
-                .startPos(trailPreset.getStartPos())
-                .endPos(trailPreset.getEndPos())
-                .lifetime(trailPreset.getLifetime())
-                .interpolations(trailPreset.getInterpolates())
-                .texture(TrailInfo.GENERIC_TRAIL_TEXTURE)
-                .create();
-
-        return this;
-    }
-
     public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill) {
         this.currentStyle = style;
-        this.weaponBuilder
+        this.builder
                 .category(currentCategory)
                 .collider(currentCollider)
                 .hitSound(currentHitSound)
@@ -263,7 +204,7 @@ public class WeaponCapabilityBuilder {
 
     public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill innateSkill) {
         this.currentStyle = style;
-        this.weaponBuilder.category(currentCategory).collider(currentCollider).hitSound(currentHitSound).swingSound(currentSwingSound)
+        this.builder.category(currentCategory).collider(currentCollider).hitSound(currentHitSound).swingSound(currentSwingSound)
                 .canBePlacedOffhand(currentHoldableInOffHand).passiveSkill(currentPassive)
                 .weaponCombinationPredicator(entityPatch -> currentHoldableInOffHand)
                 .innateSkill(style, itemStack -> innateSkill)
@@ -274,19 +215,19 @@ public class WeaponCapabilityBuilder {
     // --- Shield Methods ---
 
     public WeaponCapabilityBuilder newShieldPreset(WeaponCategory category) {
-        this.weaponBuilder.constructor(BasicShieldCapability::new);
-        this.weaponBuilder.category(category);
+        this.builder.constructor(BasicShieldCapability::new);
+        this.builder.category(category);
         return this;
     }
 
     public WeaponCapabilityBuilder newShieldPreset(WeaponCategory category, Function<WeaponCapability.Builder, CapabilityItem> constructor) {
-        this.weaponBuilder.constructor(constructor);
-        this.weaponBuilder.category(category);
+        this.builder.constructor(constructor);
+        this.builder.category(category);
         return this;
     }
 
     public WeaponCapabilityBuilder withShieldBlockAnimation(AnimationAccessor<? extends StaticAnimation> animation) {
-        this.weaponBuilder.constructor(builder -> {
+        this.builder.constructor(builder -> {
             BasicShieldCapability shield = new BasicShieldCapability(builder);
             shield.animation = animation;
             return shield;
@@ -296,24 +237,22 @@ public class WeaponCapabilityBuilder {
 
 
     public WeaponCapabilityBuilder withStyleConditions(Function<LivingEntityPatch<?>, Style> styleProvider) {
-        this.weaponBuilder.styleProvider(styleProvider);
+        this.builder.styleProvider(styleProvider);
         return this;
     }
 
-
     public WeaponCapabilityBuilder withOffHandPredict(Function<LivingEntityPatch<?>, Boolean> predicator) {
-        this.weaponBuilder.weaponCombinationPredicator(predicator);
+        this.builder.weaponCombinationPredicator(predicator);
         return this;
     }
 
     public WeaponCapabilityBuilder withLivingMotion(LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
-        this.weaponBuilder.livingMotionModifier(this.currentStyle, livingMotion, animation);
+        this.builder.livingMotionModifier(this.currentStyle, livingMotion, animation);
         return this;
     }
 
-
     public WeaponCapabilityBuilder withLivingMotion(Style style, LivingMotion livingMotion, AnimationAccessor<? extends StaticAnimation> animation) {
-        this.weaponBuilder.livingMotionModifier(style, livingMotion, animation);
+        this.builder.livingMotionModifier(style, livingMotion, animation);
         return this;
     }
 
@@ -350,7 +289,7 @@ public class WeaponCapabilityBuilder {
 
 
     public WeaponCapabilityBuilder withReach(float reach) {
-        this.weaponBuilder.reach(reach);
+        this.builder.reach(reach);
         return this;
     }
 
@@ -363,7 +302,7 @@ public class WeaponCapabilityBuilder {
 
             categoryMap.putAll(this.localHeavyComboMap);
         }
-        return this.weaponBuilder;
+        return this.builder;
     }
 
     // --- Shield Capability Class ---

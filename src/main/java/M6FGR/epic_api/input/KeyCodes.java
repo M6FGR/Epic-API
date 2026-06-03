@@ -1,7 +1,5 @@
 package M6FGR.epic_api.input;
 
-
-@SuppressWarnings("unused")
 public final class KeyCodes {
 
     // Prevent instantiation

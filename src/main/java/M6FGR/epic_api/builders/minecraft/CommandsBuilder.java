@@ -17,8 +17,6 @@ import java.util.function.Consumer;
 @Experimental
 public class CommandsBuilder {
 
-    private CommandsBuilder() {}
-
     // Entry point for /command
     public static RootBuilder newRoot(String name) {
         return new RootBuilder(Commands.literal(name));

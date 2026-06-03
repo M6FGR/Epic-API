@@ -31,34 +31,33 @@ public class MeshBuilder {
         return toAccessor(modid, path, type);
     }
 
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String modid, String path) {
-        return toAccessor(modid, path, MeshType.SKINNED_MESH);
-    }
-
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(ResourceLocation location) {
-        return toAccessor(location.getNamespace(), location.getPath(), MeshType.SKINNED_MESH);
-    }
-
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String parsedLocation) {
-        ResourceLocation parsed = ResourceLocation.parse(parsedLocation);
-        return toAccessor(parsed.getNamespace(), parsed.getPath(), MeshType.SKINNED_MESH);
+    // Avoid usage, Use MeshAccessor#create instead
+    @Internal
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String modid, String path, MeshContructor<SkinnedMeshPart, VertexBuilder, ME> constructor) {
+        return Meshes.MeshAccessor.create(modid, path, loader -> loader.loadSkinnedMesh(constructor));
     }
 
     @Internal
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(ResourceLocation location, MeshContructor<SkinnedMeshPart, VertexBuilder, ME> constructor) {
+        return Meshes.MeshAccessor.create(location.getNamespace(), location.getPath(), loader -> loader.loadSkinnedMesh(constructor));
+    }
+
+    @Internal
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String parsedLocation, MeshContructor<SkinnedMeshPart, VertexBuilder, ME> constructor) {
+        ResourceLocation parsed = ResourceLocation.parse(parsedLocation);
+        return Meshes.MeshAccessor.create(parsed.getNamespace(), parsed.getPath(), loader -> loader.loadSkinnedMesh(constructor));
+    }
+
     private static <ME extends Mesh> Meshes.MeshAccessor<ME> toAccessor(String modid, String path, MeshType type) {
         return Meshes.MeshAccessor.create(modid, path, type::load);
     }
 
     public enum MeshType {
-        // used for entities since it can contain weight data and more
         SKINNED_MESH(loader -> loader.loadSkinnedMesh(SkinnedMesh::new)),
         HUMANOID_MESH(loader -> loader.loadSkinnedMesh(HumanoidMesh::new)),
-        // used for cloth objects mostly?
         COMPOSITE_MESH(JsonAssetLoader::loadCompositeMesh),
-        // mostly used for projectiles, such as the laser beam
-        CLASSIC_MESH(loader -> loader.loadClassicMesh(ClassicMesh::new)),
-        // used to read the mesh loaded inside the .json itself (it needs to contain "mesh_loader" provider!)
-        JSON_LOADER(JsonAssetLoader::loadMesh);
+        MESH_LOADER(JsonAssetLoader::loadMesh),
+        CLASSIC_MESH(loader -> loader.loadClassicMesh(ClassicMesh::new));
 
         private Function<JsonAssetLoader, Mesh> factory;
 

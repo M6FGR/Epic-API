@@ -28,10 +28,9 @@ public abstract class PlayerPatchMixin<T extends Player> extends LivingEntityPat
             method = "onJoinWorld(Lnet/minecraft/world/entity/player/Player;Lnet/minecraft/world/level/Level;Z)V",
             remap = false
     )
-    public void epicAPI$onJoinWorld(T entity, Level level, boolean worldgenSpawn, CallbackInfo ci) {
+    public void onJoinWorld(T entity, Level level, boolean worldgenSpawn, CallbackInfo ci) {
         // add HeavyAttack as a default skill
         PlayerSkills skillCapability = this.getPlayerSkills();
         skillCapability.getSkillContainerFor(EpicAPISkillSlots.HEAVY_ATTACK).setSkill(EpicAPISkills.HEAVY_ATTACKS.get());
-        skillCapability.getSkillContainerFor(EpicAPISkillSlots.COUNTER_ATTACK).setSkill(EpicAPISkills.COUNTER_ATTACK.get());
     }
 }

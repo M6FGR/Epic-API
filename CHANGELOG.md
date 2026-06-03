@@ -1,3 +1,5 @@
+_previous versions __[2.1.13 and below]__ didn't have update logs sadly, so only 21.1.4 and above will have update logs!_
+
 ### [21.2.1]
 
 ### Fixes:
@@ -14,8 +16,8 @@
 [[CommandsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/CommandsBuilder.java)]
 [[GameRulesBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/GameRulesBuilder.java)]
 [[ItemsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/ItemsBuilder.java)]
-- New Event [EntityPatchEventHook](src/main/java/M6FGR/epic_api/events/registry/EntityPatchEventHook.java) for ease of registering entity patches.
----
+- New Event [EntityPatchEventHook](src/main/java/M6FGR/epic_api/events/entity/EntityPatchEventHook.java) for ease of registering entity patches.
+
 ### [21.2.2]
 
 ### Fixes:
@@ -25,23 +27,3 @@
 ### Added:
 - [KeyMappingsBuilder](src/main/java/M6FGR/epic_api/builders/minecraft/KeyMappingsBuilder.java), ease of code readability and registry for keymappings.
 - [KeyCodes](src/main/java/M6FGR/epic_api/input/KeyCodes.java), now you can know which keycode is the one! (not to note InputConstants, has the same thing)
-
----
-
-### [21.2.3]
-
-### Fixes:
-- Fixed issue [LoadableClassManager](src/main/java/M6FGR/epic_api/cls/LoadableClassManager.java) doesn't print out the forgotten classes. [[Commit]](https://github.com/M6FGR/Epic-API/commit/1853a847fb52687780eaf46302f89773870aacf1)
----
-### [21.2.4]
-
-### Added:
-- New builder [DeferredCapabilityBuilder](src/main/java/M6FGR/epic_api/builders/epicfight/excap/deferred/DeferredCapabilityBuilder.java) for the newest epic fight API.
-- New exception [DeveloperException](src/main/java/M6FGR/epic_api/exception/DeveloperException.java) for enhanced logging and debugging
-- New skill [CounterAttack](src/main/java/M6FGR/epic_api/skills/common/CounterAttack.java)
-- EventHooks for both [HeavyAttack](src/main/java/M6FGR/epic_api/skills/common/HeavyAttack.java) and [CounterAttack](src/main/java/M6FGR/epic_api/skills/common/CounterAttack.java)
-
-### Removed:
-- Removed the old [MoveSetBuilder]() and [MoveSetCapabilityRegistryEventHook]() due to deprecations and the newest API changes of Epic Fight.
-
-

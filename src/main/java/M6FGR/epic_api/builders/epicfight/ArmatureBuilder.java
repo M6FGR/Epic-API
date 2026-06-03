@@ -1,5 +1,6 @@
 package M6FGR.epic_api.builders.epicfight;
 
+import M6FGR.epic_api.models.armature.NonHumanoidArmature;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import org.jetbrains.annotations.ApiStatus.Internal;
@@ -8,58 +9,28 @@ import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.gameasset.Armatures;
 import yesman.epicfight.gameasset.Armatures.ArmatureAccessor;
 import yesman.epicfight.gameasset.Armatures.ArmatureContructor;
-import yesman.epicfight.model.armature.CreeperArmature;
-import yesman.epicfight.model.armature.DragonArmature;
-import yesman.epicfight.model.armature.EndermanArmature;
-import yesman.epicfight.model.armature.HoglinArmature;
 import yesman.epicfight.model.armature.HumanoidArmature;
-import yesman.epicfight.model.armature.IronGolemArmature;
-import yesman.epicfight.model.armature.PiglinArmature;
-import yesman.epicfight.model.armature.RavagerArmature;
-import yesman.epicfight.model.armature.SpiderArmature;
-import yesman.epicfight.model.armature.VexArmature;
-import yesman.epicfight.model.armature.WitherArmature;
 
+import javax.annotation.Nullable;
 import java.util.Map;
 
 public class ArmatureBuilder {
 
     private ArmatureBuilder() {}
 
-
-    // deprecated, use MeshAccessor#create instead
-    @Deprecated(forRemoval = true)
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String parsedPath, Armatures.ArmatureContructor<AR> contructor) {
-        ResourceLocation parsed = ResourceLocation.parse(parsedPath);
-        return newArmatureI(parsed.getNamespace(), parsed.getPath(), contructor);
-    }
-
-    @Deprecated(forRemoval = true)
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(ResourceLocation location, Armatures.ArmatureContructor<AR> contructor) {
-        return newArmatureI(location.getNamespace(), location.getPath(), contructor);
-    }
-
-    @Deprecated(forRemoval = true)
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String modid, String path, Armatures.ArmatureContructor<AR> contructor) {
-        return newArmatureI(modid, path, contructor);
-    }
-
-    @Deprecated(forRemoval = true)
+    // Automatically puts the armature to the entity, no need for events, and can accept 3 arguments:
     public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String parsedPath, Armatures.ArmatureContructor<AR> contructor) {
         ResourceLocation parsed = ResourceLocation.parse(parsedPath);
         return newEntityArmatureI(entity, parsed.getNamespace(), parsed.getPath(), contructor);
     }
 
-    @Deprecated(forRemoval = true)
     public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, ResourceLocation location, Armatures.ArmatureContructor<AR> contructor) {
         return newEntityArmatureI(entity, location.getNamespace(), location.getPath(), contructor);
     }
 
-    @Deprecated(forRemoval = true)
     public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String modid, String path, Armatures.ArmatureContructor<AR> contructor) {
         return newEntityArmatureI(entity, modid, path, contructor);
     }
-
 
     public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String parsedPath, ArmatureType type) {
         ResourceLocation parsed = ResourceLocation.parse(parsedPath);
@@ -75,6 +46,20 @@ public class ArmatureBuilder {
     }
 
     // needs to be posted via an event (FMLCommonSetupEvent)
+
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String parsedPath, Armatures.ArmatureContructor<AR> contructor) {
+        ResourceLocation parsed = ResourceLocation.parse(parsedPath);
+        return newArmatureI(parsed.getNamespace(), parsed.getPath(), contructor);
+    }
+
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(ResourceLocation location, Armatures.ArmatureContructor<AR> contructor) {
+        return newArmatureI(location.getNamespace(), location.getPath(), contructor);
+    }
+
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String modid, String path, Armatures.ArmatureContructor<AR> contructor) {
+        return newArmatureI(modid, path, contructor);
+    }
+
     public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String parsedPath, ArmatureType type) {
         ResourceLocation parsed = ResourceLocation.parse(parsedPath);
         return newArmatureI(parsed.getNamespace(), parsed.getPath(), type::apply);
@@ -102,38 +87,24 @@ public class ArmatureBuilder {
 
     public enum ArmatureType {
         HUMANOID_ARMATURE(HumanoidArmature::new),
-        CREEPER(CreeperArmature::new),
-        PIGLIN(PiglinArmature::new),
-        ENDERMAN(EndermanArmature::new),
-        ENDER_DRAGON(DragonArmature::new),
-        HOGLIN(HoglinArmature::new),
-        IRON_GOLEM(IronGolemArmature::new),
-        RAVAGER(RavagerArmature::new),
-        SPIDER(SpiderArmature::new),
-        VEX(VexArmature::new),
-        WITHER(WitherArmature::new),
-        EMPTY(null);
-        // Use a specific constructor reference
-        private ArmatureContructor<? extends Armature> constructor;
+        NON_HUMANOID_ARMATURE(NonHumanoidArmature::new);
 
-        ArmatureType(ArmatureContructor<? extends Armature> constructor) {
+        // Use a specific constructor reference
+        private @Nullable ArmatureContructor<? extends Armature> constructor;
+
+        ArmatureType(@Nullable ArmatureContructor<? extends Armature> constructor) {
             this.constructor = constructor;
         }
 
         @SuppressWarnings("unchecked")
-        private <AR extends Armature> AR apply(String name, int jointNumber, Joint joint, Map<String, Joint> jointMap) {
+        <AR extends Armature> AR apply(String name, int jointNumber, Joint joint, Map<String, Joint> jointMap) {
             // We cast the result of the invocation to the generic type AR
             return (AR) this.constructor.invoke(name, jointNumber, joint, jointMap);
         }
 
         public static ArmatureType of(ArmatureContructor<? extends Armature> constructor) {
-            EMPTY.constructor = constructor;
-            return EMPTY;
-        }
-
-
-        public ArmatureContructor<? extends Armature> getConstructor() {
-            return this.constructor;
+            NON_HUMANOID_ARMATURE.constructor = constructor;
+            return NON_HUMANOID_ARMATURE;
         }
     }
 

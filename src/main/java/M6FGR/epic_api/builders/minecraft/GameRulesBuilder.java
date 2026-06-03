@@ -1,24 +1,34 @@
 package M6FGR.epic_api.builders.minecraft;
 
-import M6FGR.epic_api.network.EpicAPINetworkManager;
-import M6FGR.epic_api.network.EpicAPINetworkManager.Distribute;
-import M6FGR.epic_api.network.packets.server.SPGameRulesSync;
+import M6FGR.epic_api.cls.ILoadableClass;
+import M6FGR.epic_api.main.EpicAPI;
 import com.mojang.brigadier.context.CommandContext;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.ClientboundCustomPayloadPacket;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameRules.BooleanValue;
+import net.minecraft.world.level.GameRules.IntegerValue;
 import net.minecraft.world.level.GameRules.Value;
 import net.minecraft.world.level.Level;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.server.command.EnumArgument;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
+import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.function.BiConsumer;
 
-public class GameRulesBuilder {
-
-    private GameRulesBuilder() {}
+public class GameRulesBuilder implements ILoadableClass {
+    private static final ResourceLocation PACKET_ID = EpicAPI.identifier("gamerule_sync");
 
     // Non-Synchronized methods (by default)
     public static <E extends Enum<E>> GameRules.Key<EnumValue<E>> newEnum(String name, GameRules.Category category, E defaultValue) {
@@ -32,7 +42,6 @@ public class GameRulesBuilder {
     public static GameRules.Key<GameRules.IntegerValue> newInteger(String name, GameRules.Category category, int defaultValue) {
         return newInteger(name, category, defaultValue, false);
     }
-
 
     // Synchronized methods
     public static GameRules.Key<GameRules.BooleanValue> newBoolean(String name, GameRules.Category category, boolean defaultValue, boolean synchronised) {
@@ -66,12 +75,55 @@ public class GameRulesBuilder {
 
     // Syncing the commands
     private static void broadcastToServer(MinecraftServer server, String name, int value) {
-        SPGameRulesSync gameRulesSyncPct = new SPGameRulesSync(name, value);
+        SPGameRulesSync payload = new SPGameRulesSync(name, value);
         for (ServerPlayer player : server.getPlayerList().getPlayers()) {
-            EpicAPINetworkManager.send(gameRulesSyncPct, player, Distribute.PLAYER);
+            player.connection.send(new ClientboundCustomPayloadPacket(payload));
         }
     }
 
+    private record SPGameRulesSync(String ruleName, int value) implements CustomPacketPayload {
+        public static final Type<SPGameRulesSync> TYPE = new Type<>(PACKET_ID);
+
+        @Override
+        public Type<? extends CustomPacketPayload> type() {
+            return TYPE;
+        }
+
+        public static final StreamCodec<FriendlyByteBuf, SPGameRulesSync> CODEC = CustomPacketPayload.codec(
+                (payload, buffer) -> {
+                    buffer.writeUtf(payload.ruleName);
+                    buffer.writeInt(payload.value);
+                },
+                buffer -> new SPGameRulesSync(buffer.readUtf(), buffer.readInt())
+        );
+    }
+
+    private void registerNetworking(final RegisterPayloadHandlersEvent event) {
+        final PayloadRegistrar registrar = event.registrar("efa");
+        registrar.playToClient(SPGameRulesSync.TYPE, SPGameRulesSync.CODEC, (payload, context) -> {
+            context.enqueueWork(() -> {
+                Minecraft mc = Minecraft.getInstance();
+                if (mc.level != null) {
+                    GameRules.visitGameRuleTypes(new GameRules.GameRuleTypeVisitor() {
+                        @Override
+                        @ParametersAreNonnullByDefault
+                        public <T extends GameRules.Value<T>> void visit(GameRules.Key<T> key, GameRules.Type<T> type) {
+                            if (key.toString().equals(payload.ruleName())) {
+                                T rule = mc.level.getGameRules().getRule(key);
+                                switch (rule) {
+                                    case BooleanValue bool -> bool.set(payload.value() != 0, null);
+                                    case IntegerValue intRule -> intRule.set(payload.value(), null);
+                                    case EnumValue<?> enumRule -> enumRule.setOrdinal(payload.value());
+                                    default -> {
+                                    }
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+        });
+    }
 
     // --- Accessors ---
     public static boolean getBoolVal(Level level, GameRules.Key<GameRules.BooleanValue> key) {
@@ -84,6 +136,13 @@ public class GameRulesBuilder {
 
     public static <E extends Enum<E>> E getEnumVal(Level level, GameRules.Key<EnumValue<E>> key) {
         return level.getGameRules().getRule(key).get();
+    }
+
+    @Override
+    public void onModConstructor(IEventBus modBus) {
+        modBus.addListener(this::registerNetworking);
+        EpicAPI.debug("Registered SPGameRuleSync Packet.");
+
     }
 
     public static class EnumValue<E extends Enum<E>> extends Value<EnumValue<E>> {

@@ -11,13 +11,11 @@ import java.util.Optional;
 @ClientOnly
 public enum EpicAPIIntputAction implements InputAction {
 
-    HEAVY_ATTACK,
-    COUNTER_ATTACK;
+    HEAVY_ATTACK;
 
     public @NotNull KeyMapping keyMapping() {
         return switch (this) {
             case HEAVY_ATTACK -> EpicAPIKeyMappings.HEAVY_ATTACK;
-            case COUNTER_ATTACK -> EpicAPIKeyMappings.COUNTER_ATTACK;
         };
     }
 

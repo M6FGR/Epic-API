@@ -1,6 +1,3 @@
 {
-  "key.epic_api.heavy_attack": "Heavy Attack",
-  "skill.epic_api.category.heavy_attack" : "Heavy Attack",
-  "key.epic_api.counter_attack" : "Counter Attack",
-  "skill.epic_api.category.counter_attack" : "Counter Attack"
+  "key.epic_api.heavy_attack": "Heavy Attack"
 }

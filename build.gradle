@@ -25,7 +25,6 @@ repositories {
     }
 }
 
-
 base {
     archivesName = mod_id
 }
@@ -40,16 +39,15 @@ artifacts {
 }
 
 neoForge {
-    version = neo_version
+    version = project.neo_version
 
     parchment {
-        mappingsVersion = parchment_mappings_version
-        minecraftVersion = parchment_minecraft_version
+        mappingsVersion = project.parchment_mappings_version
+        minecraftVersion = project.parchment_minecraft_version
     }
 
     runs {
         client {
-            devLogin = false
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
         }
@@ -85,14 +83,14 @@ neoForge {
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
 dependencies {
-    // the (:) represents (-) in the file's name, so we do "epicfight:21.17.3:sources"
-    // 21.17.3
-    implementation "curse.maven:epic-fight-mod-405076:8080214"
-    // 21.17.3 sources (raw code)
-    compileOnlyApi "local:epicfight:21.17.3:sources"
+    // the (:) represents (-) in the file's name, so we do epicfight:00.00:sources
+    // 21.16.3
+    implementation "curse.maven:epic-fight-mod-405076:7919295"
+    // 21.16.3 sources (raw code)
+    compileOnlyApi "local:epicfight:21.16.3:sources"
 
     // to apply skins
-    implementation "local:skinrestorer:2.7.0"
+    //implementation "local:skinrestorer:2.7.0"
 }
 
 // Fixed resource processing - This replaces the broken generateModMetadata task
@@ -108,9 +106,7 @@ tasks.named('processResources', ProcessResources).configure {
             mod_license            : mod_license,
             mod_version            : mod_version,
             mod_authors            : mod_authors,
-            mod_description        : mod_description,
-            issueTrackerURL        : issueTrackerURL,
-            displayURL             : displayURL
+            mod_description        : mod_description
     ]
     inputs.properties replaceProperties
 

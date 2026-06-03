@@ -1,6 +1,5 @@
 package M6FGR.epic_api.cls;
 
-import M6FGR.epic_api.exception.DeveloperException;
 import net.neoforged.fml.ModList;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import net.neoforged.neoforgespi.language.ModFileScanData;
@@ -39,7 +38,7 @@ final class LoadableClassManager {
 
         // using the scan data, we scan the package based on the mod-id here
         scanData.getClasses().stream()
-                // ONLY give classes that implement ILoadableClass
+                // ONLY give is classes that implements ILoadableClass
                 .filter(data -> data.interfaces().contains(loadableClsType))
                 .forEach(data -> {
                     // if found, we get its name
@@ -48,8 +47,8 @@ final class LoadableClassManager {
                     if (loadedNames.contains(className)) {
                         return; // skip, we already loaded this one
                     }
-
-                    DeveloperException.throwOrLog("Class ["+className+"] is never loaded!");
+                    // in case the guard-wall above didn't work, we print out what's forgotten
+                    LOGGER.warn("Class [{}] is never loaded!", className);
                 });
     }
 

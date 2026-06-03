@@ -8,7 +8,6 @@
     "epicfight.GuardAnimationMixin",
     "epicfight.PlayerPatchMixin",
     "epicfight.WeaponTypeReloadListenerMixin",
-    ,
     "minecraft.CrashReportMixin",
     "minecraft.CrashReportMixin$CrashReportCategoryAccessor"
   ],

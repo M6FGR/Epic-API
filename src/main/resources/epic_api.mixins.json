@@ -5,8 +5,11 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "epicfight.ControlEngineMixin",
+    "epicfight.GuardAnimationMixin",
     "epicfight.PlayerPatchMixin",
-    "epicfight.WeaponTypeReloadListenerMixin"
+    "epicfight.WeaponTypeReloadListenerMixin",
+    "minecraft.CrashReportMixin",
+    "minecraft.CrashReportMixin$CrashReportCategoryAccessor"
   ],
   "client": [
   ],

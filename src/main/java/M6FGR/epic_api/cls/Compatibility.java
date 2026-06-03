@@ -2,7 +2,10 @@ package M6FGR.epic_api.cls;
 
 import net.neoforged.fml.ModList;
 
-import java.lang.annotation.*;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * This annotation acts as a <b>Conditional Gatekeeper</b> for {@link ILoadableClass} implementations.
@@ -30,10 +33,9 @@ public @interface Compatibility {
     /**
      * The unique Mod ID required for this class to load.
      * If {@link ModList#isLoaded(String)} returns {@code false},
-     * this class will be ignored.
+     * the class will be ignored.
      */
-    String modid();
-
+    String[] modid();
     /**
      * If {@code true}, the loading process will bail out if the current 
      * environment is a Dedicated Server. 
@@ -52,6 +54,6 @@ public @interface Compatibility {
      * Useful for debugging registration or preventing server crashes by identifying
      * misplaced client-only code (models, UI, etc.).
      */
-    boolean printWarns() default false;
+    boolean debug() default false;
 
 }

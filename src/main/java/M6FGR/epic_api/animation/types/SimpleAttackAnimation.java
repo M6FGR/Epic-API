@@ -68,30 +68,40 @@ public class SimpleAttackAnimation extends AttackAnimation {
         this.addProperty(AnimationProperty.StaticAnimationProperty.POSE_MODIFIER, Animations.ReusableSources.COMBO_ATTACK_DIRECTION_MODIFIER);
     }
 
+    public SimpleAttackAnimation(float transitionTime, float antic, float preDelay, float contact, float recovery, @Nullable Collider collider, Joint colliderJoint, String path, AssetAccessor<? extends Armature> armature) {
+        super(transitionTime, path, armature, new Phase(antic, antic, preDelay, contact, recovery, recovery, colliderJoint, collider));
+        this.addCommonProperties();
+    }
+
+    public SimpleAttackAnimation(float transitionTime, String path, AssetAccessor<? extends Armature> armature, Phase... phases) {
+        super(transitionTime, path, armature, phases);
+        this.addCommonProperties();
+    }
+
     public SimpleAttackAnimation(float transitionTime, AnimationManager.AnimationAccessor<? extends SimpleAttackAnimation> accessor, AssetAccessor<? extends Armature> armature, Phase... phases) {
         super(transitionTime, accessor, armature, phases);
         this.addCommonProperties();
     }
 
-    public SimpleAttackAnimation addTrail(String joint, TrailColor color) {
+    public SimpleAttackAnimation addTrail(Joint joint, TrailColor color) {
         this.trailDefinitions.add(new TrailDefinition(joint, color, Arrays.stream(this.phases).iterator().next().preDelay, Arrays.stream(this.phases).iterator().next().contact, TrailPreset.SWORD));
         return this;
     }
-    public SimpleAttackAnimation addTrail(String joint, TrailColor color, TrailPreset preset) {
+    public SimpleAttackAnimation addTrail(Joint joint, TrailColor color, TrailPreset preset) {
         this.trailDefinitions.add(new TrailDefinition(joint, color, Arrays.stream(this.phases).iterator().next().preDelay, Arrays.stream(this.phases).iterator().next().contact, preset));
         return this;
     }
-    public SimpleAttackAnimation addTrail(String joint, TrailColor color, float begin, float end, TrailPreset preset) {
+    public SimpleAttackAnimation addTrail(Joint joint, TrailColor color, float begin, float end, TrailPreset preset) {
         this.trailDefinitions.add(new TrailDefinition(joint, color, begin, end, preset));
         return this;
     }
     // FPS Calculation
-    public SimpleAttackAnimation addTrail(String joint, TrailColor color, int beginFrame, int endFrane, TrailPreset preset) {
+    public SimpleAttackAnimation addTrail(Joint joint, TrailColor color, int beginFrame, int endFrane, TrailPreset preset) {
         this.trailDefinitions.add(new TrailDefinition(joint, color, (float) beginFrame / 60, (float) endFrane / 60, preset));
         return this;
     }
 
-    public SimpleAttackAnimation addTrail(String joint, TrailColor color, float begin, float end) {
+    public SimpleAttackAnimation addTrail(Joint joint, TrailColor color, float begin, float end) {
         this.trailDefinitions.add(new TrailDefinition(joint, color, begin, end, TrailPreset.SWORD));
         return this;
     }
@@ -141,8 +151,8 @@ public class SimpleAttackAnimation extends AttackAnimation {
             for (TrailDefinition def : this.trailDefinitions) {
                 activeTrails.add(TrailInfo.builder()
                         .time(def.startDelay(), def.endDelay())
-                        .joint(def.joint())
-                        .r(def.color().r).g(def.color().g).b(def.color().b)
+                        .joint(def.joint().getName())
+                        .r(def.color().getR()).g(def.color().getG()).b(def.color().getB())
                         .startPos(new Vec3(0, 0, 0))
                         .endPos(new Vec3(0, 0, -1.2))
                         .texture(TrailInfo.GENERIC_TRAIL_TEXTURE)
@@ -153,14 +163,14 @@ public class SimpleAttackAnimation extends AttackAnimation {
                 if (def.preset != null) {
                     activeTrails.add(TrailInfo.builder()
                             .time(def.startDelay, def.endDelay)
-                            .joint(def.joint())
-                            .r(def.color().r).g(def.color().g).b(def.color().b)
-                            .startPos(def.preset.start)
-                            .endPos(def.preset.end)
+                            .joint(def.joint.getName())
+                            .r(def.color().getR()).g(def.color().getG()).b(def.color().getB())
+                            .startPos(def.preset.getStartPos())
+                            .endPos(def.preset.getEndPos())
                             .texture(TrailInfo.GENERIC_TRAIL_TEXTURE)
                             .type(EpicFightParticles.SWING_TRAIL.get())
-                            .lifetime(def.preset.lifetime)
-                            .interpolations(def.preset.interpolates)
+                            .lifetime(def.preset.getLifetime())
+                            .interpolations(def.preset.getInterpolates())
                             .create());
                 }
             }
@@ -201,7 +211,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
         return this;
     }
 
-    private record TrailDefinition(String joint, TrailColor color, float startDelay, float endDelay, TrailPreset preset) {}
+    private record TrailDefinition(Joint joint, TrailColor color, float startDelay, float endDelay, TrailPreset preset) {}
 
     public enum TrailColor {
         WOOD(0.55f, 0.41f, 0.29f),
@@ -230,7 +240,21 @@ public class SimpleAttackAnimation extends AttackAnimation {
             EMPTY.b = Math.min(b, 1);
             return EMPTY;
         }
+
+        public float getR() {
+            return this.r;
+        }
+
+        public float getG() {
+            return this.g;
+        }
+
+        public float getB() {
+            return this.b;
+        }
+
     }
+
     public enum TrailPreset {
         AXE(new Vec3(0.0, -0.15, -0.35), new Vec3(0.0, -0.15, -0.7), 4, 6),
         DAGGER(new Vec3(0, 0, 0), new Vec3(0, 0, -0.6), 4, 4),
@@ -243,6 +267,7 @@ public class SimpleAttackAnimation extends AttackAnimation {
 
         Vec3 start, end;
         int lifetime, interpolates;
+
         TrailPreset(Vec3 start, Vec3 end, int lifetime, int interpolateCount) {
             this.start = start;
             this.end = end;
@@ -252,12 +277,28 @@ public class SimpleAttackAnimation extends AttackAnimation {
 
 
         public static TrailPreset newPreset(Vec3 beginPos, Vec3 endPos, int lifetime, int interpolates) {
-            // we target EMPTY instance too
+            // we target EMPTY instance
             EMPTY.start = beginPos;
             EMPTY.end = endPos;
             EMPTY.lifetime = lifetime;
             EMPTY.interpolates = interpolates;
             return EMPTY;
+        }
+
+        public Vec3 getStartPos() {
+            return this.start;
+        }
+
+        public Vec3 getEndPos() {
+            return this.end;
+        }
+
+        public int getInterpolates() {
+            return this.interpolates;
+        }
+
+        public int getLifetime() {
+            return this.lifetime;
         }
     }
 }

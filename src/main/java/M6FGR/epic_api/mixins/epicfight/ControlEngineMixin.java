@@ -23,23 +23,30 @@ import yesman.epicfight.skill.SkillSlot;
 
 @Mixin(value = ControlEngine.class, remap = false)
 public abstract class ControlEngineMixin {
-    @Shadow private LocalPlayerPatch playerpatch;
+    @Shadow
+    private LocalPlayerPatch playerpatch;
 
-    @Shadow protected abstract boolean isCurrentHoldingAction(@NotNull InputAction other);
+    @Shadow
+    protected abstract boolean isCurrentHoldingAction(@NotNull InputAction other);
 
     @Shadow
     private static void consumeVanillaAttackKeyClicks() {
     }
 
-    @Shadow private LocalPlayer player;
+    @Shadow
+    private LocalPlayer player;
 
-    @Shadow private boolean attackLightPressToggle;
+    @Shadow
+    private boolean attackLightPressToggle;
 
-    @Shadow protected abstract void reserveKey(SkillSlot slot, InputAction action);
+    @Shadow
+    protected abstract void reserveKey(SkillSlot slot, InputAction action);
 
-    @Shadow private boolean weaponInnatePressToggle;
+    @Shadow
+    private boolean weaponInnatePressToggle;
 
-    @Shadow private int weaponInnatePressCounter;
+    @Shadow
+    private int weaponInnatePressCounter;
 
     @Unique
     private void epicAPI$maybeHeavyAttack() {
@@ -79,15 +86,57 @@ public abstract class ControlEngineMixin {
             }
         }
     }
+
+    @Unique
+    private void epicAPI$maybeCounterAttack() {
+        if (!this.playerpatch.isEpicFightMode() || isCurrentHoldingAction(EpicAPIIntputAction.COUNTER_ATTACK)) {
+            return;
+        }
+        final MinecraftInputAction vanillaAttack = MinecraftInputAction.ATTACK_DESTROY;
+        final EpicAPIIntputAction counterAttack = EpicAPIIntputAction.COUNTER_ATTACK;
+
+        boolean shouldPlayAttackAnimation = this.playerpatch.canPlayAttackAnimation();
+        if (vanillaAttack.keyMapping().getKey() == counterAttack.keyMapping().getKey() && Minecraft.getInstance().hitResult != null && shouldPlayAttackAnimation) {
+            consumeVanillaAttackKeyClicks();
+        }
+
+        if (shouldPlayAttackAnimation) {
+            if (!InputManager.isBoundToSamePhysicalInput(counterAttack, EpicFightInputAction.SWITCH_MODE)) {
+                SkillCastEvent skillCastEvent = this.playerpatch.getSkill(EpicAPISkillSlots.COUNTER_ATTACK).sendCastRequest(this.playerpatch, ControlEngine.getInstance());
+
+                if (skillCastEvent.isExecutable()) {
+                    this.player.resetAttackStrengthTicker();
+                    this.attackLightPressToggle = false;
+                    ControlEngine.getInstance().releaseAllServedKeys();
+                } else {
+                    if (!this.player.isSpectator()) {
+                        this.reserveKey(EpicAPISkillSlots.COUNTER_ATTACK, counterAttack);
+                    }
+                }
+
+                ControlEngine.getInstance().lockHotkeys();
+                this.attackLightPressToggle = false;
+                this.weaponInnatePressToggle = false;
+                this.weaponInnatePressCounter = 0;
+            } else {
+                if (!this.weaponInnatePressToggle) {
+                    this.weaponInnatePressToggle = true;
+                }
+            }
+        }
+    }
     @Inject(
             at = @At("HEAD"),
             remap = false,
-            method = {"handleEpicFightKeyMappings"}
+            method = "handleEpicFightKeyMappings"
     )
     private void injectHeavyAttack(CallbackInfo ci) {
         if (this.playerpatch != null) {
             InputManager.triggerOnPress(EpicAPIIntputAction.HEAVY_ATTACK, () ->
                     InputUtils.runKeyboardMouseEvent(EpicAPIIntputAction.HEAVY_ATTACK, this::epicAPI$maybeHeavyAttack));
+
+            InputManager.triggerOnPress(EpicAPIIntputAction.COUNTER_ATTACK, () ->
+                    InputUtils.runKeyboardMouseEvent(EpicAPIIntputAction.COUNTER_ATTACK, this::epicAPI$maybeCounterAttack));
         }
 
     }

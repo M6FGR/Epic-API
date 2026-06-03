@@ -2,6 +2,7 @@ package M6FGR.epic_api.gameassets;
 
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.main.EpicAPI;
+import M6FGR.epic_api.skills.common.CounterAttack;
 import M6FGR.epic_api.skills.common.HeavyAttack;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.neoforged.bus.api.IEventBus;
@@ -13,9 +14,11 @@ import yesman.epicfight.skill.SkillDataKey;
 public class EpicAPISkillDataKeys implements ILoadableClass {
     private static final DeferredRegister<SkillDataKey<?>> SKILL_DATA_KEYS = DeferredRegister.create(EpicFightRegistries.SKILL_DATA_KEY, EpicAPI.MODID);
     public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Integer>> HEAVY_COUNTER;
+    public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Integer>> MOTION_COUNTER;
 
     static {
         HEAVY_COUNTER = SKILL_DATA_KEYS.register("heavy_counter", () -> SkillDataKey.createSkillDataKey(ByteBufCodecs.INT, 0, false, HeavyAttack.class));
+        MOTION_COUNTER = SKILL_DATA_KEYS.register("motion_counter", () -> SkillDataKey.createSkillDataKey(ByteBufCodecs.INT, 0, false, CounterAttack.class));
     }
 
     @Override

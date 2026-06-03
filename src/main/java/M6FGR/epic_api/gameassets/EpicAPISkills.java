@@ -2,6 +2,7 @@ package M6FGR.epic_api.gameassets;
 
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.main.EpicAPI;
+import M6FGR.epic_api.skills.common.CounterAttack;
 import M6FGR.epic_api.skills.common.HeavyAttack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -10,12 +11,14 @@ import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.skill.Skill;
 
 public class EpicAPISkills implements ILoadableClass {
-    private static final DeferredRegister<Skill> SKILLS = DeferredRegister.create(EpicFightRegistries.Keys.SKILL, EpicAPI.MODID);;
-    public static DeferredHolder<Skill, HeavyAttack> HEAVY_ATTACKS;
+    private static final DeferredRegister<Skill> SKILLS = DeferredRegister.create(EpicFightRegistries.Keys.SKILL, EpicAPI.MODID);
 
-    static {
-        HEAVY_ATTACKS = SKILLS.register("heavy_attack", key -> HeavyAttack.createHeavyAttackBuilder().build(key));
-    }
+
+    public static final DeferredHolder<Skill, HeavyAttack> HEAVY_ATTACKS =
+            SKILLS.register("heavy_attack", key -> HeavyAttack.createHeavyAttackBuilder().build(key));
+
+    public static final DeferredHolder<Skill, CounterAttack> COUNTER_ATTACK =
+            SKILLS.register("counter_attack", key -> CounterAttack.createCounterAttackBuilder().build(key));
 
     @Override
     public void onModConstructor(IEventBus bus) {

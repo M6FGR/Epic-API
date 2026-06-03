@@ -1,7 +1,11 @@
 package M6FGR.epic_api.skills.common;
 
-import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
+import M6FGR.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
+import M6FGR.epic_api.events.player.HeavyAttackEvent;
+import M6FGR.epic_api.exception.DeveloperException;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
+import M6FGR.epic_api.network.EpicAPINetworkManager;
+import M6FGR.epic_api.network.EpicAPINetworkManager.Distribute;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,17 +16,15 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
+import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.property.AnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.event.EpicFightEventHooks;
-import yesman.epicfight.api.event.types.player.ComboAttackEvent;
 import yesman.epicfight.api.event.types.player.ModifyComboCounter;
 import yesman.epicfight.api.event.types.player.SkillConsumeEvent;
-import yesman.epicfight.api.exception.AssetLoadingException;
 import yesman.epicfight.api.utils.math.ValueModifier;
-import yesman.epicfight.network.EpicFightNetworkManager;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.skill.Skill;
@@ -50,14 +52,14 @@ public class HeavyAttack extends Skill {
     protected float heavyDashAttackConsumption;
     protected float heavyAirAttackConsumption;
 
+    protected int attackRecovery;
+
     // Scaling Parameters
     protected float damageMultiplier;
     protected float impactMultiplier;
     protected float armorNegation;
 
-    /**
-     * Standard Builder Creator
-     */
+    // standard builder
     public static SkillBuilder<?> createHeavyAttackBuilder() {
         return new SkillBuilder<>(HeavyAttack::new)
                 .setCategory(EpicAPISkillCategories.HEAVY_ATTACK)
@@ -75,6 +77,8 @@ public class HeavyAttack extends Skill {
         this.heavyAttackConsumption = parameters.getFloat("heavy_attack_consumption");
         this.heavyDashAttackConsumption = parameters.getFloat("heavy_dash_consumption");
         this.heavyAirAttackConsumption = parameters.getFloat("heavy_airslash_consumption");
+        // Recovery timing
+        this.attackRecovery = parameters.contains("attack_recovery") ? parameters.getInt("attack_recovery") : 16;
         // Attributes multipliers
         this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5f;
         this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0f;
@@ -85,6 +89,7 @@ public class HeavyAttack extends Skill {
     public void executeOnServer(SkillContainer skillContainer, CompoundTag args) {
         ServerPlayerPatch executor = skillContainer.getServerExecutor();
         SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
+        HeavyAttackEvent heavyAttackEvent = new HeavyAttackEvent(skillContainer);
 
         if (!executor.getEntityState().canBasicAttack()) {
             return;
@@ -94,9 +99,9 @@ public class HeavyAttack extends Skill {
             event.getResourceType().consumer.consume(skillContainer, executor, event.getAmount());
         }
 
-        if (!EpicFightEventHooks.Player.COMBO_ATTACK.post(new ComboAttackEvent(executor)).isCanceled()) {
+        if (!heavyAttackEvent.post().isCanceled()) {
             CapabilityItem cap = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
-            AnimationManager.AnimationAccessor<? extends AttackAnimation> attackMotion;
+            AnimationAccessor<? extends AttackAnimation> attackMotion;
             ServerPlayer player = executor.getOriginal();
             SkillDataManager dataManager = skillContainer.getDataManager();
             int comboCounter = dataManager.getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER);
@@ -104,13 +109,14 @@ public class HeavyAttack extends Skill {
             boolean dashAttack = player.isSprinting();
             boolean airAttack = !player.isInWater() && !player.onGround() && blocksToDelta.y() > this.MIN_ATTACK_Y && !player.getBlockStateOn().is(Block.byItem(Items.DIRT_PATH));
 
-            List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> combo = this.applyMotionsForMaps(executor, cap);
+            List<AnimationAccessor<? extends AttackAnimation>> combo = this.applyMotionsForMaps(executor, cap);
 
             if (combo == null || combo.isEmpty()) return;
 
             int comboSize = combo.size();
             if (comboSize < 3) {
-                throw new AssetLoadingException("Heavy combo for " + cap.getWeaponCategory() + " needs at least 3 animations (Regular, Dash, Air).");
+                // even for a non-developer environment, it'd still throw
+                DeveloperException.throwExBoth("Heavy combo for " + cap.getWeaponCategory() + " needs at least 3 animations (Regular, Dash, Air).");
             }
 
             if (airAttack) {
@@ -124,18 +130,20 @@ public class HeavyAttack extends Skill {
             }
 
             if (attackMotion != null && this.checkConsumption(executor, dashAttack, airAttack)) {
-                // Apply scaling to the animation before playing
+                // apply scaling to the animation before playing
                 if (attackMotion.get() instanceof AttackAnimation attackAnim) {
                     this.applyWeaponScaling(attackAnim);
                 }
 
                 setHeavyCounter(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
-                executor.getAnimator().playAnimation(attackMotion, 0.0F);
+                // do Animator#playAnimationSynchronized() instead of Animator#play(), for safer animation play handling
+                executor.playAnimationSynchronized(attackMotion, 0.0F);
                 executor.getAnimator().getVariables().put(HEAVY_COMBO, attackMotion, true);
 
                 boolean stiffAttack = EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(player.level());
                 SPAnimatorControl animatorControlPacket = getAnimatorControl(skillContainer, stiffAttack, attackMotion);
-                EpicFightNetworkManager.sendToAllPlayerTrackingThisEntityWithSelf(animatorControlPacket, player);
+
+                EpicAPINetworkManager.send(animatorControlPacket, player, Distribute.PTEAS);
             }
             executor.updateEntityState();
         }
@@ -167,7 +175,7 @@ public class HeavyAttack extends Skill {
     @Override
     public void updateContainer(SkillContainer container) {
         container.runOnServer((serverPlayerPatch) -> {
-            if (container.getExecutor().getTickSinceLastAction() > 16 && container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER) > 0) {
+            if (container.getExecutor().getTickSinceLastAction() > this.attackRecovery && container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER) > 0) {
                 setHeavyCounter(ModifyComboCounter.Causal.TIME_EXPIRED, serverPlayerPatch, container, null, 0);
             }
         });
@@ -179,7 +187,7 @@ public class HeavyAttack extends Skill {
         Style currentStyle = itemCapability.getStyle(playerpatch);
 
         List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> dynamicCombo =
-                WeaponCapabilityBuilder.getHeavyCombo(currentCategory, currentStyle);
+                DeferredCapabilityBuilder.getHeavyCombo(currentCategory, currentStyle);
 
         if (dynamicCombo != null) return dynamicCombo;
 

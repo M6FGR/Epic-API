@@ -20,11 +20,11 @@ public class SimpleStaticAnimation extends StaticAnimation {
     }
 
     public SimpleStaticAnimation(boolean repeatable, AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> animation, AssetAccessor<? extends Armature> armature) {
-        super(repeatable, animation, armature);
+        this(0.16F, repeatable, animation, armature);
     }
 
     public SimpleStaticAnimation(AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> animation, AssetAccessor<? extends Armature> armature) {
-        super(true, animation, armature);
+        this(true, animation, armature);
     }
 
     public SimpleStaticAnimation withPriority(Layer.Priority priority) {
@@ -47,7 +47,7 @@ public class SimpleStaticAnimation extends StaticAnimation {
     }
 
     public enum JointMasks {
-        ROOT_UPPER_JOINTS(() -> joints(
+        BIPED_ROOT_UPPER_JOINTS(() -> joints(
                 Armatures.BIPED.get().torso,
                 Armatures.BIPED.get().chest,
                 Armatures.BIPED.get().head,
@@ -58,15 +58,15 @@ public class SimpleStaticAnimation extends StaticAnimation {
                 Armatures.BIPED.get().shoulderL, Armatures.BIPED.get().armL,
                 Armatures.BIPED.get().handL, Armatures.BIPED.get().toolL
         )),
-        LEFT_ARM(() -> joints(
+        BIPED_LEFT_ARM(() -> joints(
                 Armatures.BIPED.get().shoulderL, Armatures.BIPED.get().armL,
                 Armatures.BIPED.get().handL, Armatures.BIPED.get().toolL
         )),
-        RIGHT_ARM(() -> joints(
+        BIPED_RIGHT_ARM(() -> joints(
                 Armatures.BIPED.get().shoulderR, Armatures.BIPED.get().armR,
                 Armatures.BIPED.get().handR, Armatures.BIPED.get().toolR
         )),
-        LEGS(() -> joints(
+        BIPED_LEGS(() -> joints(
                 Armatures.BIPED.get().thighR, Armatures.BIPED.get().kneeR,
                 Armatures.BIPED.get().legR, Armatures.BIPED.get().thighL,
                 Armatures.BIPED.get().kneeL, Armatures.BIPED.get().legL

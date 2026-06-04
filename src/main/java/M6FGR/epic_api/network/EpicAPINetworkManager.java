@@ -105,7 +105,7 @@ public class EpicAPINetworkManager implements ILoadableClass {
                if (entity != null) {
                    PacketDistributor.sendToPlayersTrackingEntityAndSelf(entity, packet);
                } else if (player != null) {
-                   PacketDistributor.sendToPlayersTrackingEntity(player, packet);
+                   PacketDistributor.sendToPlayersTrackingEntityAndSelf(player, packet);
                }
             }
             case PTE -> {

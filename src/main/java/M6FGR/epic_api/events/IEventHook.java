@@ -6,7 +6,7 @@ import yesman.epicfight.api.event.Event;
 
 /**
  * A lightweight event system hook that allows for dynamic event execution.
- * Check EpicAPI#commonEvents, for example
+ * Check HeavyAttack#executeOnServer(L102), for example
  */
 @Experimental
 public interface IEventHook<T extends Event> {

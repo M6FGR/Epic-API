@@ -54,13 +54,13 @@ public class CounterAttack extends Skill {
         boolean canParry = EpicFightSkills.PARRYING.get().isHoldingWeaponAvailable(executor, mainHand, GuardSkill.BlockType.ADVANCED_GUARD);
         CounterTypes counterType = canParry ? CounterTypes.PARRY : CounterTypes.NORMAL;
 
-        // Resolve the exact animation using your static getters
+        // Resolve the exact animation using static getters
         AnimationManager.AnimationAccessor<? extends StaticAnimation> animation = this.getCounterMotion(container, mainHand, counterType);
         if (animation == null) {
             return;
         }
 
-        CounterAttackEvent counterAttackEvent = new CounterAttackEvent(serverExecutor);
+        CounterAttackEvent counterAttackEvent = new CounterAttackEvent(container);
 
         if (!counterAttackEvent.post().isCanceled()) {
             SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
@@ -84,7 +84,7 @@ public class CounterAttack extends Skill {
         WeaponCategory category = itemCapability.getWeaponCategory();
 
         if (counterType == CounterTypes.PARRY) {
-            // Fetch list via your getParryingCounterAttacks getter
+            // Fetch list via getParryingCounterAttacks getter
             List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> parryList = DeferredCapabilityBuilder.getParryingCounterAttacks(category);
 
             if (parryList != null && !parryList.isEmpty()) {

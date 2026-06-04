@@ -11,7 +11,4 @@ import yesman.epicfight.api.event.Event;
 @Experimental
 public interface IEventHook<T extends Event> {
     T post();
-    default T postClient() {
-        return null;
-    }
 }

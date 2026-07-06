@@ -1,21 +1,31 @@
 package M6FGR.epic_api.skills.common;
 
 import M6FGR.epic_api.builders.epicfight.WeaponCapabilityBuilder;
+import M6FGR.epic_api.events.player.HeavyAttackEvent;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
+import M6FGR.epic_api.main.EpicAPI;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
+import M6FGR.epic_api.utils.EnvironmentHelper;
+import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
+import net.minecraft.client.Minecraft;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.AnimationVariables;
 import yesman.epicfight.api.animation.property.AnimationProperty;
+import yesman.epicfight.api.animation.property.AnimationProperty.ActionAnimationProperty;
 import yesman.epicfight.api.animation.types.AttackAnimation;
+import yesman.epicfight.api.animation.types.MainFrameAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.exception.AssetLoadingException;
 import yesman.epicfight.api.utils.math.ValueModifier;
@@ -24,12 +34,10 @@ import yesman.epicfight.network.common.AnimatorControlPacket.Action;
 import yesman.epicfight.network.common.AnimatorControlPacket.Layer;
 import yesman.epicfight.network.common.AnimatorControlPacket.Priority;
 import yesman.epicfight.network.server.SPAnimatorControl;
+import yesman.epicfight.skill.BasicAttack;
 import yesman.epicfight.skill.Skill;
 import yesman.epicfight.skill.SkillBuilder;
-import yesman.epicfight.skill.SkillCategories;
 import yesman.epicfight.skill.SkillContainer;
-import yesman.epicfight.skill.SkillDataKey;
-import yesman.epicfight.skill.SkillDataKeys;
 import yesman.epicfight.skill.SkillDataManager;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.ServerPlayerPatch;
@@ -53,7 +61,8 @@ public class HeavyAttack extends Skill {
     public double MIN_ATTACK_Y = 0.1;
     private final Map<WeaponCategory, Map<Style, BiFunction<CapabilityItem, PlayerPatch<?>, List<AnimationManager.AnimationAccessor<? extends AttackAnimation>>>>> heavyMotionMap = new HashMap<>();
     public static final AnimationVariables.IndependentAnimationVariableKey<Boolean> HEAVY_COMBO = AnimationVariables.independent((animator) -> false, false);
-    private static UUID EVENT_UUID = UUID.fromString("7d2a9b1c-4e8f-43b2-a5d6-c9e0f1a2b3c4");
+    private static final UUID EVENT_UUID = UUID.fromString("7d2a9b1c-4e8f-43b2-a5d6-c9e0f1a2b3c4");
+    // Consumption Parameters
     protected float heavyAttackConsumption;
     protected float heavyDashAttackConsumption;
     protected float heavyAirAttackConsumption;
@@ -63,6 +72,8 @@ public class HeavyAttack extends Skill {
     protected float impactMultiplier;
     protected float armorNegation;
 
+    // Attack Recovery by Ticks
+    protected int recoveryTicks;
 
 
     @SuppressWarnings("unchecked")
@@ -87,19 +98,21 @@ public class HeavyAttack extends Skill {
         this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5f;
         this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0f;
         this.armorNegation = parameters.contains("armor_negation") ? parameters.getFloat("armor_negation") : 15.0f;
+
+        this.recoveryTicks = parameters.contains("attack_recovery") ? parameters.getInt("attack_recovery") : 16;
     }
 
     @Override
     public void executeOnServer(SkillContainer skillContainer, FriendlyByteBuf buf) {
         ServerPlayerPatch executor = skillContainer.getServerExecutor();
         SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, buf);
-        BasicAttackEvent attackEvent = new BasicAttackEvent(executor);
+        HeavyAttackEvent heavyAttackEvent = new HeavyAttackEvent(executor);
         executor.getEventListener().triggerEvents(EventType.SKILL_CONSUME_EVENT, event);
         if (!event.isCanceled()) {
             event.getResourceType().consumer.consume(skillContainer, executor, event.getAmount());
         }
-
-        if (!attackEvent.isCanceled()) {
+        executor.getEventListener().triggerEvents(HeavyAttackEvent.TYPE, heavyAttackEvent);
+        if (!heavyAttackEvent.isCanceled()) {
             CapabilityItem cap = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
             AnimationManager.AnimationAccessor<? extends AttackAnimation> attackMotion;
             ServerPlayer player = executor.getOriginal();
@@ -170,9 +183,18 @@ public class HeavyAttack extends Skill {
     @Override
     public void onInitiate(SkillContainer container) {
         container.getExecutor().getEventListener().addEventListener(EventType.ACTION_EVENT_SERVER, EVENT_UUID, (event) -> {
-            int comboCounter = container.getDataManager().getDataValue(SkillDataKeys.COMBO_COUNTER.get());
+            int comboCounter = container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER.get());
             setHeavyCounter(Causal.ANOTHER_ACTION_ANIMATION, event.getPlayerPatch(), container, event.getAnimation(), comboCounter);
         });
+    }
+
+    @Override
+    public void updateContainer(SkillContainer container) {
+        if (!container.getExecutor().isLogicalClient() && container.getExecutor().getTickSinceLastAction() > this.recoveryTicks && container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER.get()) > 0) {
+            setHeavyCounter(Causal.TIME_EXPIRED, container.getServerExecutor(), container, null, 0);
+        }
+
+
     }
 
     public void onRemoved(SkillContainer container) {
@@ -198,7 +220,7 @@ public class HeavyAttack extends Skill {
     }
 
 
-    private static void setHeavyCounter(Causal reason, ServerPlayerPatch playerpatch, SkillContainer container, AnimationManager.AnimationAccessor<? extends StaticAnimation> causalAnimation, int value) {
+    private static void setHeavyCounter(ComboCounterHandleEvent.Causal reason, ServerPlayerPatch playerpatch, SkillContainer container, AnimationManager.AnimationAccessor<? extends StaticAnimation> causalAnimation, int value) {
         int prevValue = container.getDataManager().getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER.get());
         ComboCounterHandleEvent comboResetEvent = new ComboCounterHandleEvent(reason, playerpatch, causalAnimation, prevValue, value);
         container.getExecutor().getEventListener().triggerEvents(EventType.COMBO_COUNTER_HANDLE_EVENT, comboResetEvent);

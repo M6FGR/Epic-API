@@ -8,12 +8,13 @@ import yesman.epicfight.api.client.input.controller.ControllerBinding;
 
 import java.util.Optional;
 public enum EpicAPIIntputAction implements InputAction {
-
-    HEAVY_ATTACK;
+    HEAVY_ATTACK,
+    COUNTER_ATTACK;
 
     public @NotNull KeyMapping keyMapping() {
         return switch (this) {
             case HEAVY_ATTACK -> EpicAPIKeyMappings.HEAVY_ATTACK;
+            case COUNTER_ATTACK -> EpicAPIKeyMappings.COUNTER_ATTACK;
         };
     }
 

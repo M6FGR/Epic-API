@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.world.InteractionHand;
@@ -35,6 +36,8 @@ import java.util.function.Function;
 public class WeaponCapabilityBuilder {
     // 1. GLOBAL STORAGE FOR SKILLS
     private static final Map<WeaponCategory, Map<Style, List<AnimationAccessor<? extends AttackAnimation>>>> GLOBAL_HEAVY_COMBOS = Maps.newHashMap();
+    private static final Map<WeaponCategory, Map<Style, AnimationAccessor<? extends AttackAnimation>>> GLOBAL_COUNTER_ATTACKS = Maps.newHashMap();
+    private static final Map<WeaponCategory, Map<Style, List<AnimationAccessor<? extends AttackAnimation>>>> GLOBAL_PARRY_COUNTERS = Maps.newHashMap();
 
     private final WeaponCapability.Builder builder;
     protected Collider currentCollider;
@@ -50,6 +53,8 @@ public class WeaponCapabilityBuilder {
 
     // 2. LOCAL STORAGE FOR BUILDER
     private final Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> localHeavyComboMap = Maps.newHashMap();
+    private final Map<Style, AnimationAccessor<? extends AttackAnimation>> localCounterAttacksMap = Maps.newHashMap();
+    private final Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> localParryCountersMap = Maps.newHashMap();
 
     private WeaponCapabilityBuilder() {
         this.builder = WeaponCapability.builder();
@@ -63,6 +68,20 @@ public class WeaponCapabilityBuilder {
     @Internal
     public static @Nullable List<AnimationAccessor<? extends AttackAnimation>> getHeavyCombo(WeaponCategory category, Style style) {
         Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> styleMap = GLOBAL_HEAVY_COMBOS.get(category);
+        return styleMap != null ? styleMap.get(style) : null;
+    }
+
+    // Static accessor for CounterAttack skill - Now returns a single animation
+    @Internal
+    public static @Nullable AnimationAccessor<? extends AttackAnimation> getNormalCounter(WeaponCategory category, Style style) {
+        Map<Style, AnimationAccessor<? extends AttackAnimation>> styleMap = GLOBAL_COUNTER_ATTACKS.get(category);
+        return styleMap != null ? styleMap.get(style) : null;
+    }
+
+    // Static accessor for ParryCounter skill
+    @Internal
+    public static @Nullable List<AnimationAccessor<? extends AttackAnimation>> getParryCounters(WeaponCategory category, Style style) {
+        Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> styleMap = GLOBAL_PARRY_COUNTERS.get(category);
         return styleMap != null ? styleMap.get(style) : null;
     }
 
@@ -80,9 +99,36 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
+    // --- Counter Attack Methods (Single Animation Constraints) ---
+
+    public final WeaponCapabilityBuilder addCounterAttack(Style style, AnimationAccessor<? extends AttackAnimation> counterAttack) {
+        this.localCounterAttacksMap.put(style, counterAttack);
+        return this;
+    }
+
+    public final WeaponCapabilityBuilder addCounterAttack(AnimationAccessor<? extends AttackAnimation> counterAttack) {
+        this.localCounterAttacksMap.put(this.currentStyle, counterAttack);
+        return this;
+    }
+
+    // --- Parry Counter Methods ---
+
+    @SafeVarargs
+    public final WeaponCapabilityBuilder addParryCounterAttack(Style style, AnimationAccessor<? extends AttackAnimation>... parryCounter) {
+        this.localParryCountersMap.put(style, List.of(parryCounter));
+        return this;
+    }
+
+    @SafeVarargs
+    public final WeaponCapabilityBuilder addParryCounterAttack(AnimationAccessor<? extends AttackAnimation>... parryCounter) {
+        this.localParryCountersMap.put(this.currentStyle, List.of(parryCounter));
+        return this;
+    }
+
+    // --- Data Serialization / Loading ---
+
     @Internal
-    // used in WeaponTypeReloadListener#deserializeWeaponCapabilityBuilder
-    public void registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
+    public static void registerHeavyComboFromTag(ResourceLocation rl, CompoundTag rootTag) {
         String categoryStr = rootTag.getString("category");
         if (categoryStr.isEmpty()) return;
 
@@ -94,7 +140,7 @@ public class WeaponCapabilityBuilder {
             for (String styleKey : heavyCombosTag.getAllKeys()) {
                 Style style = Style.ENUM_MANAGER.getOrThrow(styleKey);
 
-                ListTag animList = heavyCombosTag.getList(styleKey, 8); // 8 is String types
+                ListTag animList = heavyCombosTag.getList(styleKey, 8);
                 List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<>();
 
                 for (int i = 0; i < animList.size(); ++i) {
@@ -104,7 +150,7 @@ public class WeaponCapabilityBuilder {
                     if (animation != null) {
                         anims.add(animation);
                     } else {
-                        EpicAPI.warn("Missing animation {} in {}", animId, rl);
+                        EpicAPI.err("Missing animation {} in {}", animId, rl);
                     }
                 }
 
@@ -115,7 +161,70 @@ public class WeaponCapabilityBuilder {
                 }
             }
         }
+    }
 
+    @Internal
+    public static void registerCounterAttackFromTag(ResourceLocation rl, CompoundTag rootTag) {
+        String categoryStr = rootTag.getString("category");
+        if (categoryStr.isEmpty()) return;
+
+        WeaponCategory category = WeaponCategory.ENUM_MANAGER.getOrThrow(categoryStr);
+
+        if (rootTag.contains("counter_attack")) {
+            CompoundTag counterTag = rootTag.getCompound("counter_attack");
+
+            for (String styleKey : counterTag.getAllKeys()) {
+                Style style = Style.ENUM_MANAGER.getOrThrow(styleKey);
+
+                if (counterTag.contains(styleKey, 8)) {
+                    String animId = counterTag.getString(styleKey);
+                    AnimationAccessor<? extends AttackAnimation> animation = AnimationManager.byKey(animId);
+
+                    if (animation != null) {
+                        GLOBAL_COUNTER_ATTACKS
+                                .computeIfAbsent(category, k -> Maps.newHashMap())
+                                .put(style, animation);
+                    } else {
+                        EpicAPI.warn("Missing counter attack animation {} in {}", animId, rl);
+                    }
+                }
+            }
+        }
+    }
+
+    @Internal
+    public static void registerParryCounterFromTag(ResourceLocation rl, CompoundTag rootTag) {
+        String categoryStr = rootTag.getString("category");
+        if (categoryStr.isEmpty()) return;
+
+        WeaponCategory category = WeaponCategory.ENUM_MANAGER.getOrThrow(categoryStr);
+
+        if (rootTag.contains("parry_counters")) {
+            CompoundTag parryTag = rootTag.getCompound("parry_counters");
+
+            for (String styleKey : parryTag.getAllKeys()) {
+                Style style = Style.ENUM_MANAGER.getOrThrow(styleKey);
+                ListTag animList = parryTag.getList(styleKey, 8);
+                List<AnimationAccessor<? extends AttackAnimation>> anims = new ArrayList<>();
+
+                for (int i = 0; i < animList.size(); ++i) {
+                    String animId = animList.getString(i);
+                    AnimationAccessor<? extends AttackAnimation> animation = AnimationManager.byKey(animId);
+
+                    if (animation != null) {
+                        anims.add(animation);
+                    } else {
+                        EpicAPI.warn("Missing parry counter animation {} in {}", animId, rl);
+                    }
+                }
+
+                if (!anims.isEmpty()) {
+                    GLOBAL_PARRY_COUNTERS
+                            .computeIfAbsent(category, k -> Maps.newHashMap())
+                            .put(style, anims);
+                }
+            }
+        }
     }
 
     // --- Preset & Style Methods ---
@@ -176,7 +285,7 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
-    public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill) {
+    public WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill passiveSkill, @Nullable Skill innateSkill) {
         this.currentStyle = style;
         this.builder
                 .category(currentCategory)
@@ -197,7 +306,7 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
-    public final WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill innateSkill) {
+    public WeaponCapabilityBuilder secondaryStyle(Style style, @Nullable Skill innateSkill) {
         this.currentStyle = style;
         this.builder.category(currentCategory).collider(currentCollider).hitSound(currentHitSound).swingSound(currentSwingSound)
                 .canBePlacedOffhand(currentHoldableInOffHand).passiveSkill(currentPassive)
@@ -229,7 +338,6 @@ public class WeaponCapabilityBuilder {
         });
         return this;
     }
-
 
     public WeaponCapabilityBuilder withStyleConditions(Function<LivingEntityPatch<?>, Style> styleProvider) {
         this.builder.styleProvider(styleProvider);
@@ -282,7 +390,6 @@ public class WeaponCapabilityBuilder {
         return this;
     }
 
-
     public WeaponCapabilityBuilder withReach(float reach) {
         this.builder.reach(reach);
         return this;
@@ -291,11 +398,27 @@ public class WeaponCapabilityBuilder {
     // --- The Build Method ---
 
     public WeaponCapability.Builder build() {
-        if (this.currentCategory != null && !this.localHeavyComboMap.isEmpty()) {
-            Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> categoryMap =
-                    GLOBAL_HEAVY_COMBOS.computeIfAbsent(this.currentCategory, k -> Maps.newHashMap());
+        if (this.currentCategory != null) {
+            // Heavy Combos
+            if (!this.localHeavyComboMap.isEmpty()) {
+                Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> heavyMap =
+                        GLOBAL_HEAVY_COMBOS.computeIfAbsent(this.currentCategory, k -> Maps.newHashMap());
+                heavyMap.putAll(this.localHeavyComboMap);
+            }
 
-            categoryMap.putAll(this.localHeavyComboMap);
+            // Counter Attacks (Flattens values strictly to single animation states)
+            if (!this.localCounterAttacksMap.isEmpty()) {
+                Map<Style, AnimationAccessor<? extends AttackAnimation>> counterMap =
+                        GLOBAL_COUNTER_ATTACKS.computeIfAbsent(this.currentCategory, k -> Maps.newHashMap());
+                counterMap.putAll(this.localCounterAttacksMap);
+            }
+
+            // Parry Counters
+            if (!this.localParryCountersMap.isEmpty()) {
+                Map<Style, List<AnimationAccessor<? extends AttackAnimation>>> parryMap =
+                        GLOBAL_PARRY_COUNTERS.computeIfAbsent(this.currentCategory, k -> Maps.newHashMap());
+                parryMap.putAll(this.localParryCountersMap);
+            }
         }
         return this.builder;
     }

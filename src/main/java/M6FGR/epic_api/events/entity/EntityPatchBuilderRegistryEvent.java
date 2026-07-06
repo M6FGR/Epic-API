@@ -17,20 +17,24 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 
-public class EntityPatchBuilderRegistryEvent extends Event implements IModBusEvent, ILoadableClass {
+public class EntityPatchBuilderRegistryEvent extends Event implements IModBusEvent {
     private static final Map<FullPatchEntry<?>, PRendererConstructor> ENTITY_PATCH_MAP = Maps.newHashMap();
 
-    public <E extends Entity> void registerFrom(EntityPatchBuilder registrar) {
+    public EntityPatchBuilderRegistryEvent() {
+
+    }
+
+    public void registerFrom(EntityPatchBuilder registrar) {
         for (FullPatchEntry<?> entry : registrar.getEntries()) {
             ENTITY_PATCH_MAP.put(entry, entry.pRendererConstructor());
         }
     }
 
-    private void onEntityPatchRegistry(EntityPatchRegistryEvent event) {
+    public void onEntityPatchRegistry(EntityPatchRegistryEvent event) {
         ENTITY_PATCH_MAP.keySet().forEach(entry -> this.registerSingle(event, entry));
     }
 
-    private void onPatchedRenderers(PatchedRenderersEvent.Add event) {
+    public void onPatchedRenderers(PatchedRenderersEvent.Add event) {
         ENTITY_PATCH_MAP.keySet().forEach(entry -> this.addSingleRenderer(event, entry));
     }
 
@@ -41,21 +45,11 @@ public class EntityPatchBuilderRegistryEvent extends Event implements IModBusEve
     }
 
     @SuppressWarnings("unchecked")
-    private <E extends Entity> void addSingleRenderer(PatchedRenderersEvent.Add event, FullPatchEntry<?> entry) {
+    private  <E extends Entity> void addSingleRenderer(PatchedRenderersEvent.Add event, FullPatchEntry<?> entry) {
         FullPatchEntry<E> castedEntry = (FullPatchEntry<E>) entry;
 
         event.addPatchedEntityRenderer(castedEntry.type(), (entityType) ->
                 castedEntry.pRendererConstructor().create(event.getContext(), entityType)
         );
-    }
-
-    @Override
-    public void onModConstructor(IEventBus modBus) {
-        modBus.addListener(this::onEntityPatchRegistry);
-    }
-
-    @Override
-    public void onModClientConstructor(IEventBus modBus) {
-        modBus.addListener(this::onPatchedRenderers);
     }
 }

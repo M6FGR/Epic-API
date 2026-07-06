@@ -4,7 +4,8 @@ import net.minecraft.network.chat.Component;
 import yesman.epicfight.skill.SkillCategory;
 
 public enum EpicAPISkillCategories implements SkillCategory {
-    HEAVY_ATTACK(false, false, false);
+    HEAVY_ATTACK(false, false, false),
+    COUNTER_ATTACK(false, false, false);
 
     private final boolean shouldSave;
     private final boolean synchronize;

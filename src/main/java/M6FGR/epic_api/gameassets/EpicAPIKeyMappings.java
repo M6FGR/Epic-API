@@ -2,6 +2,7 @@ package M6FGR.epic_api.gameassets;
 
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.input.KeyCodes;
+import M6FGR.epic_api.main.EpicAPI;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.platform.InputConstants.Type;
 import net.minecraft.client.KeyMapping;
@@ -18,9 +19,16 @@ public class EpicAPIKeyMappings implements ILoadableClass {
 
     private static final List<KeyMapping> KEY_MAPPINGS = new ArrayList<>();
     public static final KeyMapping HEAVY_ATTACK = newCombatKeyMapping(
-            EpicAPIComponents.HEAVY_ATTACK,
+            EpicAPIComponents.HEAVY_ATTACK_KEY,
             InputType.KEYBOARD,
-            KeyCodes.KEY_Y,
+            KeyCodes.KEY_X,
+            LangKeys.KEY_COMBAT
+    );
+
+    public static final KeyMapping COUNTER_ATTACK = newCombatKeyMapping(
+            EpicAPIComponents.COUNTER_ATTACK_KEY,
+            InputType.MOUSE,
+            KeyCodes.MOUSE_LEFT_CLICK,
             LangKeys.KEY_COMBAT
     );
 
@@ -34,6 +42,7 @@ public class EpicAPIKeyMappings implements ILoadableClass {
         for (KeyMapping keyMapping : KEY_MAPPINGS) {
             event.register(keyMapping);
         }
+        EpicAPI.debug("Registered EpicAPI Keymappings.");
     }
 
     // Helper methods

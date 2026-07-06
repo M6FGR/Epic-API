@@ -13,7 +13,7 @@ import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 import yesman.epicfight.world.capabilities.entitypatch.player.PlayerPatch;
 import yesman.epicfight.world.capabilities.skill.CapabilitySkill;
 
-@Mixin(value = PlayerPatch.class, remap = false)
+@Mixin(value = PlayerPatch.class, remap = false, priority = 1005)
 public abstract class PlayerPatchMixin<T extends Player> extends LivingEntityPatch<T> {
 
 
@@ -26,6 +26,7 @@ public abstract class PlayerPatchMixin<T extends Player> extends LivingEntityPat
     )
     public void onJoinWorld(T entity, EntityJoinLevelEvent event, CallbackInfo ci) {
         CapabilitySkill skillCapability = this.getSkillCapability();
-        skillCapability.getSkillContainerFor(EpicAPISkillSlots.HEAVY_ATTACK).setSkill(EpicAPISkills.HEAVY_ATTACKS);
+        skillCapability.getSkillContainerFor(EpicAPISkillSlots.HEAVY_ATTACK).setSkill(EpicAPISkills.HEAVY_ATTACK);
+        skillCapability.getSkillContainerFor(EpicAPISkillSlots.COUNTER_ATTACK).setSkill(EpicAPISkills.COUNTER_ATTACK);
     }
 }

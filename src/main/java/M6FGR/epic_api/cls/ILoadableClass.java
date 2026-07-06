@@ -2,6 +2,8 @@ package M6FGR.epic_api.cls;
 
 import M6FGR.epic_api.exception.ClassLoadingException;
 import M6FGR.epic_api.main.EpicAPI;
+import M6FGR.epic_api.utils.EnvironmentHelper;
+import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.fml.ModContainer;
@@ -66,11 +68,11 @@ public interface ILoadableClass {
             loadableIns.onNeoForgeConstructor(MinecraftForge.EVENT_BUS);
             bus.addListener(loadableIns::onModCommonEvents);
 
-            if (EpicAPI.isClient()) {
+            if (EnvironmentHelper.getCurrentEnvironment().is(Environments.CLIENT)) {
                 loadableIns.onModClientConstructor(bus);
                 loadableIns.onNeoForgeClientConstructor(MinecraftForge.EVENT_BUS);
                 bus.addListener(loadableIns::onModClientEvents);
-            } else {
+            } else if (EnvironmentHelper.getCurrentEnvironment().is(Environments.DEDICATED_SERVER)) {
                 bus.addListener(loadableIns::onModServerEvents);
             }
             LoadableClassManager.LOADED_CLASSES.add(loadableClass);

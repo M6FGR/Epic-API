@@ -2,22 +2,30 @@ package M6FGR.epic_api.main;
 
 import M6FGR.epic_api.cls.ILoadableClass;
 import M6FGR.epic_api.events.entity.EntityPatchBuilderRegistryEvent;
+import M6FGR.epic_api.gameassets.EpicAPIKeyMappings;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.gameassets.EpicAPISkills;
 import M6FGR.epic_api.input.EpicAPIIntputAction;
 import M6FGR.epic_api.network.EpicAPINetworkManager;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
 import M6FGR.epic_api.skills.EpicAPISkillSlots;
+import M6FGR.epic_api.utils.EnvironmentHelper;
+import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.fml.ModList;
+import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.fml.loading.FMLEnvironment;
+import net.minecraftforge.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import yesman.epicfight.api.client.input.action.InputAction;
+import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.skill.SkillCategory;
 import yesman.epicfight.skill.SkillSlot;
 
@@ -28,27 +36,35 @@ public class EpicAPI {
 
     public EpicAPI(FMLJavaModLoadingContext context) {
         IEventBus modBus = context.getModEventBus();
-
         ILoadableClass.loadClasses(modBus,
-                // Assets registry
                 EpicAPISkills.class,
                 EpicAPISkillDataKeys.class,
-                // Events
-                EntityPatchBuilderRegistryEvent.class,
-                // Network
+                EpicAPIKeyMappings.class,
                 EpicAPINetworkManager.class
         );
 
-
+        EntityPatchBuilderRegistryEvent entityPatchBuilderRegistryEvent = new EntityPatchBuilderRegistryEvent();
+        modBus.addListener(entityPatchBuilderRegistryEvent::onEntityPatchRegistry);
+        modBus.addListener(entityPatchBuilderRegistryEvent::onPatchedRenderers);
+        modBus.addListener(this::onModCommonEvents);
+        ModLoader.get().postEvent(entityPatchBuilderRegistryEvent);
         // EpicFight Extensible Enums Registry
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
     }
 
-    private void commonEvents(FMLCommonSetupEvent event) {
-        EntityPatchBuilderRegistryEvent entityPatchBuilderRegistryEvent = new EntityPatchBuilderRegistryEvent();
+    private void checkNotNull() {
+        debug("Counter attack check: {}", EpicAPISkills.COUNTER_ATTACK);
+        debug("Heavy attack check: {}", EpicAPISkills.HEAVY_ATTACK);
     }
+
+    private void onModCommonEvents(FMLCommonSetupEvent event) {
+        event.enqueueWork(this::checkNotNull);
+    }
+
+
+
 
     // Logger helpers
     public static void err(String message, Object... args) {
@@ -67,26 +83,8 @@ public class EpicAPI {
         LOGGER.debug(message, args);
     }
 
-    private static boolean sideIs(Dist dist) {
-        return FMLEnvironment.dist == dist;
-    }
-
-    public static boolean isClient() {
-        return sideIs(Dist.CLIENT);
-    }
-
-    public static boolean isDedicatedServer() {
-        return sideIs(Dist.DEDICATED_SERVER);
-    }
-
-    public static boolean isDeveloper() {
-        return !FMLEnvironment.production;
-    }
-
     public static ResourceLocation identifier(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
-
-    // removed IEventHook so, there is no commonEvents here
 
 }

@@ -88,6 +88,46 @@ public abstract class ControlEngineMixin {
             }
         }
     }
+
+    @Unique
+    private void epicAPI$maybeCounterAttack() {
+        ControlEngine controlEngine = ClientEngine.getInstance().controlEngine;
+        if (!this.playerPatch.isEpicFightMode() || isCurrentHoldingAction(EpicAPIIntputAction.COUNTER_ATTACK)) {
+            return;
+        }
+        final MinecraftInputAction vanillaAttack = MinecraftInputAction.ATTACK_DESTROY;
+        final EpicAPIIntputAction counterAttack = EpicAPIIntputAction.COUNTER_ATTACK;
+
+        boolean shouldPlayAttackAnimation = this.playerPatch.canPlayAttackAnimation();
+        if (vanillaAttack.keyMapping().getKey() == counterAttack.keyMapping().getKey() && Minecraft.getInstance().hitResult != null && shouldPlayAttackAnimation) {
+            consumeVanillaAttackKeyClicks();
+        }
+
+        if (shouldPlayAttackAnimation) {
+            if (!InputManager.isBoundToSamePhysicalInput(counterAttack, EpicFightInputAction.SWITCH_MODE)) {
+                SkillCastEvent skillCastEvent = this.playerPatch.getSkill(EpicAPISkillSlots.COUNTER_ATTACK).sendCastRequest(this.playerPatch, controlEngine);
+
+                if (skillCastEvent.isExecutable()) {
+                    this.player.resetAttackStrengthTicker();
+                    this.attackLightPressToggle = false;
+                    controlEngine.releaseAllServedKeys();
+                } else {
+                    if (!this.player.isSpectator()) {
+                        this.reserveKey(EpicAPISkillSlots.COUNTER_ATTACK, counterAttack);
+                    }
+                }
+
+                controlEngine.lockHotkeys();
+                this.attackLightPressToggle = false;
+                this.weaponInnatePressToggle = false;
+                this.weaponInnatePressCounter = 0;
+            } else {
+                if (!this.weaponInnatePressToggle) {
+                    this.weaponInnatePressToggle = true;
+                }
+            }
+        }
+    }
     @Inject(
             at = @At("HEAD"),
             remap = false,
@@ -97,6 +137,9 @@ public abstract class ControlEngineMixin {
         if (this.playerPatch != null) {
             InputManager.triggerOnPress(EpicAPIIntputAction.HEAVY_ATTACK, () ->
                     runKeyboardMouseEvent(EpicAPIIntputAction.HEAVY_ATTACK, this::epicAPI$maybeHeavyAttack));
+
+            InputManager.triggerOnPress(EpicAPIIntputAction.COUNTER_ATTACK, () ->
+                    runKeyboardMouseEvent(EpicAPIIntputAction.COUNTER_ATTACK, this::epicAPI$maybeCounterAttack));
         }
 
     }

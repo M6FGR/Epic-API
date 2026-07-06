@@ -1,6 +1,8 @@
 package M6FGR.epic_api.models.armature;
 
 import M6FGR.epic_api.main.EpicAPI;
+import M6FGR.epic_api.utils.EnvironmentHelper;
+import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
 import yesman.epicfight.api.animation.Joint;
 import yesman.epicfight.api.exception.AssetLoadingException;
 import yesman.epicfight.api.model.Armature;
@@ -52,7 +54,7 @@ public class NonHumanoidArmature extends Armature {
 
     public Joint getOrDevException(Map<String, Joint> jointMap, String name) {
         if (!jointMap.containsKey(name)) {
-            if (EpicAPI.isDeveloper()) {
+            if (EnvironmentHelper.getCurrentEnvironment().is(Environments.IDE)) {
                 throw new AssetLoadingException("Cannot find the joint named " + name + " in " + this.getClass().getSimpleName());
             }
             return Joint.EMPTY;

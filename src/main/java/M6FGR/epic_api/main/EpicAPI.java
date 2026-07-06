@@ -46,7 +46,6 @@ public class EpicAPI {
         EntityPatchBuilderRegistryEvent entityPatchBuilderRegistryEvent = new EntityPatchBuilderRegistryEvent();
         modBus.addListener(entityPatchBuilderRegistryEvent::onEntityPatchRegistry);
         modBus.addListener(entityPatchBuilderRegistryEvent::onPatchedRenderers);
-        modBus.addListener(this::onModCommonEvents);
         ModLoader.get().postEvent(entityPatchBuilderRegistryEvent);
         // EpicFight Extensible Enums Registry
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
@@ -54,14 +53,7 @@ public class EpicAPI {
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
     }
 
-    private void checkNotNull() {
-        debug("Counter attack check: {}", EpicAPISkills.COUNTER_ATTACK);
-        debug("Heavy attack check: {}", EpicAPISkills.HEAVY_ATTACK);
-    }
 
-    private void onModCommonEvents(FMLCommonSetupEvent event) {
-        event.enqueueWork(this::checkNotNull);
-    }
 
 
 

@@ -45,7 +45,6 @@ public class EnvironmentHelper {
     public static Environments getCurrentEnvironment() {
         MinecraftServer server = getServer();
         if (server != null) {
-            System.out.println("Server is ALIVE!");
             if (server instanceof GameTestServer) {
                 return Environments.GAME_TEST_SERVER;
             } else if (server.isDedicatedServer()) {

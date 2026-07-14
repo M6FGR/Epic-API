@@ -14,9 +14,11 @@ import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.eventbus.api.IEventBus;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModList;
 import net.minecraftforge.fml.ModLoader;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLConstructModEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
@@ -24,7 +26,9 @@ import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.fml.loading.FMLLoader;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import yesman.epicfight.api.client.forgeevent.PatchedRenderersEvent;
 import yesman.epicfight.api.client.input.action.InputAction;
+import yesman.epicfight.api.forgeevent.EntityPatchRegistryEvent;
 import yesman.epicfight.main.EpicFightMod;
 import yesman.epicfight.skill.SkillCategory;
 import yesman.epicfight.skill.SkillSlot;
@@ -33,7 +37,7 @@ import yesman.epicfight.skill.SkillSlot;
 public class EpicAPI {
     public static final String MODID = "epic_api";
     private static final Logger LOGGER = LogManager.getLogger("EpicAPI");
-
+    private static final EntityPatchBuilderRegistryEvent entityPatchEvent = new EntityPatchBuilderRegistryEvent();
     public EpicAPI(FMLJavaModLoadingContext context) {
         IEventBus modBus = context.getModEventBus();
         ILoadableClass.loadClasses(modBus,
@@ -43,20 +47,13 @@ public class EpicAPI {
                 EpicAPINetworkManager.class
         );
 
-        EntityPatchBuilderRegistryEvent entityPatchBuilderRegistryEvent = new EntityPatchBuilderRegistryEvent();
-        modBus.addListener(entityPatchBuilderRegistryEvent::onEntityPatchRegistry);
-        modBus.addListener(entityPatchBuilderRegistryEvent::onPatchedRenderers);
-        ModLoader.get().postEvent(entityPatchBuilderRegistryEvent);
+        modBus.addListener(EpicAPI::onEntityPatchRegistry);
         // EpicFight Extensible Enums Registry
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
+        System.out.println("Current environment is: " + EnvironmentHelper.getCurrentEnvironment());
     }
-
-
-
-
-
 
     // Logger helpers
     public static void err(String message, Object... args) {
@@ -71,6 +68,20 @@ public class EpicAPI {
         LOGGER.debug(message, args);
     }
 
+    public static void debugIfDevSide(String message, Object... args) {
+        if (EnvironmentHelper.getCurrentEnvironment().isDeveloper())
+            debug(message, args);
+    }
+
+    public static void onEntityPatchRegistry(EntityPatchRegistryEvent event) {
+        entityPatchEvent.onEntityPatchRegistry(event);
+    }
+
+    public static void errIfDevSide(String message, Object... args) {
+        if (EnvironmentHelper.getCurrentEnvironment().is(Environments.IDE))
+            err(message, args);
+    }
+
     public static void info(String message, Object... args) {
         LOGGER.debug(message, args);
     }
@@ -78,5 +89,13 @@ public class EpicAPI {
     public static ResourceLocation identifier(String path) {
         return ResourceLocation.fromNamespaceAndPath(MODID, path);
     }
+
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
+   public static class ClientSideEvents {
+        @SubscribeEvent
+        public static void onAddRenderers(PatchedRenderersEvent.Add event) {
+            entityPatchEvent.onPatchedRenderers(event);
+        }
+   }
 
 }

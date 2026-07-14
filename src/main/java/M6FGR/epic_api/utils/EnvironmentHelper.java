@@ -46,17 +46,20 @@ public class EnvironmentHelper {
     public static Environments getCurrentEnvironment() {
         MinecraftServer server = getServer();
         if (server != null) {
+            // debug if the server is not null
+            System.out.println("Server alive!");
             if (server instanceof GameTestServer) {
                 return Environments.GAME_TEST_SERVER;
-            } else if (server.isDedicatedServer()) {
+            }
+            if (server.isDedicatedServer()) {
                 return Environments.DEDICATED_SERVER;
+            }
+            if (server instanceof IntegratedServer) {
+                return Environments.LAN_SERVER;
             }
         }
 
         if (FMLLoader.getDist().isClient()) {
-            if (server instanceof IntegratedServer) {
-                return Environments.LAN_SERVER;
-            }
             return isDeveloper() ? Environments.IDE : Environments.CLIENT;
         }
 
@@ -72,9 +75,9 @@ public class EnvironmentHelper {
         COMMON(false, false);
 
 
-        private boolean isDeveloper;
-        private boolean isAuthenticated;
-        private @Nullable Environments parent;
+        private final boolean isDeveloper;
+        private final boolean isAuthenticated;
+        private final @Nullable Environments parent;
         Environments(boolean isDev, boolean authenticated, @Nullable Environments parent) {
             this.isDeveloper = isDev;
             this.isAuthenticated = authenticated;

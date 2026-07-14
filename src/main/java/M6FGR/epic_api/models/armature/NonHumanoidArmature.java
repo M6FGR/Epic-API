@@ -54,7 +54,7 @@ public class NonHumanoidArmature extends Armature {
 
     public Joint getOrDevException(Map<String, Joint> jointMap, String name) {
         if (!jointMap.containsKey(name)) {
-            if (EnvironmentHelper.getCurrentEnvironment().is(Environments.IDE)) {
+            if (EnvironmentHelper.getInstance().getCurrentEnvironment().is(Environments.IDE)) {
                 throw new AssetLoadingException("Cannot find the joint named " + name + " in " + this.getClass().getSimpleName());
             }
             return Joint.EMPTY;

@@ -52,7 +52,6 @@ public class EpicAPI {
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
         InputAction.ENUM_MANAGER.registerEnumCls(MODID, EpicAPIIntputAction.class);
-        System.out.println("Current environment is: " + EnvironmentHelper.getCurrentEnvironment());
     }
 
     // Logger helpers
@@ -69,7 +68,7 @@ public class EpicAPI {
     }
 
     public static void debugIfDevSide(String message, Object... args) {
-        if (EnvironmentHelper.getCurrentEnvironment().isDeveloper())
+        if (EnvironmentHelper.getInstance().getCurrentEnvironment().isDevEnv())
             debug(message, args);
     }
 
@@ -78,7 +77,7 @@ public class EpicAPI {
     }
 
     public static void errIfDevSide(String message, Object... args) {
-        if (EnvironmentHelper.getCurrentEnvironment().is(Environments.IDE))
+        if (EnvironmentHelper.getInstance().getCurrentEnvironment().isDevEnv())
             err(message, args);
     }
 

@@ -68,11 +68,11 @@ public interface ILoadableClass {
             loadableIns.onNeoForgeConstructor(MinecraftForge.EVENT_BUS);
             bus.addListener(loadableIns::onModCommonEvents);
 
-            if (EnvironmentHelper.getCurrentEnvironment().is(Environments.CLIENT)) {
+            if (EnvironmentHelper.getInstance().getCurrentEnvironment().is(Environments.CLIENT)) {
                 loadableIns.onModClientConstructor(bus);
                 loadableIns.onNeoForgeClientConstructor(MinecraftForge.EVENT_BUS);
                 bus.addListener(loadableIns::onModClientEvents);
-            } else if (EnvironmentHelper.getCurrentEnvironment().is(Environments.DEDICATED_SERVER)) {
+            } else if (EnvironmentHelper.getInstance().getCurrentEnvironment().is(Environments.DEDICATED_SERVER)) {
                 bus.addListener(loadableIns::onModServerEvents);
             }
             LoadableClassManager.LOADED_CLASSES.add(loadableClass);

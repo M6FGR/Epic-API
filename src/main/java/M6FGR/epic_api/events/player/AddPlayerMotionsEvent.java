@@ -26,12 +26,12 @@ public class AddPlayerMotionsEvent extends Event implements IModBusEvent, Detach
 
     @Override
     public void setCanceled(boolean val) {
-
+        super.setCanceled(val);
     }
 
     @Override
     public boolean isCanceled() {
-        return false;
+        return super.isCanceled();
     }
 
     public Animator getAnimator() {

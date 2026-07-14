@@ -47,7 +47,7 @@ public class EpicAPI {
                 EpicAPINetworkManager.class
         );
 
-        modBus.addListener(EpicAPI::onEntityPatchRegistry);
+        modBus.addListener(this::onEntityPatchRegistry);
         // EpicFight Extensible Enums Registry
         SkillSlot.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillSlots.class);
         SkillCategory.ENUM_MANAGER.registerEnumCls(MODID, EpicAPISkillCategories.class);
@@ -72,7 +72,8 @@ public class EpicAPI {
             debug(message, args);
     }
 
-    public static void onEntityPatchRegistry(EntityPatchRegistryEvent event) {
+
+    public void onEntityPatchRegistry(EntityPatchRegistryEvent event) {
         entityPatchEvent.onEntityPatchRegistry(event);
     }
 

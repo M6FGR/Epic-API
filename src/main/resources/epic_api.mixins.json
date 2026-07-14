@@ -3,11 +3,14 @@
   "minVersion": "0.8",
   "package": "M6FGR.epic_api.mixins",
   "compatibilityLevel": "JAVA_17",
+  "refmap": "epic_api.refmap.json",
   "mixins": [
-    "epicfight.ControlEngineMixin",
     "epicfight.GuardAnimationMixin",
     "epicfight.PlayerPatchMixin",
     "epicfight.WeaponTypeReloadListenerMixin"
+  ],
+  "client": [
+    "epicfight.ControlEngineMixin"
   ],
   "injectors": {
     "defaultRequire": 1

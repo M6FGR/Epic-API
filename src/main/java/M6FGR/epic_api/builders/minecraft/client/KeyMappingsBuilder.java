@@ -1,6 +1,5 @@
-package M6FGR.epic_api.builders.minecraft;
+package M6FGR.epic_api.builders.minecraft.client;
 
-import M6FGR.epic_api.main.EpicAPI;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import yesman.epicfight.client.input.CombatKeyMapping;
@@ -10,12 +9,10 @@ public class KeyMappingsBuilder {
     private KeyMappingsBuilder() {}
 
     public static KeyMapping newKeyMapping(String name, int keyCode, InputType inputType, KeyCategory category) {
-        if (EpicAPI.getEnvHelper().isDedicatedServer()) return null;
         return new KeyMapping(name, inputType.get(), keyCode, category.get());
     }
 
     public static CombatKeyMapping newCombatKeyMapping(String name, InputType inputType, int keyCode, KeyCategory category) {
-        if (EpicAPI.getEnvHelper().isDedicatedServer()) return null;
         return new CombatKeyMapping(name, inputType.get(), keyCode, category.get());
     }
 
@@ -47,19 +44,22 @@ public class KeyMappingsBuilder {
         COMBAT("key.categories.combat"),
 
         // EpicFight Categories
-        EPICFIGHT_COMBAT("key.epicfight.combat");
+        EPICFIGHT_COMBAT("key.epicfight.combat"),
+        EPICFIGHT_GUI("key.epicfight.gui");
 
         private String translationKey;
+
         KeyCategory(String translationKey) {
             this.translationKey = translationKey;
         }
 
         /**
-         * @return The translation key used by Minecraft's KeyMapping system.
+         * @return The translation key used by Minecraft's KeyMapping system
          */
         public String get() {
             return this.translationKey;
         }
+
         // in case you want to add your own
         public static KeyCategory of(String translationKey) {
             MISC.translationKey = translationKey;

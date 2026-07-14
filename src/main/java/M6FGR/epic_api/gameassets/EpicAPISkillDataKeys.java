@@ -12,7 +12,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.skill.SkillDataKey;
 
 public class EpicAPISkillDataKeys implements ILoadableClass {
-    private static final DeferredRegister<SkillDataKey<?>> SKILL_DATA_KEYS = DeferredRegister.create(EpicFightRegistries.SKILL_DATA_KEY, EpicAPI.MODID);
+    private static final DeferredRegister<SkillDataKey<?>> SKILL_DATA_KEYS = DeferredRegister.create(EpicFightRegistries.SKILL_DATA_KEY, EpicAPI.MOD_ID);
     public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Integer>> HEAVY_COUNTER;
     public static final DeferredHolder<SkillDataKey<?>, SkillDataKey<Integer>> MOTION_COUNTER;
 

@@ -11,8 +11,7 @@ import yesman.epicfight.registry.EpicFightRegistries;
 import yesman.epicfight.skill.Skill;
 
 public class EpicAPISkills implements ILoadableClass {
-    private static final DeferredRegister<Skill> SKILLS = DeferredRegister.create(EpicFightRegistries.Keys.SKILL, EpicAPI.MODID);
-
+    private static final DeferredRegister<Skill> SKILLS = DeferredRegister.create(EpicFightRegistries.Keys.SKILL, EpicAPI.MOD_ID);
 
     public static final DeferredHolder<Skill, HeavyAttack> HEAVY_ATTACKS =
             SKILLS.register("heavy_attack", key -> HeavyAttack.createHeavyAttackBuilder().build(key));

@@ -1,4 +1,4 @@
-package M6FGR.epic_api.mixins.minecraft;
+package M6FGR.epic_api.mixins.minecraft.common;
 
 import net.minecraft.CrashReport;
 import net.minecraft.CrashReportCategory;
@@ -20,12 +20,12 @@ import java.util.Random;
 @Mixin(value = CrashReport.class, remap = false)
 public abstract class CrashReportMixin {
 
-    // Shadow the description title field so we can overwrite it dynamically
-    @Shadow @Final @Mutable private String title;
+    @Shadow @Final @Mutable
+    private String title;
 
-    // Grab the internal details list from CrashReport
-    @Accessor("details")
-    protected abstract List<CrashReportCategory> epicAPI$getDetails();
+    @Shadow @Final @Mutable
+    private List<CrashReportCategory> details;
+
 
     // Access the private title field inside CrashReportCategory
     @Mixin(value = CrashReportCategory.class, remap = false)
@@ -50,7 +50,7 @@ public abstract class CrashReportMixin {
             CrashReport report = (CrashReport) (Object) this;
             boolean isEpicAPIFault = false;
 
-            // 1. Check mid-game exception stack traces
+            // Check mid-game exception stack traces
             if (report.getException() != null) {
                 Throwable currentThrowable = report.getException();
                 while (currentThrowable != null) {
@@ -65,11 +65,11 @@ public abstract class CrashReportMixin {
                 }
             }
 
-            // 2. Check mod loading category descriptions (For early bootstrap failures)
+            // Check mod loading category descriptions (For early bootstrap failures)
             if (!isEpicAPIFault) {
-                List<CrashReportCategory> categories = this.epicAPI$getDetails();
-                if (categories != null) {
-                    for (CrashReportCategory category : categories) {
+
+                if (this.details != null) {
+                    for (CrashReportCategory category : this.details) {
                         String catTitle = ((CrashReportCategoryAccessor) category).epicAPI$getTitle();
                         if (catTitle != null && catTitle.contains("epic_api")) {
                             isEpicAPIFault = true;
@@ -79,8 +79,8 @@ public abstract class CrashReportMixin {
                 }
             }
 
-            // 3. Overwrite the main description title to include our message banner at the top
-            if (isEpicAPIFault && this.title != null && !this.title.contains("Epic API Blame Room")) {
+            // Overwrite the main description title to include our message banner at the top
+            if (isEpicAPIFault && this.title != null && !this.title.contains("Epic-API Faced an Error:")) {
                 Random rand = new Random();
                 String chosenMessage = RANDOM_MESSAGES[rand.nextInt(RANDOM_MESSAGES.length)];
 

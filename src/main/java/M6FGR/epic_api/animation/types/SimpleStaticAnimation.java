@@ -1,7 +1,9 @@
 package M6FGR.epic_api.animation.types;
 
+import M6FGR.epic_api.animation.SimpleAnimationProperty;
 import yesman.epicfight.api.animation.AnimationManager;
 import yesman.epicfight.api.animation.Joint;
+import yesman.epicfight.api.animation.types.DynamicAnimation;
 import yesman.epicfight.api.animation.types.StaticAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
 import yesman.epicfight.api.client.animation.Layer;
@@ -10,6 +12,7 @@ import yesman.epicfight.api.client.animation.property.JointMask;
 import yesman.epicfight.api.client.animation.property.JointMaskEntry;
 import yesman.epicfight.api.model.Armature;
 import yesman.epicfight.gameasset.Armatures;
+import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 import java.util.Arrays;
 import java.util.function.Supplier;
@@ -26,6 +29,7 @@ public class SimpleStaticAnimation extends StaticAnimation {
     public SimpleStaticAnimation(AnimationManager.AnimationAccessor<? extends SimpleStaticAnimation> animation, AssetAccessor<? extends Armature> armature) {
         this(true, animation, armature);
     }
+
 
     public SimpleStaticAnimation withPriority(Layer.Priority priority) {
         this.addProperty(ClientAnimationProperties.PRIORITY, priority);
@@ -44,6 +48,14 @@ public class SimpleStaticAnimation extends StaticAnimation {
     public SimpleStaticAnimation withJointMask(JointMaskEntry mask) {
         this.addProperty(ClientAnimationProperties.JOINT_MASK, mask);
         return this;
+    }
+
+    @Override
+    public float getPlaySpeed(LivingEntityPatch<?> entitypatch, DynamicAnimation animation) {
+        if (this.properties.containsKey(SimpleAnimationProperty.PLAY_SPEED)) {
+            return this.getProperty(SimpleAnimationProperty.PLAY_SPEED).orElse(1.0F);
+        }
+        return super.getPlaySpeed(entitypatch, animation);
     }
 
     public enum JointMasks {

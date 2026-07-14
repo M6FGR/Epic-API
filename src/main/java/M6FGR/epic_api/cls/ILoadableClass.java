@@ -2,6 +2,8 @@ package M6FGR.epic_api.cls;
 
 import M6FGR.epic_api.exception.ClassLoadingException;
 import M6FGR.epic_api.main.EpicAPI;
+import M6FGR.epic_api.utils.EnvironmentHelper;
+import M6FGR.epic_api.utils.EnvironmentHelper.Environments;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
@@ -42,7 +44,7 @@ public interface ILoadableClass {
                 // Compatibility verification (Only run if the annotation exists)
                 if (compatibilityAnn != null) {
                     // Compatibility Side Check
-                    if (compatibilityAnn.clientSide() && EpicAPI.getEnvHelper().isClient()) {
+                    if (compatibilityAnn.clientSide() && EnvironmentHelper.getCurrentEnvironment().is(Environments.DEDICATED_SERVER)) {
                         if (compatibilityAnn.debug()) {
                             LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
                         }
@@ -76,11 +78,12 @@ public interface ILoadableClass {
                 instance.onNeoForgeConstructor(NeoForge.EVENT_BUS);
                 bus.addListener(instance::onModCommonEvents);
 
-                 if (EpicAPI.getEnvHelper().isClient()) {
+                if (EnvironmentHelper.getCurrentEnvironment().is(Environments.CLIENT)) {
                     instance.onModClientConstructor(bus);
                     instance.onNeoForgeClientConstructor(NeoForge.EVENT_BUS);
                     bus.addListener(instance::onModClientEvents);
-                } else {
+                }
+                if (EnvironmentHelper.getCurrentEnvironment().is(Environments.DEDICATED_SERVER)) {
                     bus.addListener(instance::onModServerEvents);
                 }
 
@@ -104,9 +107,7 @@ public interface ILoadableClass {
             }
         }
 
-        // set loaded here
-
-        // Auto-namespace check
+        // auto-namespace check
         ModContainer container = ModLoadingContext.get().getActiveContainer();
         LoadableClassManager.checkUnloaded(container.getModId());
     }

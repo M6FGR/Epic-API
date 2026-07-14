@@ -23,42 +23,51 @@ import yesman.epicfight.network.server.SPEntityPairingPacket;
 
 public class EpicAPINetworkManager implements ILoadableClass {
     private static final String PROTOCOL = "1";
-    private PayloadRegistrar registrar;
+    private static PayloadRegistrar registrar;
 
     private void registerNetworking(final RegisterPayloadHandlersEvent event) {
-        this.registrar = event.registrar(PROTOCOL);
-        this.play(SPGameRulesSync.TYPE, SPGameRulesSync.CODEC, SPGameRulesSync::handle, PayloadType.SERVER);
+        registrar = event.registrar(PROTOCOL);
+        registerPacket(SPGameRulesSync.TYPE, SPGameRulesSync.CODEC, SPGameRulesSync::handle, PayloadType.SERVER);
     }
 
-    private <T extends CustomPacketPayload> void play(Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, IPayloadHandler<T> handler, PayloadType payloadType) {
+    public static <T extends CustomPacketPayload> void registerPacket(Type<T> type, StreamCodec<? super RegistryFriendlyByteBuf, T> codec, IPayloadHandler<T> handler, PayloadType payloadType) {
         switch (payloadType) {
-            case CLIENT -> this.registrar.playToClient(type, codec, handler);
-            case SERVER -> this.registrar.playToServer(type, codec, handler);
+            case CLIENT -> registrar.playToServer(type, codec, handler);
+            case SERVER -> registrar.playToClient(type, codec, handler);
+            case COMMON -> registrar.playBidirectional(type, codec, handler);
         }
     }
-
 
     public static <P extends CustomPacketPayload> void send(P packet, Distribute type) {
         sendTo(type, packet, null, null, null);
     }
 
     public static <P extends CustomPacketPayload> void send(P packet, Entity entity, Distribute type) {
+        if (entity == null && type.is(Distribute.PTEAS, Distribute.PTE, Distribute.WORLD_PLAYERS)) {
+            throw new IllegalArgumentException("Cannot send the packet without an entity!");
+        }
         sendTo(type, packet, null, entity, null);
     }
 
     public static <P extends CustomPacketPayload> void send(P packet, ServerPlayer player, Distribute type) {
+        if (player == null && type.is(Distribute.PTEAS, Distribute.PLAYER, Distribute.PTE, Distribute.WORLD_PLAYERS)) {
+            throw new IllegalArgumentException("Cannot send the packet without an entity!");
+        }
         sendTo(type, packet, player, null, null);
     }
 
     public static <P extends CustomPacketPayload> void send(P packet, ServerLevel level, Distribute type) {
-        sendTo(type, packet, null, null, level);
+        if (level == null && type.is(Distribute.WORLD_PLAYERS)) {
+            throw new IllegalArgumentException("Cannot send the packet without a level!");
+        }
+            sendTo(type, packet, null, null, level);
     }
 
-    public static <EP extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, EP packet, Object... args) {
-        sendPairingPacket(player, packet, Distribute.ALL_CLIENTS, args);
+    public static <E extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, E packet, Object... args) {
+        sendPairingPacket(player, packet, Distribute.PTEAS, args);
     }
 
-    public static <EP extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, EP packet, Distribute distribute, Object... args) {
+    public static <E extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, E packet, Distribute distribute, Object... args) {
         SPEntityPairingPacket entityPairingPacket = new SPEntityPairingPacket(player.getId(), packet);
         FriendlyByteBuf buffer = entityPairingPacket.buffer();
 
@@ -88,12 +97,12 @@ public class EpicAPINetworkManager implements ILoadableClass {
             }
         }
 
-        send(entityPairingPacket, distribute);
+        send(entityPairingPacket, player, distribute);
     }
 
-    public static <EP extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, EP packet, Distribute distribute) {
+    public static <E extends EntityPairingPacketType> void sendPairingPacket(ServerPlayer player, E packet, Distribute distribute) {
         SPEntityPairingPacket entityPairingPacket = new SPEntityPairingPacket(player.getId(), packet);
-        send(entityPairingPacket, distribute);
+        send(entityPairingPacket, player, distribute);
     }
 
     private static <PCT extends CustomPacketPayload> void sendTo(Distribute distribute, PCT packet, @Nullable ServerPlayer player, @Nullable Entity entity, @Nullable ServerLevel level) {
@@ -116,12 +125,23 @@ public class EpicAPINetworkManager implements ILoadableClass {
                 }
             }
             case WORLD_PLAYERS -> {
-                if (level != null) PacketDistributor.sendToPlayersInDimension(level, packet);
+                if (level != null) {
+                    PacketDistributor.sendToPlayersInDimension(level, packet);
+                }
+                if (player != null) {
+                    PacketDistributor.sendToPlayersInDimension(player.serverLevel(), packet);
+                }
+                if (entity != null) {
+                    PacketDistributor.sendToPlayersInDimension(entity.level() instanceof ServerLevel ? (ServerLevel) entity.level() : null, packet);
+                }
             }
-            case SERVER -> {
-                PacketDistributor.sendToServer(packet);
-            }
-            case ALL_CLIENTS -> {
+            case SERVER -> PacketDistributor.sendToServer(packet);
+            case ALL_PLAYERS -> {
+                if (level != null) {
+                    for (ServerPlayer eachPlayer : level.players()) {
+                        PacketDistributor.sendToPlayer(eachPlayer, packet);
+                    }
+                }
                 PacketDistributor.sendToAllPlayers(packet);
             }
         }
@@ -129,16 +149,26 @@ public class EpicAPINetworkManager implements ILoadableClass {
 
     public enum Distribute {
         SERVER,
-        ALL_CLIENTS,
+        ALL_PLAYERS,
         PLAYER,
         WORLD_PLAYERS,
         PTE,
-        PTEAS
+        PTEAS;
+
+        public boolean is(Distribute... matches) {
+            for (Distribute match : matches) {
+                if (this == match) {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
-    private enum PayloadType {
+    public enum PayloadType {
         CLIENT,
-        SERVER
+        SERVER,
+        COMMON
     }
 
     @Override

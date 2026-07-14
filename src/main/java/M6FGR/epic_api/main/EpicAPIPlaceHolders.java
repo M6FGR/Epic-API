@@ -17,7 +17,7 @@ import M6FGR.epic_api.builders.minecraft.GameRulesBuilder;
 import M6FGR.epic_api.builders.minecraft.GameRulesBuilder.EnumValue;
 import M6FGR.epic_api.builders.minecraft.ItemsBuilder;
 import M6FGR.epic_api.cls.Compatibility;
-import M6FGR.epic_api.events.EpicAPIEventHooks;
+import M6FGR.epic_api.events.epic_api.EpicAPIEventHooks;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -33,6 +33,7 @@ import net.minecraft.world.level.GameRules.Category;
 import net.minecraft.world.level.GameRules.IntegerValue;
 import net.minecraft.world.level.GameRules.Key;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.server.command.EnumArgument;
@@ -247,25 +248,30 @@ class EpicAPIPlaceHolders {
 
 
     static class Commands {
-        public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
             dispatcher.register(
-                    CommandsBuilder
-                            // the beginning of the command, it will be "/example" here
-                            .newRoot("example")
-                            // a literal, just a word in the command, such as: /example "literal" set
-                            .newLiteral("literal")
-                            .executes(context ->
-                                    hateAllPlayers(context.getSource(), EntityArgument.getPlayers(context, "targets")))
-                            .newEnum("setEnum", BloodType.class)
-                            .executes(context ->
-                                    setBloodType(context.getSource(), EnumArgument.enumArgument(BloodType.class)))
+                    CommandsBuilder.newRoot("example")
+                            // /example enums <targets> <setEnum> ===
+                            .newLiteral("enums")
+                            .fork(root -> root.newArgument("targets", EntityArgument.entities())
+                                        .newEnum("setEnum", BloodType.class)
+                                        .executes(context -> setBloodType(context.getSource(), EnumArgument.enumArgument(BloodType.class))))
+
+                            // === BRANCH 2: /example <setFlt> ===
                             .newFloat("setFlt", 0.1F, 30.5F)
-                            .executes(context -> rotateBall(context.getSource(), FloatArgumentType.getFloat(context, "degrees")))
+                            .executes(context -> rotateBall(context.getSource(), FloatArgumentType.getFloat(context, "setFlt")))
+
+                            // === BRANCH 3: /example <setInt> ===
                             .newInt("setInt", 0, 30)
-                            .executes(context -> setTemp(context.getSource(), IntegerArgumentType.getInteger(context, "temp")))
+                            .executes(context -> setTemp(context.getSource(), IntegerArgumentType.getInteger(context, "setInt")))
+
                             .build()
             );
 
+        }
+
+        private void registerCommand(RegisterCommandsEvent event) {
+            Commands.register(event.getDispatcher());
         }
 
         private static int hateAllPlayers(CommandSourceStack source, Collection<ServerPlayer> players) {
@@ -299,8 +305,8 @@ class EpicAPIPlaceHolders {
 
     static class CapabilityPreset {
         // first off, we do 2 registries as so:
-        static final ItemPresetRegister ITEM_REGISTRY = ItemPresetRegister.create(EpicAPI.MODID);
-        static final MovesetRegister MOVESET_REGISTRY = MovesetRegister.create(EpicAPI.MODID);
+        static final ItemPresetRegister ITEM_REGISTRY = ItemPresetRegister.create(EpicAPI.MOD_ID);
+        static final MovesetRegister MOVESET_REGISTRY = MovesetRegister.create(EpicAPI.MOD_ID);
 
         // then we build a capability
         // (it has to be a supplier because this runs before epic fight's animation registry?, odd):
@@ -337,7 +343,10 @@ class EpicAPIPlaceHolders {
                 )
                 .addGuardAnimation(Animations.LONGSWORD_GUARD)
                 .addGuardHitAnimation(Animations.LONGSWORD_GUARD_HIT)
-                .addParryingAnimations(Animations.LONGSWORD_GUARD_ACTIVE_HIT1, Animations.LONGSWORD_GUARD_ACTIVE_HIT2);
+                .addParryingAnimations(Animations.LONGSWORD_GUARD_ACTIVE_HIT1, Animations.LONGSWORD_GUARD_ACTIVE_HIT2)
+                .addCounterAttack(Animations.SWEEPING_EDGE)
+                // these will play in order from first to last
+                .addParryCounterAttacks(Animations.DANCING_EDGE, Animations.STEEL_WHIRLWIND);
         // if you want another style, you can call newMoveSet() again, or for cleaner code, you can build another capability the same way
 
        // you can do a static-block, or you can define a DeferredWeapon and DeferredMoveset separately

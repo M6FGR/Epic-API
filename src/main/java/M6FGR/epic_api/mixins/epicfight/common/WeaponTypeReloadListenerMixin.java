@@ -1,4 +1,4 @@
-package M6FGR.epic_api.mixins.epicfight;
+package M6FGR.epic_api.mixins.epicfight.common;
 
 import M6FGR.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
 import net.minecraft.nbt.CompoundTag;
@@ -23,7 +23,7 @@ public class WeaponTypeReloadListenerMixin {
     )
     private static void epicAPI$injectHeavyCombos(ResourceLocation rl, CompoundTag tag, ExtraEntryProvider extraEntryProvider, CallbackInfoReturnable<WeaponCapability.Builder> cir) {
         // make HeavyAttack and CounterAttack datapack friendly too!
-        DeferredCapabilityBuilder.registerHeavyComboFromTag(rl, tag); // removed ExtraEntryProvider usage, it's deprecated!
-        DeferredCapabilityBuilder.registerCounterFromTag(rl, tag); // removed ExtraEntryProvider usage, it's deprecated!
+        DeferredCapabilityBuilder.registerHeavyComboFromTag(rl, tag);
+        DeferredCapabilityBuilder.registerCounterFromTag(rl, tag);
     }
 }

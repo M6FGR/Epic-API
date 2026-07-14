@@ -4,14 +4,23 @@
   "package": "M6FGR.epic_api.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "epicfight.ControlEngineMixin",
-    "epicfight.GuardAnimationMixin",
-    "epicfight.PlayerPatchMixin",
-    "epicfight.WeaponTypeReloadListenerMixin",
-    "minecraft.CrashReportMixin",
-    "minecraft.CrashReportMixin$CrashReportCategoryAccessor"
+    "epicfight.client.ControlEngineMixin",
+    "epicfight.common.GuardAnimationMixin",
+    "epicfight.common.PlayerPatchMixin",
+    "epicfight.common.WeaponTypeReloadListenerMixin",
+    "minecraft.common.CrashReportMixin",
+    "minecraft.common.CrashReportMixin$CrashReportCategoryAccessor",
+    "minecraft.common.PlayerMixin",
+    "minecraft.server.ServerLevelMixin"
   ],
   "client": [
+    "minecraft.client.ClientLevelMixin",
+    "minecraft.client.MinecraftMixin",
+    "minecraft.client.WorldOpenFlowsMixin"
+  ],
+  "server": [
+    "minecraft.server.MinecraftServerMixin",
+    "neoforge.server.ServerLifecycleHooksMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -2,7 +2,7 @@ package M6FGR.epic_api.skills.common;
 
 import M6FGR.epic_api.animation.EpicAPIAnimationStates;
 import M6FGR.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
-import M6FGR.epic_api.events.player.CounterAttackEvent;
+import M6FGR.epic_api.events.epic_api.player.CounterAttackEvent;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.network.EpicAPINetworkManager;
 import M6FGR.epic_api.skills.EpicAPISkillCategories;
@@ -49,27 +49,26 @@ public class CounterAttack extends Skill {
     public void executeOnServer(SkillContainer container, CompoundTag tag) {
         PlayerPatch<?> executor = container.getExecutor();
         ServerPlayerPatch serverExecutor = container.getServerExecutor();
+
         CapabilityItem mainHand = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
 
+        CounterAttackEvent counterAttackEvent = new CounterAttackEvent(container);
+        SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(executor, this, this.resource, null);
+
         boolean canParry = EpicFightSkills.PARRYING.get().isHoldingWeaponAvailable(executor, mainHand, GuardSkill.BlockType.ADVANCED_GUARD);
+
         CounterTypes counterType = canParry ? CounterTypes.PARRY : CounterTypes.NORMAL;
 
-        // Resolve the exact animation using static getters
         AnimationManager.AnimationAccessor<? extends StaticAnimation> animation = this.getCounterMotion(container, mainHand, counterType);
         if (animation == null) {
             return;
         }
 
-        CounterAttackEvent counterAttackEvent = new CounterAttackEvent(container);
-
         if (!counterAttackEvent.post().isCanceled()) {
-            SkillConsumeEvent event = new SkillConsumeEvent(executor, this, this.resource, null);
-            if (!event.isCanceled()) {
-                event.getResourceType().consumer.consume(container, serverExecutor, this.counterConsumption);
+            if (!skillConsumeEvent.isCanceled()) {
+                skillConsumeEvent.getResourceType().consumer.consume(container, serverExecutor, this.counterConsumption);
             }
-
             container.getExecutor().playSound(EpicFightSounds.HYPERVITALITY.get(), 0.5F, 0, 0);
-
             EpicAPINetworkManager.sendPairingPacket(
                     serverExecutor.getOriginal(),
                     EntityPairingPacketTypes.FLASH_WHITE,
@@ -96,7 +95,6 @@ public class CounterAttack extends Skill {
             }
         }
 
-        // Fall back or default to normal counter if not parrying / no parry list is configured
         return DeferredCapabilityBuilder.getNormalCounterAttack(category);
     }
 

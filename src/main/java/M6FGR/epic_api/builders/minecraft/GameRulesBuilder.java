@@ -73,18 +73,10 @@ public class GameRulesBuilder {
     }
 
 
-    // --- Accessors ---
-    public static boolean getBoolVal(Level level, GameRules.Key<GameRules.BooleanValue> key) {
-        return level.getGameRules().getBoolean(key);
+    public static <T extends Value<T>> T getRuleValue(Level level, GameRules.Key<T> key) {
+        return level.getGameRules().getRule(key);
     }
 
-    public static int getIntVal(Level level, GameRules.Key<GameRules.IntegerValue> key) {
-        return level.getGameRules().getInt(key);
-    }
-
-    public static <E extends Enum<E>> E getEnumVal(Level level, GameRules.Key<EnumValue<E>> key) {
-        return level.getGameRules().getRule(key).get();
-    }
 
     public static class EnumValue<E extends Enum<E>> extends Value<EnumValue<E>> {
 

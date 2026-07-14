@@ -1,7 +1,7 @@
 package M6FGR.epic_api.skills.common;
 
 import M6FGR.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
-import M6FGR.epic_api.events.player.HeavyAttackEvent;
+import M6FGR.epic_api.events.epic_api.player.HeavyAttackEvent;
 import M6FGR.epic_api.exception.DeveloperException;
 import M6FGR.epic_api.gameassets.EpicAPISkillDataKeys;
 import M6FGR.epic_api.network.EpicAPINetworkManager;
@@ -12,7 +12,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import yesman.epicfight.api.animation.AnimationManager;
@@ -25,6 +24,7 @@ import yesman.epicfight.api.event.EpicFightEventHooks;
 import yesman.epicfight.api.event.types.player.ModifyComboCounter;
 import yesman.epicfight.api.event.types.player.SkillConsumeEvent;
 import yesman.epicfight.api.utils.math.ValueModifier;
+import yesman.epicfight.api.utils.math.Vec3f;
 import yesman.epicfight.network.common.AbstractAnimatorControl;
 import yesman.epicfight.network.server.SPAnimatorControl;
 import yesman.epicfight.skill.Skill;
@@ -105,9 +105,9 @@ public class HeavyAttack extends Skill {
             ServerPlayer player = executor.getOriginal();
             SkillDataManager dataManager = skillContainer.getDataManager();
             int comboCounter = dataManager.getDataValue(EpicAPISkillDataKeys.HEAVY_COUNTER);
-            Vec3 blocksToDelta = this.deltaToBlocks(player.getDeltaMovement());
+            Vec3f blocksToDelta = this.deltaToBlocks(new Vec3f(player.getDeltaMovement()));
             boolean dashAttack = player.isSprinting();
-            boolean airAttack = !player.isInWater() && !player.onGround() && blocksToDelta.y() > this.MIN_ATTACK_Y && !player.getBlockStateOn().is(Block.byItem(Items.DIRT_PATH));
+            boolean airAttack = !player.isInWater() && !player.onGround() && blocksToDelta.y > this.MIN_ATTACK_Y && !player.getBlockStateOn().is(Block.byItem(Items.DIRT_PATH));
 
             List<AnimationAccessor<? extends AttackAnimation>> combo = this.applyMotionsForMaps(executor, cap);
 
@@ -142,7 +142,6 @@ public class HeavyAttack extends Skill {
 
                 boolean stiffAttack = EpicFightGameRules.STIFF_COMBO_ATTACKS.getRuleValue(player.level());
                 SPAnimatorControl animatorControlPacket = getAnimatorControl(skillContainer, stiffAttack, attackMotion);
-
                 EpicAPINetworkManager.send(animatorControlPacket, player, Distribute.PTEAS);
             }
             executor.updateEntityState();
@@ -150,16 +149,16 @@ public class HeavyAttack extends Skill {
     }
 
 
-    private Vec3 deltaToBlocks(Vec3 delta) {
-        double dx = delta.x * 2.12453;
-        double dz = delta.z * 2.12453;
-        double dy = 0;
+    private Vec3f deltaToBlocks(Vec3f delta) {
+        float dx = delta.x * 2.12453F;
+        float dz = delta.z * 2.12453F;
+        float dy = 0;
         if (delta.y > 0) {
-            dy = Math.sqrt(delta.y * 0.16) + 0.02;
+            dy = (float) (Math.sqrt(delta.y * 0.16F) + 0.02F);
         } else if (delta.y < 0) {
-            dy = delta.y * 0.1;
+            dy = delta.y * 0.1F;
         }
-        return new Vec3(dx, dy, dz);
+        return new Vec3f(dx, dy, dz);
     }
 
 

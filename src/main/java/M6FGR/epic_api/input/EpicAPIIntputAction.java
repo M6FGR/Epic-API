@@ -5,12 +5,10 @@ import net.minecraft.client.KeyMapping;
 import org.jetbrains.annotations.NotNull;
 import yesman.epicfight.api.client.input.action.InputAction;
 import yesman.epicfight.api.client.input.controller.ControllerBinding;
-import yesman.epicfight.api.utils.side.ClientOnly;
 
 import java.util.Optional;
-@ClientOnly
-public enum EpicAPIIntputAction implements InputAction {
 
+public enum EpicAPIIntputAction implements InputAction {
     HEAVY_ATTACK,
     COUNTER_ATTACK;
 
@@ -28,7 +26,7 @@ public enum EpicAPIIntputAction implements InputAction {
     }
 
     @Override
-    public @NotNull Optional<@NotNull ControllerBinding> controllerBinding() {
+    public Optional<ControllerBinding> controllerBinding() {
         return Optional.empty();
     }
 

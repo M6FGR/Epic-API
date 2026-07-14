@@ -1,5 +1,6 @@
 package M6FGR.epic_api.animation.types;
 
+import M6FGR.epic_api.animation.SimpleAnimationProperty;
 import yesman.epicfight.api.animation.AnimationManager.AnimationAccessor;
 import yesman.epicfight.api.animation.types.DynamicAnimation;
 import yesman.epicfight.api.asset.AssetAccessor;
@@ -50,14 +51,12 @@ public class SimpleMovementAnimation extends SimpleStaticAnimation {
 
     @Override
     public float getPlaySpeed(LivingEntityPatch<?> entitypatch, DynamicAnimation animation) {
-        float i = 1.0F;
-        if (!animation.isLinkAnimation()) {
-            if (Math.abs(entitypatch.getOriginal().walkAnimation.speed() - entitypatch.getOriginal().walkAnimation.speed(1.0F)) < 0.007F) {
-                i *= entitypatch.getOriginal().walkAnimation.speed() * this.movementSpeed;
-            }
-
+        if (this.properties.containsKey(SimpleAnimationProperty.PLAY_SPEED)) {
+            this.getProperty(SimpleAnimationProperty.PLAY_SPEED);
+        } else {
+            return this.addProperty(SimpleAnimationProperty.PLAY_SPEED, this.movementSpeed).getProperty(SimpleAnimationProperty.PLAY_SPEED).orElse(1.0F);
         }
-        return i;
+        return super.getPlaySpeed(entitypatch, animation);
     }
 
     @Override

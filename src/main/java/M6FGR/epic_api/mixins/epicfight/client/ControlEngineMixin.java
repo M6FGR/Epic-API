@@ -1,4 +1,4 @@
-package M6FGR.epic_api.mixins.epicfight;
+package M6FGR.epic_api.mixins.epicfight.client;
 
 import M6FGR.epic_api.input.EpicAPIIntputAction;
 import M6FGR.epic_api.skills.EpicAPISkillSlots;

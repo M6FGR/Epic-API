@@ -1,9 +1,9 @@
-package M6FGR.epic_api.events.registry;
+package M6FGR.epic_api.events.epic_api.registry;
 
 import M6FGR.epic_api.builders.epicfight.EntityPatchBuilder;
 import M6FGR.epic_api.builders.epicfight.EntityPatchBuilder.FullPatchEntry;
 import M6FGR.epic_api.builders.epicfight.EntityPatchBuilder.PRendererConstructor;
-import M6FGR.epic_api.events.EpicAPIEventHooks;
+import M6FGR.epic_api.events.epic_api.EpicAPIEventHooks;
 import M6FGR.epic_api.events.IEventHook;
 import M6FGR.epic_api.main.EpicAPI;
 import com.google.common.collect.Maps;
@@ -55,10 +55,10 @@ public class EntityPatchEventHook extends Event implements IEventHook<EntityPatc
 
     @SuppressWarnings("unchecked")
     private <E extends Entity> void registerSingle(EntityPatchRegistryEvent event, FullPatchEntry<E> entry) {
-        // 1. Step down to a raw Function to erase the '? extends EntityPatch<Entity>' wildcard capture
+        // Step down to a raw Function to erase the '? extends EntityPatch<Entity>' wildcard capture
         Function rawConstructor = entry.patchConstructor();
 
-        // 2. Cast the raw function cleanly to the strict format Epic Fight expects
+        // Cast the raw function cleanly to the strict format Epic Fight expects
         Function<E, EntityPatch<E>> strictConstructor = (Function<E, EntityPatch<E>>) rawConstructor;
 
         event.registerEntityPatch(entry.type(), strictConstructor);

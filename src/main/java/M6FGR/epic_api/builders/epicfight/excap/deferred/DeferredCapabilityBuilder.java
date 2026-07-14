@@ -143,7 +143,7 @@ public class DeferredCapabilityBuilder {
                 this.addLivingMotion(motion, animation);
                 EpicAPI.debugIfDevSide("Registered animation pairs of: [{}, {}] for moveset ID: [{}]", motion.toString(), animation.registryName().toString(), this.currentMoveSetID.toString());
             } else {
-                EpicAPI.errIfDevSide("Animation for motion [{}] is not found for moveset: [{}]!, animation slot in pair: {}", motion.toString(), this.currentMoveSetID.toString(), i + 1);
+                EpicAPI.err("Animation for motion [{}] is not found for moveset: [{}]!, animation slot in pair: {}", motion.toString(), this.currentMoveSetID.toString(), i + 1);
             }
         }
         this.currentMotionsPair = pairs;
@@ -165,14 +165,13 @@ public class DeferredCapabilityBuilder {
         return this;
     }
 
-    @SafeVarargs
-    public final DeferredCapabilityBuilder addCounterAttack(AnimationAccessor<? extends AttackAnimation>... animation) {
-        this.localNormalCounters.addAll(Arrays.asList(animation));
+    public final DeferredCapabilityBuilder addCounterAttack(AnimationAccessor<? extends AttackAnimation> animation) {
+        this.localNormalCounters.add(animation);
         return this;
     }
 
     @SafeVarargs
-    public final DeferredCapabilityBuilder addParryCounterAttack(AnimationAccessor<? extends AttackAnimation>... animation) {
+    public final DeferredCapabilityBuilder addParryCounterAttacks(AnimationAccessor<? extends AttackAnimation>... animation) {
         this.localParryCounters.addAll(Arrays.asList(animation));
         return this;
     }

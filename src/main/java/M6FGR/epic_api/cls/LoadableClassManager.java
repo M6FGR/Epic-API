@@ -20,7 +20,6 @@ final class LoadableClassManager {
     public static boolean LOADED;
 
 
-
     // in case you forgot to load a class, this will help
     public static void checkUnloaded(String modId) {
         // it gets the package from the mod-id, as so:
@@ -46,12 +45,14 @@ final class LoadableClassManager {
                     String className = data.clazz().getClassName();
 
                     if (loadedNames.contains(className)) {
-                        return; // skip, we already loaded this one
+                        return; // stop, we already loaded this one
                     }
 
-                    DeveloperException.throwOrLog("Class ["+className+"] is never loaded!");
+                    DeveloperException.throwOrLog("Class [{}] is never loaded!", className);
                 });
+
     }
+
 
     public static boolean isClass(Class<?> clazz) {
         return !clazz.isInterface() && !clazz.isEnum() && !clazz.isAnnotation();

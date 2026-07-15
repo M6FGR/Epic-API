@@ -10,6 +10,7 @@
     "epicfight.WeaponTypeReloadListenerMixin"
   ],
   "client": [
+    "epicfight.client.AbstractClientPlayerPatchMixin",
     "epicfight.ControlEngineMixin"
   ],
   "injectors": {

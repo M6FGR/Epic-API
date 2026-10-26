@@ -3,16 +3,24 @@ package dev.m6fgr.epic_api.events.epic_api.registry;
 import dev.m6fgr.epic_api.animation.client.CameraAnimatorAPI;
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventBus;
+import dev.m6fgr.epic_api.events.dispatch.marks.HybridEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import dev.m6fgr.epic_api.main.EpicAPI;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.List;
 
+@HybridEvent(EventBus.MOD)
 public class CameraAnimationRegistryDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<CameraAnimationRegistryDispatchableEvent> {
 
     public void register(CameraAnimatorAPI.CamAnim camAnim) {
         CameraAnimatorAPI.getInstance().registerAnimation(camAnim);
+    }
+
+    public void registerFromList(List<CameraAnimatorAPI.CamAnim> camAnimations) {
+        camAnimations.forEach(this::register);
     }
 
     public void registerFromClass(Class<?> cls) {

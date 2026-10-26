@@ -35,15 +35,20 @@ public final class ExampleCameraAnimation {
 
     public static final CameraAnimatorAPI.CamAnim TEST2 = register(
             "test2",
-            ResourceLocation.fromNamespaceAndPath(EpicAPI.MOD_ID, "camera/testcamera.json"));
+            EpicAPI.getInstance().identifier("camera/testcamera.json"));
 
     public static final CameraAnimatorAPI.CamAnim TEST = new CameraAnimatorAPI.CamAnim(ResourceLocation.fromNamespaceAndPath(EpicAPI.MOD_ID,"testcamera_2"));
 
 
     @SubscribeEvent
     public static void registerExampleCamAnim(CameraAnimationRegistryDispatchableEvent event){
-        CAM_ANIM_LIST.forEach(camAnim -> event.register(TEST2));
-        event.register(TEST);
+        // you can register the animation in these 3 ways:
+        // First, is the singular registry
+        event.register(TEST2);
+        // Second, register from the class, reading all of its static fields
+        event.registerFromClass(ExampleCameraAnimation.class);
+        // Third, registering from a list, like so:
+        event.registerFromList(CAM_ANIM_LIST);
     }
 
 }

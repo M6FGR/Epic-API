@@ -1,5 +1,8 @@
 package dev.m6fgr.epic_api.main;
 
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.arguments.FloatArgumentType;
+import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.m6fgr.epic_api.animation.types.SimpleAttackAnimation;
 import dev.m6fgr.epic_api.animation.types.SimpleAttackAnimation.TrailColor;
 import dev.m6fgr.epic_api.animation.types.SimpleAttackAnimation.TrailPreset;
@@ -18,10 +21,10 @@ import dev.m6fgr.epic_api.builders.minecraft.GameRulesBuilder.EnumValue;
 import dev.m6fgr.epic_api.builders.minecraft.GameRulesBuilder.SynchronizedGameRule;
 import dev.m6fgr.epic_api.builders.minecraft.ItemsBuilder;
 import dev.m6fgr.epic_api.cls.loadable.Compatibility;
+import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
-import com.mojang.brigadier.CommandDispatcher;
-import com.mojang.brigadier.arguments.FloatArgumentType;
-import com.mojang.brigadier.arguments.IntegerArgumentType;
+import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchEvent;
+import dev.m6fgr.epic_api.events.mc.MinecraftDispatchableEvents;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
@@ -33,6 +36,8 @@ import net.minecraft.world.level.GameRules.BooleanValue;
 import net.minecraft.world.level.GameRules.Category;
 import net.minecraft.world.level.GameRules.IntegerValue;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.server.command.EnumArgument;
@@ -353,6 +358,44 @@ class EpicAPIPlaceHolders {
         public void onModConstructor(IEventBus modBus) {
             ITEM_REGISTRY.register(modBus);
             MOVESET_REGISTRY.register(modBus);
+        }
+    }
+
+    @EventBusSubscriber(modid = EpicAPI.MOD_ID)
+    static class DispatchableEvents {
+        // a dispatchable event is almost like an event hook, but more flexible, as so:
+        private static void onDispatch() {
+            MinecraftDispatchableEvents.Player.JOIN_CLIENT.dispatchEvent(event -> EpicAPI.debugIfDevSide("Hello from [{}]", event.getEventClsName()));
+        }
+        // the method above can be called anywhere, but it's best to call it in a life cycle event, or the mod's constructor
+        // or if needed, and the event is hybrid (having the @HybridEvent annotation), you can use neo's event subscribers
+        @SubscribeEvent
+        // This event is empty, used to dispatch other events, posted in the mod's constructor
+        public static void onDispatch(DispatchEvent event) {
+            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(joinEvent -> EpicAPI.debugIfDevSide("Hello from [{}] subscribed!", event.getEventClsName()));
+        }
+        // IF the event is not hybrid and used in a subscriber, it'd do nothing
+        // An event with the @HybridEvent annotation is automatically posted to neo's event bus API (based on the event bus passed in the annotation)
+        // and since the annotation is not present, the event is never posted anywhere, resulting in an event that's not doing anything
+
+        // now, we cover the priority system
+        private static void onClientStart() {
+            // By default, the priority is always middle if left empty
+            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
+                    EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+            );
+            // But here, we make it the highest, so it dispatches before the event above
+            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
+                    EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+            , EventPriority.HIGHEST
+            );
+            // But here, if we put the override priority, it cancels the 2 above and overrides them, completely changing the result of the event itself
+            // Note that it can be only overridden if the boolean DispatchableEvent#canBeOverridden is true
+            // The only un-overridable event is DispatchEvent used above
+            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
+                     EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+            , EventPriority.OVERRIDE
+            );
         }
     }
 

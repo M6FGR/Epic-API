@@ -20,12 +20,13 @@ public class CameraAnimationManager {
         CameraAnimatorAPI.getInstance().tick();
     }
 
-    @SubscribeEvent
+    //@SubscribeEvent
     public static void computeFOV(ViewportEvent.ComputeFov event) {
         if (CameraAnimatorAPI.getInstance().isPlaying()) {
 
             CameraAnimatorAPI.CamAnim current = CameraAnimatorAPI.getInstance().getCurrentCamAnim();
 
+            //FIXME: This is calculated Default FOV from blender do you guys really think it should be default
             if (current != null) {
                 event.setFOV(CameraFOVHelper.focalLengthToFOV(10.3923f));
             }
@@ -38,15 +39,20 @@ public class CameraAnimationManager {
     public static void onCameraBuild(FMLClientSetupEvent evt) {
         EpicFightClientEventHooks.Camera.BUILD_TRANSFORM_PRE.registerContextAwareEvent((event, eventContext) -> {
             if (!CameraAnimatorAPI.getInstance().isPlaying()) return;
+
             // Apply Camera animation
             CameraAnimatorAPI.getInstance().applyToCamera(
                     event.getCamera(),
                     event.getPartialTick()
             );
+
             // Take full control of camera during animation
             event.setVanillaCameraSetupCanceled(true);
 
         });
+
+
+
         evt.enqueueWork(() -> {
             new CameraAnimationRegistryDispatchableEvent().post();
         });

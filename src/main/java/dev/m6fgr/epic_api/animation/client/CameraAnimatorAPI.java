@@ -28,6 +28,7 @@ import java.util.Map;
 
 public class CameraAnimatorAPI {
     private static final Logger LOGGER = LogManager.getLogger(CameraAnimatorAPI.class.getSimpleName());
+
     private static final CameraAnimatorAPI INSTANCE = new CameraAnimatorAPI();
 
     public static CameraAnimatorAPI getInstance() {
@@ -65,6 +66,11 @@ public class CameraAnimatorAPI {
     }
 
     public record CamAnim(ResourceLocation id, ResourceLocation jsonLocation) {
+        /** derive JsonLocation From ResourceLocation.
+         * <p>
+         ** example: new CamAnim(Resourcelocation.parse(Mod_id:camera/camera_json))
+         *
+         **/
         public CamAnim(ResourceLocation id) {
             this(id, ResourceLocation.fromNamespaceAndPath(
                     id.getNamespace(), "camera/" + id.getPath() + ".json"));
@@ -176,9 +182,10 @@ public class CameraAnimatorAPI {
 
     }
 
-    /// WorldSpace only
+    /// WorldSpace only ## It says mirrored but its actually works as a reverse ##
     public void playMirrored(CamAnim camAnim, boolean loop, Entity originEntity) {
         Vec3 worldSpaceOrigin = originEntity.getEyePosition();
+        //Only Derive Origin Point from Origin but Drive rest of animation using localPlayer for worldSpace
         play(camAnim, loop, true, true, worldSpaceOrigin, Minecraft.getInstance().player, true);
     }
 

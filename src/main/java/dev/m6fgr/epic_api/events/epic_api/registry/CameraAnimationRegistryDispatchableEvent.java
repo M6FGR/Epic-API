@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 
 public class CameraAnimationRegistryDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<CameraAnimationRegistryDispatchableEvent> {
+
     public void register(CameraAnimatorAPI.CamAnim camAnim) {
         CameraAnimatorAPI.getInstance().registerAnimation(camAnim);
     }

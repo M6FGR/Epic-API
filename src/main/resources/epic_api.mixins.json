@@ -1,25 +1,32 @@
 {
   "required": true,
   "minVersion": "0.8",
-  "package": "M6FGR.epic_api.mixins",
+  "package": "dev.m6fgr.epic_api.mixins",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "epicfight.client.ControlEngineMixin",
+    "epicfight.common.ControlEngineMixin",
     "epicfight.common.GuardAnimationMixin",
+    "epicfight.common.GuardSkillMixin",
+    "epicfight.common.ParrySkillMixin",
     "epicfight.common.PlayerPatchMixin",
     "epicfight.common.WeaponTypeReloadListenerMixin",
     "minecraft.common.CrashReportMixin",
     "minecraft.common.CrashReportMixin$CrashReportCategoryAccessor",
-    "minecraft.common.PlayerMixin",
-    "minecraft.server.ServerLevelMixin"
+    "minecraft.common.GameRulesMixin",
+    "minecraft.common.PlayerMixin"
   ],
   "client": [
+    "minecraft.client.CameraAccessor",
     "minecraft.client.ClientLevelMixin",
+    "minecraft.client.IntegratedServerMixin",
     "minecraft.client.MinecraftMixin",
     "minecraft.client.WorldOpenFlowsMixin"
   ],
   "server": [
+    "minecraft.server.DedicatedServerMixin",
+    "minecraft.server.GameTestServerMixin",
     "minecraft.server.MinecraftServerMixin",
+    "minecraft.server.ServerLevelMixin",
     "neoforge.server.ServerLifecycleHooksMixin"
   ],
   "injectors": {

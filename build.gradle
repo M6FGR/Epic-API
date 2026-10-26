@@ -70,6 +70,8 @@ neoForge {
             programArguments.addAll '--mod', project.mod_id, '--all', '--output', file('src/generated/resources/').getAbsolutePath(), '--existing', file('src/main/resources/').getAbsolutePath()
         }
 
+
+
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
             logLevel = org.slf4j.event.Level.DEBUG
@@ -89,10 +91,13 @@ dependencies {
     // the (:) represents (-) in the file's name, so we do "epicfight:21.17.3:sources"
     // 21.17.3
     implementation "curse.maven:epic-fight-mod-405076:8080214"
+
+    implementation "curse.maven:weapons-of-miracles-epicfight-918614:8829395"
     // 21.17.3 sources (raw code)
     compileOnlyApi "local:epicfight:21.17.3:sources"
+    compileOnlyApi "local:tome_randomizer:1.0"
 
-    // to apply skins
+    // to apply skins in-game
     implementation "local:skinrestorer:2.7.0"
 }
 
@@ -110,8 +115,8 @@ tasks.named('processResources', ProcessResources).configure {
             mod_version            : mod_version,
             mod_authors            : mod_authors,
             mod_description        : mod_description,
-            issueTrackerURL        : issueTrackerURL,
-            displayURL             : displayURL
+            issue_tracker          : issue_tracker,
+            update_tracker         : update_tracker
     ]
     inputs.properties replaceProperties
 

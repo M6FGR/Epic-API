@@ -1,0 +1,60 @@
+package dev.m6fgr.epic_api.cls.loadable;
+
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
+
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * This annotation acts as a <b>Conditional Gatekeeper</b> for {@link ILoadableClass} implementations.
+ * <p>
+ * It prevents the API from attempting to initialize a class if the required mod dependencies 
+ * are missing or if the class is being loaded on the wrong physical side (Client vs. Server).
+ * </p>
+ * Example:
+ *
+ * <pre>
+ * {@code
+ * @Compatibility(modid = "examplemod", clientSide = true, printWarns = false)
+ * public class ExampleModCompatibility implements ILoadableClass {
+ *      ...
+ * }
+ * }
+ * </pre>
+ *
+ * @see LoadableClassManager#loadClass(IEventBus, Class[])
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface Compatibility {
+
+    /**
+     * The unique Mod ID required for this class to load.
+     * If {@link ModList#isLoaded(String)} returns {@code false},
+     * the class will be ignored.
+     */
+    String[] modid();
+    /**
+     * If {@code true}, the loading process will bail out if the current 
+     * environment is a Dedicated Server. 
+     * <p>
+     * Set this to {@code true} for classes that reference rendering, 
+     * models, or UI code to prevent server crashes.
+     */
+    boolean clientSide();
+
+    /**
+     * Toggles verbose logging for compatibility check failures.
+     * <p>
+     * When {@code true}, explicitly logs why a class was skipped (e.g., missing mod
+     * or physical side mismatch). When {@code false}, skips the class silently.
+     * </p>
+     * Useful for debugging registration or preventing server crashes by identifying
+     * misplaced client-only code (models, UI, etc.).
+     */
+    boolean debug() default false;
+
+}

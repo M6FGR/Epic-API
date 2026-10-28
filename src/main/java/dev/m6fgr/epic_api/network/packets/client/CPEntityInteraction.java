@@ -2,6 +2,7 @@ package dev.m6fgr.epic_api.network.packets.client;
 
 import dev.m6fgr.epic_api.client.gui.InteractionType;
 import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.network.interfaces.PacketBufHandler;
 import dev.m6fgr.epic_api.network.packets.ICustomPacket;
 import net.minecraft.network.FriendlyByteBuf;
@@ -51,7 +52,7 @@ public record CPEntityInteraction(int targetEntityId, InteractionType interactio
                 Entity target = player.level().getEntity(this.targetEntityId);
                 if (target != null && target.isAlive() && player.distanceToSqr(target) <= 64.0) {
                     this.interactionType.execute(player, target, context);
-                    EpicAPI.debugIfDevSide("Executed interaction: {}", this.interactionType.toString().toLowerCase());
+                    EpicAPIMod.debugIfDevSide("Executed interaction: {}", this.interactionType.toString().toLowerCase());
                 }
             }
         });

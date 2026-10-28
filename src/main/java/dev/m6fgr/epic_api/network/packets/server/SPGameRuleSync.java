@@ -2,6 +2,7 @@ package dev.m6fgr.epic_api.network.packets.server;
 
 import dev.m6fgr.epic_api.cls.Comment;
 import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.network.interfaces.PacketBufHandler;
 import dev.m6fgr.epic_api.network.packets.ICustomPacket;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper;
@@ -69,7 +70,7 @@ public record SPGameRuleSync(String ruleName, int value) implements ICustomPacke
                             case GameRules.IntegerValue intRule -> intRule.set(packet.value(), null);
                             default -> throw new IllegalStateException("Unexpected game rule type: " + rule);
                         }
-                        EpicAPI.debugIfDevSide("Synced rule {}", key.getId());
+                        EpicAPIMod.debugIfDevSide("Synced rule {}", key.getId());
                     }
                 }
             });

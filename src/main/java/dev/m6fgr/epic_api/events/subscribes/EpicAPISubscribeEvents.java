@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.events.subscribes;
 
 import dev.m6fgr.epic_api.client.gui.InteractionAPI;
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -14,7 +14,7 @@ import net.neoforged.neoforge.client.event.ViewportEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 
 public class EpicAPISubscribeEvents {
-    @EventBusSubscriber(modid = EpicAPI.MOD_ID, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = EpicAPIMod.MOD_ID, value = Dist.CLIENT)
     public static class Client {
 
         private static long lastFrameNanos = 0L;

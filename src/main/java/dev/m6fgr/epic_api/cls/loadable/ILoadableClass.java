@@ -16,4 +16,9 @@ public interface ILoadableClass {
     /** Use to register listeners to the client side of NeoForge.EVENT_BUS. Called Directly. */
     default void onGameClientConstruct(IEventBus neoBus) {}
 
+    /** Overridden so the class does not log/throws an exception that it wasn't loaded */
+    default boolean ignoreNotLoadedWarning() {
+        return false;
+    }
+
 }

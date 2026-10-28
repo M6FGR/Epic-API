@@ -3,7 +3,7 @@ package dev.m6fgr.epic_api.client.gui.screens;
 import dev.m6fgr.epic_api.client.gui.InteractionAPI;
 import dev.m6fgr.epic_api.client.gui.data.DialogueData;
 import dev.m6fgr.epic_api.client.gui.data.OptionStyle;
-import dev.m6fgr.epic_api.client.input.InputKeyCodes;
+import dev.m6fgr.epic_api.input.InputKeyCodes;
 import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
 import dev.m6fgr.epic_api.network.packets.client.CPEntityInteraction;
 import dev.m6fgr.epic_api.utils.color.Color;

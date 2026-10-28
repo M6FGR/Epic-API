@@ -1,43 +1,69 @@
 package dev.m6fgr.epic_api.cls.maps;
 
-import java.util.HashMap;
+import java.util.Map;
 
-public class BasicMap<K, V> extends HashMap<K, V> {
+public interface BasicMap<K, V> extends Map<K, V> {
 
-    public BasicMap() {
-        super();
+    boolean removeKey(K key);
+
+    boolean removeValue(V value);
+
+    boolean removeIfPresent(K key, V value);
+
+    boolean removeKeyIfPresent(K key);
+
+    boolean removeValueIfPresent(V value);
+
+    static <K, V> BasicMap<K, V> of() {
+        return new BasicHashMap<>();
     }
 
-    public BasicMap(int initialCapacity) {
-        super(initialCapacity);
+    static <K, V> BasicMap<K, V> of(K k1, V v1) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        map.put(k1, v1);
+        return map;
     }
 
-    public boolean removeKey(K key) {
-        return this.remove(key) != null;
+    static <K, V> BasicMap<K, V> of(K k1, V v1, K k2, V v2) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        return map;
     }
 
-    public boolean removeValue(V value) {
-        return this.values().remove(value);
+    static <K, V> BasicMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        return map;
     }
 
-    public boolean removeIfPresent(K key, V value) {
-        if (this.containsKey(key) && this.containsValue(value)) {
-            return super.remove(key, value);
+    static <K, V> BasicMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        return map;
+    }
+
+    static <K, V> BasicMap<K, V> of(K k1, V v1, K k2, V v2, K k3, V v3, K k4, V v4, K k5, V v5) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        map.put(k1, v1);
+        map.put(k2, v2);
+        map.put(k3, v3);
+        map.put(k4, v4);
+        map.put(k5, v5);
+        return map;
+    }
+
+
+    static <K, V> BasicMap<K, V> of(Map<K, V> existingMap) {
+        BasicMap<K, V> map = new BasicHashMap<>();
+        if (existingMap != null) {
+            map.putAll(existingMap);
         }
-        return false;
-    }
-
-    public boolean removeValueIfPresent(V value) {
-        if (this.containsValue(value)) {
-            return this.removeValue(value);
-        }
-        return false;
-    }
-
-    public boolean removeKeyIfPresent(K key) {
-        if (this.containsKey(key)) {
-            return this.removeKey(key);
-        }
-        return false;
+        return map;
     }
 }

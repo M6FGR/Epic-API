@@ -4,8 +4,8 @@ import dev.m6fgr.epic_api.builders.minecraft.client.KeyMappingsBuilder;
 import dev.m6fgr.epic_api.builders.minecraft.client.KeyMappingsBuilder.InputType;
 import dev.m6fgr.epic_api.builders.minecraft.client.KeyMappingsBuilder.KeyCategory;
 import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
-import dev.m6fgr.epic_api.input.KeyCodes;
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.input.InputKeyCodes;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.network.chat.Component;
 import net.neoforged.bus.api.IEventBus;
@@ -19,14 +19,22 @@ import java.util.List;
 public class EpicAPIKeyMappings implements ILoadableClass {
     private static final List<KeyMapping> KEY_MAPPINGS = new ArrayList<>();
 
-    public static CombatKeyMapping HEAVY_ATTACK;
+    public static final CombatKeyMapping HEAVY_ATTACK = EpicAPIKeyMappings.registerCombatKey(
+            EpicAPIComponents.KEY_HEAVY_ATTACK,
+            InputType.MOUSE,
+            InputKeyCodes.MOUSE_LEFT_CLICK
+    );
 
-    public static CombatKeyMapping COUNTER_ATTACK;
+    public static final CombatKeyMapping COUNTER_ATTACK = EpicAPIKeyMappings.registerCombatKey(
+            EpicAPIComponents.KEY_COUNTER_ATTACK,
+            InputType.KEYBOARD,
+            InputKeyCodes.KEY_X
+    );;
 
     private static KeyMapping registerKey(Component name, InputType inputType, int keyCode, KeyCategory category) {
         KeyMapping keyMapping = KeyMappingsBuilder.newKeyMapping(name.getString(), keyCode, inputType, category);
         if (KEY_MAPPINGS.contains(keyMapping)) {
-            EpicAPI.errIfDevSide("Keymapping: [{}] is already registered!", name.getString());
+            EpicAPIMod.errIfDevSide("Keymapping: [{}] is already registered!", name.getString());
             return null;
         }
         KEY_MAPPINGS.add(keyMapping);
@@ -36,7 +44,7 @@ public class EpicAPIKeyMappings implements ILoadableClass {
     private static CombatKeyMapping registerCombatKey(Component name, InputType inputType, int keyCode) {
         CombatKeyMapping keyMapping = KeyMappingsBuilder.newCombatKeyMapping(name.getString(), inputType, keyCode, KeyCategory.EPICFIGHT_COMBAT);
         if (KEY_MAPPINGS.contains(keyMapping)) {
-            EpicAPI.errIfDevSide("Keymapping: [{}] is already registered!", name.getString());
+            EpicAPIMod.errIfDevSide("Keymapping: [{}] is already registered!", name.getString());
             return null;
         }
         KEY_MAPPINGS.add(keyMapping);
@@ -45,17 +53,6 @@ public class EpicAPIKeyMappings implements ILoadableClass {
 
     @Override
     public void onModClientConstruct(IEventBus modBus) {
-        COUNTER_ATTACK = registerCombatKey(
-                EpicAPIComponents.KEY_COUNTER_ATTACK,
-                InputType.MOUSE,
-                KeyCodes.MOUSE_LEFT_CLICK
-        );
-
-        HEAVY_ATTACK = registerCombatKey(
-                EpicAPIComponents.KEY_HEAVY_ATTACK,
-                InputType.KEYBOARD,
-                KeyCodes.KEY_X
-        );
         modBus.addListener(EpicAPIKeyMappings::onKeysRegistry);
     }
 

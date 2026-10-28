@@ -27,30 +27,30 @@ public class ArmatureBuilder {
     private ArmatureBuilder() {}
 
 
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String parsedPath, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String parsedPath, ArmatureTypes type) {
         ResourceLocation parsed = ResourceLocation.parse(parsedPath);
         return newEntityArmatureI(entity, parsed.getNamespace(), parsed.getPath(), type::apply);
     }
 
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, ResourceLocation location, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, ResourceLocation location, ArmatureTypes type) {
         return newEntityArmatureI(entity, location.getNamespace(), location.getPath(), type::apply);
     }
 
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String modid, String path, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newEntityArmature(EntityType<?> entity, String modid, String path, ArmatureTypes type) {
         return newEntityArmatureI(entity, modid, path, type::apply);
     }
 
     // needs to be posted via an event (FMLCommonSetupEvent)
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String parsedPath, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String parsedPath, ArmatureTypes type) {
         ResourceLocation parsed = ResourceLocation.parse(parsedPath);
         return newArmatureI(parsed.getNamespace(), parsed.getPath(), type::apply);
     }
 
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(ResourceLocation location, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(ResourceLocation location, ArmatureTypes type) {
         return newArmatureI(location.getNamespace(), location.getPath(), type::apply);
     }
 
-    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String modid, String path, ArmatureType type) {
+    public static <AR extends Armature> Armatures.ArmatureAccessor<AR> newArmature(String modid, String path, ArmatureTypes type) {
         return newArmatureI(modid, path, type::apply);
     }
 
@@ -66,8 +66,8 @@ public class ArmatureBuilder {
         return accessor;
     }
 
-    public enum ArmatureType {
-        HUMANOID_ARMATURE(HumanoidArmature::new),
+    public enum ArmatureTypes {
+        HUMANOID(HumanoidArmature::new),
         CREEPER(CreeperArmature::new),
         PIGLIN(PiglinArmature::new),
         ENDERMAN(EndermanArmature::new),
@@ -82,7 +82,7 @@ public class ArmatureBuilder {
         // Use a specific constructor reference
         private ArmatureContructor<? extends Armature> constructor;
 
-        ArmatureType(ArmatureContructor<? extends Armature> constructor) {
+        ArmatureTypes(ArmatureContructor<? extends Armature> constructor) {
             this.constructor = constructor;
         }
 
@@ -92,7 +92,7 @@ public class ArmatureBuilder {
             return (AR) this.constructor.invoke(name, jointNumber, joint, jointMap);
         }
 
-        public static ArmatureType of(ArmatureContructor<? extends Armature> constructor) {
+        public static ArmatureTypes of(ArmatureContructor<? extends Armature> constructor) {
             EMPTY.constructor = constructor;
             return EMPTY;
         }

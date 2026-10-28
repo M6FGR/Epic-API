@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum InteractionType {
-
     TALK((player, target, ctx) ->
             player.sendSystemMessage(Component.literal("Interacted with " + target.getName().getString()))
     ),
@@ -58,20 +57,8 @@ public enum InteractionType {
         void handle(ServerPlayer player, Entity target, IPayloadContext context);
     }
 
-    private ParameterizedHandler parameterizedHandler;
-    private InteractionHandler interactionHandler;
-
-
-
-    public static InteractionType create(InteractionHandler handler) {
-        NONE.interactionHandler = handler;
-        return NONE;
-    }
-
-    public static InteractionType createParameterized(ParameterizedHandler handler) {
-        NONE.parameterizedHandler = handler;
-        return NONE;
-    }
+    private final ParameterizedHandler parameterizedHandler;
+    private final InteractionHandler interactionHandler;
 
     InteractionType(ParameterizedHandler handler) {
         this.parameterizedHandler = handler;
@@ -83,13 +70,12 @@ public enum InteractionType {
         this.parameterizedHandler = null;
     }
 
-    public InteractionType withArgs(Object... arguments) {
-        new BoundInteraction(this, Arrays.asList(arguments));
-        return this;
+    public BoundInteraction withArgs(Object... arguments) {
+        return new BoundInteraction(this, Arrays.asList(arguments));
     }
 
     public void execute(ServerPlayer player, Entity target, IPayloadContext context) {
-        execute(player, target, context, List.of());
+        this.execute(player, target, context, List.of());
     }
 
     public void execute(ServerPlayer player, Entity target, IPayloadContext context, List<Object> args) {

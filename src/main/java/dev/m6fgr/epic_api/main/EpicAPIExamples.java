@@ -10,17 +10,20 @@ import dev.m6fgr.epic_api.animation.types.SimpleMovementAnimation;
 import dev.m6fgr.epic_api.animation.types.SimpleStaticAnimation;
 import dev.m6fgr.epic_api.animation.types.joints.JointMasks;
 import dev.m6fgr.epic_api.builders.epicfight.ArmatureBuilder;
-import dev.m6fgr.epic_api.builders.epicfight.ArmatureBuilder.ArmatureType;
+import dev.m6fgr.epic_api.builders.epicfight.ArmatureBuilder.ArmatureTypes;
 import dev.m6fgr.epic_api.builders.epicfight.EntityPatchBuilder;
 import dev.m6fgr.epic_api.builders.epicfight.MeshBuilder;
-import dev.m6fgr.epic_api.builders.epicfight.MeshBuilder.MeshType;
+import dev.m6fgr.epic_api.builders.epicfight.MeshBuilder.MeshTypes;
 import dev.m6fgr.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
 import dev.m6fgr.epic_api.builders.minecraft.CommandsBuilder;
 import dev.m6fgr.epic_api.builders.minecraft.GameRulesBuilder;
 import dev.m6fgr.epic_api.builders.minecraft.GameRulesBuilder.EnumValue;
 import dev.m6fgr.epic_api.builders.minecraft.GameRulesBuilder.SynchronizedGameRule;
 import dev.m6fgr.epic_api.builders.minecraft.ItemsBuilder;
-import dev.m6fgr.epic_api.cls.loadable.Compatibility;
+import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
+import dev.m6fgr.epic_api.cls.loadable.enums.LoadableEnum;
+import dev.m6fgr.epic_api.cls.loadable.marks.Compatibility;
+import dev.m6fgr.epic_api.compat.plugin.CompatibilityPlugin;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchEvent;
@@ -76,17 +79,17 @@ import java.util.Collection;
 import java.util.function.Supplier;
 
 // This class shows how this API is used, no more!
-class EpicAPIPlaceHolders {
+class EpicAPIExamples {
     static class Armature {
         // these methods can accept 3 types of paths:
         // mod-id:path,
         // mod-id, path,
         // ResourceLocation#fromNamespaceAndPath(mod-id, path)
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE = ArmatureBuilder.newEntityArmature(EntityType.ZOMBIE, "epicfight:entity/biped", ArmatureType.HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE = ArmatureBuilder.newEntityArmature(EntityType.ZOMBIE, "epicfight:entity/biped", ArmatureTypes.HUMANOID);
         // Needs to be posted via FMLCommonSetupEvent
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NO_ENTITY = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureType.HUMANOID_ARMATURE);
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_NO_ENTITY = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureTypes.HUMANOID);
         // if you couldn't find what type you wish for, you could use the constructor as so:
-        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_CUSTOM_CONSTRUCTOR = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureType.of(HumanoidArmature::new));
+        public static final ArmatureAccessor<HumanoidArmature> PLACEHOLDER_ARMATURE_CUSTOM_CONSTRUCTOR = ArmatureBuilder.newArmature("epicfight:entity/biped", ArmatureTypes.of(HumanoidArmature::new));
 
     }
 
@@ -94,11 +97,11 @@ class EpicAPIPlaceHolders {
         // same thing as the armature path arguments, it accepts 3 arguments
 
         // MeshType is holding 4 types of mesh types: (SkinnedMesh, ClassicMesh, CompositeMesh, HumanoidMesh)
-        public static final MeshAccessor<HumanoidMesh> PLACEHOLDER_MESH = MeshBuilder.newMesh("epicfight:entity/biped", MeshType.HUMANOID_MESH);
+        public static final MeshAccessor<HumanoidMesh> PLACEHOLDER_MESH = MeshBuilder.newMesh("epicfight:entity/biped", MeshTypes.HUMANOID);
         // Or if you couldn't find what you wish for, you could use the constructor as so:
-        public static final MeshAccessor<WitherMesh> PLACEHOLDER_MESH_CUSTOM_CONSTRUCTOR = MeshBuilder.newMesh("epicfight:entity/wither", MeshType.of(WitherMesh::new));
+        public static final MeshAccessor<WitherMesh> PLACEHOLDER_MESH_CUSTOM_CONSTRUCTOR = MeshBuilder.newMesh("epicfight:entity/wither", MeshTypes.of(WitherMesh::new));
         // This automatically detects the mesh type inside the JSON file itself, check JsonAssetLoader#loadMesh()
-        public static final MeshAccessor<SkinnedMesh> PLACEHOLDER_MESH_JSON_LOADER = MeshBuilder.newMesh("epicfight:layer/default_cape", MeshType.JSON_LOADER);
+        public static final MeshAccessor<SkinnedMesh> PLACEHOLDER_MESH_JSON_LOADER = MeshBuilder.newMesh("epicfight:layer/default_cape", MeshTypes.JSON_LOADER);
     }
 
     static class EntityPatch {
@@ -300,10 +303,10 @@ class EpicAPIPlaceHolders {
 
     }
 
-    static class CapabilityPreset {
+    static class CapabilityPreset implements ILoadableClass {
         // first off, we do 2 registries as so:
-        static final ItemPresetRegister ITEM_REGISTRY = ItemPresetRegister.create(EpicAPI.MOD_ID);
-        static final MovesetRegister MOVESET_REGISTRY = MovesetRegister.create(EpicAPI.MOD_ID);
+        static final ItemPresetRegister ITEM_REGISTRY = ItemPresetRegister.create(EpicAPIMod.MOD_ID);
+        static final MovesetRegister MOVESET_REGISTRY = MovesetRegister.create(EpicAPIMod.MOD_ID);
 
         // then we build a capability
         // (it has to be a supplier because this runs before epic fight's animation registry?, odd):
@@ -355,24 +358,30 @@ class EpicAPIPlaceHolders {
        }
 
         // now you register the bus either by using ILoadableClass or calling the registries in the mod constructor
-        public void onModConstructor(IEventBus modBus) {
+        @Override
+        public void onModConstruct(IEventBus modBus) {
             ITEM_REGISTRY.register(modBus);
             MOVESET_REGISTRY.register(modBus);
         }
+
+        @Override
+        public boolean ignoreNotLoadedWarning() {
+            return true;
+        }
     }
 
-    @EventBusSubscriber(modid = EpicAPI.MOD_ID)
+    @EventBusSubscriber(modid = EpicAPIMod.MOD_ID)
     static class DispatchableEvents {
         // a dispatchable event is almost like an event hook, but more flexible, as so:
         private static void onDispatch() {
-            MinecraftDispatchableEvents.Player.JOIN_CLIENT.dispatchEvent(event -> EpicAPI.debugIfDevSide("Hello from [{}]", event.getEventClsName()));
+            MinecraftDispatchableEvents.Player.JOIN_CLIENT.dispatchEvent(event -> EpicAPIMod.debugIfDevSide("Hello from [{}]", event.getEventClsName()));
         }
         // the method above can be called anywhere, but it's best to call it in a life cycle event, or the mod's constructor
         // or if needed, and the event is hybrid (having the @HybridEvent annotation), you can use neo's event subscribers
         @SubscribeEvent
         // This event is empty, used to dispatch other events, posted in the mod's constructor
         public static void onDispatch(DispatchEvent event) {
-            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(joinEvent -> EpicAPI.debugIfDevSide("Hello from [{}] subscribed!", event.getEventClsName()));
+            MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(joinEvent -> EpicAPIMod.debugIfDevSide("Hello from [{}] subscribed!", event.getEventClsName()));
         }
         // IF the event is not hybrid and used in a subscriber, it'd do nothing
         // An event with the @HybridEvent annotation is automatically posted to neo's event bus API (based on the event bus passed in the annotation)
@@ -382,20 +391,114 @@ class EpicAPIPlaceHolders {
         private static void onClientStart() {
             // By default, the priority is always middle if left empty
             MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
-                    EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+                    EpicAPIMod.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
             );
             // But here, we make it the highest, so it dispatches before the event above
             MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
-                    EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+                    EpicAPIMod.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
             , EventPriority.HIGHEST
             );
             // But here, if we put the override priority, it cancels the 2 above and overrides them, completely changing the result of the event itself
             // Note that it can be only overridden if the boolean DispatchableEvent#canBeOverridden is true
             // The only un-overridable event is DispatchEvent used above
             MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(event ->
-                     EpicAPI.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
+                     EpicAPIMod.debugIfDevSide("Hello from client start with the {} priority", event.getPriority().toString().toLowerCase())
             , EventPriority.OVERRIDE
             );
+        }
+    }
+
+    static class LoadableEnumsAndClasses implements ILoadableClass {
+        // Loadable enums and classes API is an API focusing on initializing the class/enum in a simple way
+        // Here's how it works:
+
+        // in this method, it passes the mod bus directly from the constructor, and running the method as well
+        @Override
+        public void onModConstruct(IEventBus modBus) {
+            ILoadableClass.super.onModConstruct(modBus);
+        }
+
+        // in this method, it also passed a bus, but it's Neo's bus instead, same running logic
+        @Override
+        public void onGameConstruct(IEventBus neoBus) {
+            ILoadableClass.super.onGameConstruct(neoBus);
+        }
+
+        // in this one though, it works the same way as ILoadableClass#onModConstruct, but it only runs on the client side
+        // will not be invoked in the server side
+        @Override
+        public void onModClientConstruct(IEventBus modBus) {
+            ILoadableClass.super.onModClientConstruct(modBus);
+        }
+
+        // same logic here, except it passes Neo's event bus
+        @Override
+        public void onGameClientConstruct(IEventBus neoBus) {
+            ILoadableClass.super.onGameClientConstruct(neoBus);
+        }
+
+        @Override
+        public boolean ignoreNotLoadedWarning() {
+            return true;
+        }
+
+        // To load this class, you call LoadableClassManager#loadClass(IEventBus, Class<? extends ILoadableClass>[]) in your mod's constructor
+        // each class loaded will automatically invoke and run these methods, easily registering and running code instead of calling everything in the mod's constructor
+
+        // Now, we move to enums
+        // In here, we pass the loadable class inside the enum itself, and then loading them without calling anything
+        // Check EpicAPILoadableEnums for example
+        public enum ExampleLoadableEnum implements LoadableEnum {
+            LOADABLE_ENUM(LoadableEnumsAndClasses.class);
+
+            private final Class<? extends ILoadableClass> loadableClass;
+            private final boolean clientOnly;
+
+            ExampleLoadableEnum(Class<? extends ILoadableClass> loadableClass, boolean clientOnly) {
+                this.loadableClass = loadableClass;
+                this.clientOnly = clientOnly;
+            }
+
+            ExampleLoadableEnum(Class<? extends ILoadableClass> loadableClass) {
+                this(loadableClass, false);
+            }
+
+            // The main class, passed and loaded via this enum
+            @Override
+            public Class<? extends ILoadableClass> getLoadableClass() {
+                return this.loadableClass;
+            }
+
+            // a filter for client loadable classes
+            @Override
+            public boolean isClientOnly() {
+                return this.clientOnly;
+            }
+        }
+        // To load this enum, you call LoadableClassManager#loadEnum(IEventBus, Enum.values()); in your mod's constructor
+    }
+
+    static class Plugins {
+        // The API also cover plugins, known for compatibility between mods
+        // Here's how the plugins work here:
+        public static class ExamplePlugin implements CompatibilityPlugin {
+            // The compatibility mod for this plugin, if empty or not present, this plugin will not be initialized
+            @Override
+            public String getTargetModID() {
+                return EpicAPI.MOD_ID;
+            }
+            // Checks if this plugin should only be a client side plugin
+            @Override
+            public boolean isClientOnly() {
+                return false;
+            }
+            // The initialization of this plugin, it passes the mod's bus and Neo's bus, they're optional
+            @Override
+            public void onInitialize(IEventBus neoBus, IEventBus modBus) {}
+
+            // And to load this plugin, you call this in your mod's constructor:
+            // CompatibilityPluginsManager.registerPlugins(null, ExamplePlugin.class);
+
         }
     }
 

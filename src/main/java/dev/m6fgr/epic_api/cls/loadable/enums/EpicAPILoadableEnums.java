@@ -14,6 +14,7 @@ public enum EpicAPILoadableEnums implements LoadableEnum {
     SOUND_MANAGER(EpicAPISoundDataManager.class),
     SKILLS(EpicAPISkills.class),
     SKILL_DATA_KEYS(EpicAPISkillDataKeys.class),
+    // Client Registries
     KEY_MAPPINGS(EpicAPIKeyMappings.class, true);
 
     private final Class<? extends ILoadableClass> loadableClass;

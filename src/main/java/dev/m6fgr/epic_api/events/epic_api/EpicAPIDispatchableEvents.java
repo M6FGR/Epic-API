@@ -1,7 +1,5 @@
 package dev.m6fgr.epic_api.events.epic_api;
 
-import dev.m6fgr.epic_api.cls.lists.ArraysList;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.CancelableEventDispatch;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.EventDispatch;
 import dev.m6fgr.epic_api.events.epic_api.entity.EntityInteractDispatchableEvent;
@@ -13,8 +11,6 @@ import dev.m6fgr.epic_api.events.epic_api.registry.EntityPatchDispatchableEvent;
 import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchableEvent;
 
 public class EpicAPIDispatchableEvents {
-
-    private static final ArraysList<EventDispatch<?>> EVENTS = new ArraysList<>();
 
     public static class Registry {
         private Registry(){}
@@ -54,23 +50,5 @@ public class EpicAPIDispatchableEvents {
         public static final EventDispatch<EntityInteractDispatchableEvent> ENTITY_INTERACT = EventDispatch.createDispatchable();
     }
 
-    public static ArraysList<EventDispatch<? extends DispatchableEvent>> getEventsAsList() {
-        return EVENTS;
-    }
-
-    static {
-        EVENTS.addAsArray(
-                Registry.ENTITY_PATCH
-        );
-        EVENTS.addAsArray(
-                Player.ADD_MOTIONS,
-                Player.HEAVY_ATTACK,
-                Player.COUNTER_ATTACK
-        );
-        EVENTS.addAsArray(
-                Skill.ADD_NORMAL_GUARD_MOTIONS,
-                Skill.ADD_PARRY_GUARD_MOTIONS
-        );
-    }
 
 }

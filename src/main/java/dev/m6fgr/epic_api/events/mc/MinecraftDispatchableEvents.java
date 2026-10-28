@@ -1,7 +1,6 @@
 package dev.m6fgr.epic_api.events.mc;
 
 import dev.m6fgr.epic_api.cls.lists.ArraysList;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.EventDispatch;
 import dev.m6fgr.epic_api.events.dispatch.side.EventSide;
 import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchableEvent;
@@ -61,35 +60,4 @@ public class MinecraftDispatchableEvents {
         // fired when an entity is summoned in the server's world
         public static final EventDispatch<EntitySummonDispatchableEvent.Server> SUMMON_SERVER = EventDispatch.createDispatchable(EventSide.SERVER);
     }
-
-    public static ArraysList<EventDispatch<? extends DispatchableEvent>> getEventsAsList() {
-        return EVENTS;
-    }
-
-    static {
-        EVENTS.addAsArray(
-                Player.JOIN_CLIENT,
-                Player.JOIN_SERVER
-                //Player.TICK_POST,
-                //Player.TICK_PRE
-        );
-        EVENTS.addAsArray(
-                Client.CLIENT_START_POST,
-                Client.CLIENT_START_PRE,
-                Client.WORLD_CREATE,
-                Client.WORLD_INIT,
-                Client.WORLD_JOIN
-        );
-        EVENTS.addAsArray(
-                Server.SERVER_START_POST,
-                Server.SERVER_START_PRE,
-                Server.SERVER_STOP
-                //Server.SERVER_TICK
-        );
-        EVENTS.addAsArray(
-                Entity.SUMMON_CLIENT,
-                Entity.SUMMON_SERVER
-        );
-    }
-    
 }

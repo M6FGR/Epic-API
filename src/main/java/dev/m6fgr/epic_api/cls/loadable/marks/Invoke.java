@@ -1,4 +1,4 @@
-package dev.m6fgr.epic_api.cls.loadable;
+package dev.m6fgr.epic_api.cls.loadable.marks;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

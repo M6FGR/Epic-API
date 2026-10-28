@@ -9,12 +9,7 @@ import java.lang.annotation.Target;
 
 // marked on the events that can be
 // either posted by a @SubscribeEvent annotation or dispatched by the EventDispatcher
-@Target(
- {
-        ElementType.TYPE,
-        ElementType.FIELD
- }
-)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HybridEvent {
      EventBus value() default EventBus.BOTH;

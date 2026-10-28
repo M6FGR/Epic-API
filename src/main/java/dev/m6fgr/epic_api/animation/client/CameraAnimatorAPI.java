@@ -1,7 +1,10 @@
 package dev.m6fgr.epic_api.animation.client;
 
 import com.google.gson.JsonObject;
+import dev.m6fgr.epic_api.cls.maps.BasicHashMap;
+import dev.m6fgr.epic_api.cls.maps.BasicMap;
 import dev.m6fgr.epic_api.config.EpicAPIConfigs;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.mixins.minecraft.client.CameraAccessor;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -23,8 +26,6 @@ import yesman.epicfight.world.capabilities.EpicFightCapabilities;
 import yesman.epicfight.world.capabilities.entitypatch.LivingEntityPatch;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class CameraAnimatorAPI {
     private static final Logger LOGGER = LogManager.getLogger(CameraAnimatorAPI.class.getSimpleName());
@@ -35,7 +36,7 @@ public class CameraAnimatorAPI {
         return INSTANCE;
     }
 
-    private final Map<ResourceLocation, CameraAnimation> animations = new HashMap<>();
+    private final BasicMap<ResourceLocation, CameraAnimation> animations = new BasicHashMap<>();
 
     @Nullable
     private CameraAnimation currentAnimation;
@@ -85,12 +86,12 @@ public class CameraAnimatorAPI {
         try {
             Minecraft mc = Minecraft.getInstance();
             JsonAssetLoader loader = new JsonAssetLoader(mc.getResourceManager(), camAnim.jsonLocation());
-            CameraAnimation animation = loadAnimation(loader);
+            CameraAnimation animation = this.loadAnimation(loader);
             ResourceLocation name = camAnim.id();
             animations.put(name, animation);
-            System.out.println("[CameraAnimator] Registered animation: " + name + " (" + animation.getDuration() + "s)");
+            LOGGER.info("Registered camera animation: {}, ({}s) ", name, animation.getDuration());
         } catch (Exception e) {
-            System.err.println("[CameraAnimator] Failed to load animation '" + camAnim.animationName() + "': " + e.getMessage());
+            EpicAPIMod.err("Failed to load camera animation '" + camAnim.animationName() + "': " + e.getMessage());
         }
     }
 
@@ -120,7 +121,7 @@ public class CameraAnimatorAPI {
 
         if (this.playing && this.originEntity != null
                 && OriginEntity != null && this.originEntity != OriginEntity) {
-            LOGGER.warn("[CameraAnimator] play() for entity {} ignored - already playing '{}' for entity {}",
+            LOGGER.warn("play() for entity {} ignored - already playing '{}' for entity {}",
                     OriginEntity, this.currentAnimationName, this.originEntity);
             return;
         }
@@ -186,7 +187,7 @@ public class CameraAnimatorAPI {
     public void playMirrored(CamAnim camAnim, boolean loop, Entity originEntity) {
         Vec3 worldSpaceOrigin = originEntity.getEyePosition();
         //Only Derive Origin Point from Origin but Drive rest of animation using localPlayer for worldSpace
-        play(camAnim, loop, true, true, worldSpaceOrigin, Minecraft.getInstance().player, true);
+        this.play(camAnim, loop, true, true, worldSpaceOrigin, Minecraft.getInstance().player, true);
     }
 
 
@@ -201,7 +202,14 @@ public class CameraAnimatorAPI {
     }
 
 
-    public Iterable<ResourceLocation> getAnimationNames() { return animations.keySet(); }
+    public Iterable<ResourceLocation> getAnimationNames() {
+        return this.animations.keySet();
+    }
+
+
+    public CameraAnimation getAnimationByName(ResourceLocation id) {
+        return this.animations.get(id);
+    }
 
     private boolean gameHasBeenPaused;
 
@@ -234,7 +242,8 @@ public class CameraAnimatorAPI {
     }
 
     public void applyToCamera(Camera camera, float partialTick) {
-        if (!this.playing || this.currentAnimation == null) return;
+        // we stop if the config is set to false
+        if (!this.playing || this.currentAnimation == null || !EpicAPIConfigs.Common.isCamAnimationsEnabled()) return;
 
         Minecraft mc = Minecraft.getInstance();
         if (mc.player == null) return;
@@ -257,7 +266,7 @@ public class CameraAnimatorAPI {
         animOffset = yawRot.transform(animOffset);
 
         // get Desired Local/World Space params
-        Vector3f desiredPos = getDesiredPos(partialTick, mc, animOffset);
+        Vector3f desiredPos = this.getDesiredPos(partialTick, mc, animOffset);
 
         Quaternionf rotation = anim.rotation;
 
@@ -267,7 +276,7 @@ public class CameraAnimatorAPI {
         float animPitch = (float) Math.toDegrees(euler.x);
         float animRoll = (float) Math.toDegrees(euler.z);
 
-        if(this.isMirrored){
+        if (this.isMirrored) {
             animYaw += 180f;
         }
 
@@ -330,28 +339,46 @@ public class CameraAnimatorAPI {
         );
     }
 
-
     // Getters
-    public void pause()  { this.paused = true;  }
+    public void pause() {
+        this.paused = true;
+    }
 
-    public void resume() { this.paused = false; }
+    public void resume() {
+        this.paused = false;
+    }
 
-    public boolean isPlaying() { return playing; }
+    public boolean isPlaying() {
+        return this.playing;
+    }
 
-    public boolean isPaused()  { return paused;  }
+    public boolean isPaused() {
+        return this.paused;
+    }
 
 
-    @Nullable public ResourceLocation getCurrentAnimationName() { return currentAnimationName; }
+    @Nullable public ResourceLocation getCurrentAnimationName() {
+        return this.currentAnimationName;
+    }
 
-    public boolean isMirrored(){ return isMirrored;}
+    public boolean isMirrored() {
+        return this.isMirrored;
+    }
 
-    public float getCurrentTime() { return currentTime; }
+    public float getCurrentTime() {
+        return this.currentTime;
+    }
 
-    public boolean hasAnimation(ResourceLocation name) { return animations.containsKey(name); }
+    public boolean hasAnimation(ResourceLocation name) {
+        return animations.containsKey(name); }
 
-    public boolean isMousePanningLocked() { return lockMousePanning; }
+    public boolean isMousePanningLocked() {
+        return lockMousePanning;
+    }
 
-    public void setLockMousePanning(boolean lock) { this.lockMousePanning = lock; }
+    public void setLockMousePanning(boolean lock) {
+        this.lockMousePanning = lock;
+    }
 
     private static class CameraAnimation {
         private final TransformSheet sheet;
@@ -360,8 +387,63 @@ public class CameraAnimatorAPI {
             this.sheet = sheet;
             this.duration = sheet.maxFrameTime();
         }
-        public float getDuration() { return duration; }
+        public float getDuration() {
+            return this.duration;
+        }
     }
+
+    public static class CameraFOVHelper {
+
+        public enum SensorSize {
+
+            FULL_FRAME(36.0F, 24.0F),
+            APS_C(23.6F, 15.7F),
+            APS_H(28.7F, 19.1F),
+            MICRO_FOUR_THIRDS(17.3F, 13.0F),
+            MEDIUM_FORMAT(44.0F, 33.0F);
+
+            public final float width;
+            public final float height;
+
+            SensorSize(float width, float height) {
+                this.width = width;
+                this.height = height;
+            }
+        }
+
+        static Minecraft mc = Minecraft.getInstance();
+
+        private static double focalLengthToHorizontalFOV(double focalLengthMM, SensorSize sensor) {
+            if (focalLengthMM <= 0) {
+                EpicAPIMod.err("focalLength is lower than or equal to 0 : {}", focalLengthMM);
+                return 70.0d; // Default fallback
+            }
+
+            double fovRadians = 2.0d * Math.atan(sensor.width / (2.0d * focalLengthMM));
+            return Math.toDegrees(fovRadians);
+        }
+
+
+        public static double horizontalToVerticalFOV(double hFovDegrees, double aspectRatio) {
+            double hFovRad = Math.toRadians(hFovDegrees);
+            double vFovRad = 2.0d * Math.atan(Math.tan(hFovRad / 2.0d) / aspectRatio);
+            return Math.toDegrees(vFovRad);
+        }
+
+        public static double focalLengthToFOV(double focalLengthMM, SensorSize sensor) {
+            double hFov = focalLengthToHorizontalFOV(focalLengthMM, sensor);
+            double aspectRatio = mc.getWindow().getWidth() / (double) mc.getWindow().getHeight();
+            return horizontalToVerticalFOV(hFov, aspectRatio);
+        }
+
+
+        public static double focalLengthToFOV(double focalLengthMM) {
+            return focalLengthToFOV(focalLengthMM, SensorSize.FULL_FRAME);
+        }
+
+    }
+
+
 
     public record CameraTransform(Vector3f location, Quaternionf rotation) {}
 }

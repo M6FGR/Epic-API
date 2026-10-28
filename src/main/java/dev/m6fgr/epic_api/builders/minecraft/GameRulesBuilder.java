@@ -1,12 +1,13 @@
 package dev.m6fgr.epic_api.builders.minecraft;
 
-import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
 import com.mojang.brigadier.context.CommandContext;
+import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
 import dev.m6fgr.epic_api.network.packets.server.SPGameRuleSync;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.GameRules;
+import net.minecraft.world.level.GameRules.Type;
 import net.minecraft.world.level.GameRules.Value;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.server.command.EnumArgument;
@@ -66,10 +67,10 @@ public class GameRulesBuilder {
         private final String name;
         private final GameRules.Category category;
         private final boolean sync;
-        private final Function<BiConsumer<MinecraftServer, V>, GameRules.Type<V>> typeFactory;
+        private final Function<BiConsumer<MinecraftServer, V>, Type<V>> typeFactory;
         private GameRules.Key<V> key;
 
-        public SynchronizedGameRule(String name, GameRules.Category category, boolean sync, Function<BiConsumer<MinecraftServer, V>, GameRules.Type<V>> typeFactory) {
+        public SynchronizedGameRule(String name, GameRules.Category category, boolean sync, Function<BiConsumer<MinecraftServer, V>, Type<V>> typeFactory) {
             this.name = name;
             this.category = category;
             this.sync = sync;
@@ -94,6 +95,7 @@ public class GameRulesBuilder {
         public V getValue(MinecraftServer server) {
             return server.getGameRules().getRule(this.key);
         }
+
 
         public GameRules.Key<V> getKey() {
             return this.key;

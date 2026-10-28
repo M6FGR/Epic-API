@@ -1,17 +1,19 @@
 package dev.m6fgr.epic_api.config;
 
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig.Type;
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.Builder;
 
 public class EpicAPIConfigs {
     public static class Common {
         private static final ModConfigSpec.Builder BUILDER = new Builder();
-        private static final ModConfigSpec.BooleanValue ENABLE_CAMERA_ANIMATIONS = BUILDER.comment("Whether to enable Camera Animations").define("camAniToggle", true);
-        private static final ModConfigSpec.BooleanValue CAMERA_HEAD_CLIPPING_TOGGLE = BUILDER.comment("Whether to enable Head to be hidden if camera goes inside player head while camera animation").define("camHeadClipToggle", true);
+        private static final ModConfigSpec.BooleanValue ENABLE_CAMERA_ANIMATIONS = BUILDER.comment("Whether to enable Camera Animations").define("enableCamAnimations", true);
+        private static final ModConfigSpec.BooleanValue CAMERA_HEAD_CLIPPING_TOGGLE = BUILDER.comment("Whether to enable Head to be hidden if camera goes inside player head while camera animation").define("clipCamToHead", true);
 
         public static final ModConfigSpec SPEC = BUILDER.build();
 
-        public static boolean isCamAnimsEnabled() {
+        public static boolean isCamAnimationsEnabled() {
             return ENABLE_CAMERA_ANIMATIONS.getAsBoolean();
         }
 
@@ -20,7 +22,21 @@ public class EpicAPIConfigs {
         }
     }
 
-    public static class Client {}
+    public static class Client {
+        private static final ModConfigSpec.Builder BUILDER = new Builder();
 
-    public static class Server {}
+        public static final ModConfigSpec SPEC = BUILDER.build();
+    }
+
+    public static class Server {
+        private static final ModConfigSpec.Builder BUILDER = new Builder();
+
+        public static final ModConfigSpec SPEC = BUILDER.build();
+    }
+
+    public static void register(ModContainer modContainer) {
+        modContainer.registerConfig(Type.COMMON, Common.SPEC);
+        modContainer.registerConfig(Type.CLIENT, Client.SPEC);
+        modContainer.registerConfig(Type.SERVER, Server.SPEC);
+    }
 }

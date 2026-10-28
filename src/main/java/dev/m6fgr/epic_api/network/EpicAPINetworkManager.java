@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.network;
 
 import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
-import dev.m6fgr.epic_api.cls.loadable.Invoke;
+import dev.m6fgr.epic_api.cls.loadable.marks.Invoke;
 import dev.m6fgr.epic_api.network.packets.EpicAPIPacketsManager;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.level.ServerLevel;

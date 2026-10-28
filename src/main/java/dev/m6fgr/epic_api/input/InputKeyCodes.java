@@ -1,11 +1,11 @@
-package dev.m6fgr.epic_api.client.input;
+package dev.m6fgr.epic_api.input;
+
 
 import dev.m6fgr.epic_api.cls.lists.ArraysList;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.Collections;
 import java.util.List;
-
 public final class InputKeyCodes {
 
     private static final ArraysList<Integer> KEYBOARD_KEYS = new ArraysList<>();
@@ -149,9 +149,9 @@ public final class InputKeyCodes {
     public static final int REPEAT = GLFW.GLFW_REPEAT;
 
     // --- Mouse Buttons ---
-    public static final int MOUSE_BUTTON_LEFT = GLFW.GLFW_MOUSE_BUTTON_LEFT;
+    public static final int MOUSE_LEFT_CLICK = GLFW.GLFW_MOUSE_BUTTON_LEFT;
     public static final int MOUSE_BUTTON_MIDDLE = GLFW.GLFW_MOUSE_BUTTON_MIDDLE;
-    public static final int MOUSE_BUTTON_RIGHT = GLFW.GLFW_MOUSE_BUTTON_RIGHT;
+    public static final int MOUSE_RIGHT_CLICK = GLFW.GLFW_MOUSE_BUTTON_RIGHT;
 
     // --- Modifiers & Cursor modes ---
     public static final int MOD_CONTROL = GLFW.GLFW_MOD_CONTROL;
@@ -161,9 +161,9 @@ public final class InputKeyCodes {
 
     static {
         MOUSE_KEYS.addAsArray(
-                MOUSE_BUTTON_LEFT,
+                MOUSE_LEFT_CLICK,
                 MOUSE_BUTTON_MIDDLE,
-                MOUSE_BUTTON_RIGHT
+                MOUSE_RIGHT_CLICK
         );
 
         KEYBOARD_KEYS.addAsArray(

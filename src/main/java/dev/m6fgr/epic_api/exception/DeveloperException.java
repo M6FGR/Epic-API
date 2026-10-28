@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.exception;
 
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper;
 
 public class DeveloperException extends RuntimeException {
@@ -42,7 +42,7 @@ public class DeveloperException extends RuntimeException {
         if (EnvironmentHelper.getEnvironment().isDevEnv()) {
             throw new DeveloperException(loggedMessage);
         } else {
-            EpicAPI.err(loggedMessage);
+            EpicAPIMod.err(loggedMessage);
         }
     }
 

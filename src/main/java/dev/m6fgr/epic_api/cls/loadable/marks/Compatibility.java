@@ -1,5 +1,7 @@
-package dev.m6fgr.epic_api.cls.loadable;
+package dev.m6fgr.epic_api.cls.loadable.marks;
 
+import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
+import dev.m6fgr.epic_api.cls.loadable.LoadableClassManager;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModList;
 

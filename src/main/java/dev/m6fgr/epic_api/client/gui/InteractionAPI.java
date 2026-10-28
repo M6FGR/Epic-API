@@ -16,7 +16,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.entity.projectile.Projectile;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.ArrayList;
@@ -58,9 +57,7 @@ public final class InteractionAPI {
     }
 
     private InteractionAPI() {
-        this.addFilter(entity -> entity instanceof LivingEntity
-                && !(entity instanceof Projectile)
-                && entity.isAlive());
+        this.addFilter(entity -> entity instanceof LivingEntity && entity.isAlive());
     }
 
     public void interactWithEntity(Player interacter, Entity interactedEntity) {
@@ -491,5 +488,21 @@ public final class InteractionAPI {
 
     public void setLookAtPlayerDuration(float seconds) {
         this.lookAtPlayerDuration = seconds;
+    }
+
+    public float getLockedYaw() {
+        return this.lockedYaw;
+    }
+
+    public void setLockedYaw(float lockedYaw) {
+        this.lockedYaw = lockedYaw;
+    }
+
+    public float getLockedPitch() {
+        return this.lockedPitch;
+    }
+
+    public void setLockedPitch(float lockedPitch) {
+        this.lockedPitch = lockedPitch;
     }
 }

@@ -18,57 +18,57 @@ public class MeshBuilder {
     private MeshBuilder() {}
 
     // Standard Overloads for ResourceLocation
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(ResourceLocation location, MeshType type) {
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(ResourceLocation location, MeshTypes type) {
         return toAccessor(location.getNamespace(), location.getPath(), type);
     }
 
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String parsedLocation, MeshType type) {
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String parsedLocation, MeshTypes type) {
         ResourceLocation location = ResourceLocation.parse(parsedLocation);
         return toAccessor(location.getNamespace(), location.getPath(), type);
     }
 
-    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String modid, String path, MeshType type) {
+    public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String modid, String path, MeshTypes type) {
         return toAccessor(modid, path, type);
     }
 
     public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String modid, String path) {
-        return toAccessor(modid, path, MeshType.SKINNED_MESH);
+        return toAccessor(modid, path, MeshTypes.SKINNED);
     }
 
     public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(ResourceLocation location) {
-        return toAccessor(location.getNamespace(), location.getPath(), MeshType.SKINNED_MESH);
+        return toAccessor(location.getNamespace(), location.getPath(), MeshTypes.SKINNED);
     }
 
     public static <ME extends SkinnedMesh> Meshes.MeshAccessor<ME> newMesh(String parsedLocation) {
         ResourceLocation parsed = ResourceLocation.parse(parsedLocation);
-        return toAccessor(parsed.getNamespace(), parsed.getPath(), MeshType.SKINNED_MESH);
+        return toAccessor(parsed.getNamespace(), parsed.getPath(), MeshTypes.SKINNED);
     }
 
     @Internal
-    private static <ME extends Mesh> Meshes.MeshAccessor<ME> toAccessor(String modid, String path, MeshType type) {
+    private static <ME extends Mesh> Meshes.MeshAccessor<ME> toAccessor(String modid, String path, MeshTypes type) {
         return Meshes.MeshAccessor.create(modid, path, type::load);
     }
 
-    public enum MeshType {
+    public enum MeshTypes {
         // used for entities since it can contain weight data and more
-        SKINNED_MESH(loader -> loader.loadSkinnedMesh(SkinnedMesh::new)),
-        HUMANOID_MESH(loader -> loader.loadSkinnedMesh(HumanoidMesh::new)),
+        SKINNED(loader -> loader.loadSkinnedMesh(SkinnedMesh::new)),
+        HUMANOID(loader -> loader.loadSkinnedMesh(HumanoidMesh::new)),
         // used for cloth objects mostly?
-        COMPOSITE_MESH(JsonAssetLoader::loadCompositeMesh),
+        COMPOSITE(JsonAssetLoader::loadCompositeMesh),
         // mostly used for projectiles, such as the laser beam
-        CLASSIC_MESH(loader -> loader.loadClassicMesh(ClassicMesh::new)),
+        CLASSIC(loader -> loader.loadClassicMesh(ClassicMesh::new)),
         // used to read the mesh loaded inside the .json itself (it needs to contain "mesh_loader" provider!)
         JSON_LOADER(JsonAssetLoader::loadMesh);
 
         private Function<JsonAssetLoader, Mesh> factory;
 
-        MeshType(Function<JsonAssetLoader, Mesh> factory) {
+        MeshTypes(Function<JsonAssetLoader, Mesh> factory) {
             this.factory = factory;
         }
 
-        public static MeshType of(MeshContructor<SkinnedMeshPart, VertexBuilder, SkinnedMesh> meshContructor) {
-            SKINNED_MESH.factory = loader -> loader.loadSkinnedMesh(meshContructor);
-            return SKINNED_MESH;
+        public static MeshTypes of(MeshContructor<SkinnedMeshPart, VertexBuilder, SkinnedMesh> meshContructor) {
+            SKINNED.factory = loader -> loader.loadSkinnedMesh(meshContructor);
+            return SKINNED;
         }
 
 

@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.builders.epicfight.excap.deferred;
 
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import com.google.common.collect.Maps;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleType;
@@ -141,9 +141,9 @@ public class DeferredCapabilityBuilder {
             AnimationAccessor<? extends StaticAnimation> animation = (AnimationAccessor<? extends StaticAnimation>) pairs[i + 1];
             if (animation != null) {
                 this.addLivingMotion(motion, animation);
-                EpicAPI.debugIfDevSide("Registered animation pairs of: [{}, {}] for moveset ID: [{}]", motion.toString(), animation.registryName().toString(), this.currentMoveSetID.toString());
+                EpicAPIMod.debugIfDevSide("Registered animation pairs of: [{}, {}] for moveset ID: [{}]", motion.toString(), animation.registryName().toString(), this.currentMoveSetID.toString());
             } else {
-                EpicAPI.err("Animation for motion [{}] is not found for moveset: [{}]!, animation slot in pair: {}", motion.toString(), this.currentMoveSetID.toString(), i + 1);
+                EpicAPIMod.err("Animation for motion [{}] is not found for moveset: [{}]!, animation slot in pair: {}", motion.toString(), this.currentMoveSetID.toString(), i + 1);
             }
         }
         this.currentMotionsPair = pairs;
@@ -224,7 +224,7 @@ public class DeferredCapabilityBuilder {
                     if (animation != null) {
                         anims.add(animation);
                     } else {
-                        EpicAPI.err("Missing animation {} in {}", animId, rl);
+                        EpicAPIMod.err("Missing animation {} in {}", animId, rl);
                     }
                 }
 
@@ -257,7 +257,7 @@ public class DeferredCapabilityBuilder {
             if (animation != null) {
                 globalNormalCounters.put(category, animation);
             } else {
-                EpicAPI.err("Missing normal counter animation [{}] for category [{}] in file [{}]", animId, categoryStr, rl);
+                EpicAPIMod.err("Missing normal counter animation [{}] for category [{}] in file [{}]", animId, categoryStr, rl);
             }
         }
 
@@ -272,7 +272,7 @@ public class DeferredCapabilityBuilder {
                 if (animation != null) {
                     counters.add(animation);
                 } else {
-                    EpicAPI.err("Missing parry counter animation sequence index [{}] -> [{}] for category [{}] in file [{}]", i, animId, categoryStr, rl);
+                    EpicAPIMod.err("Missing parry counter animation sequence index [{}] -> [{}] for category [{}] in file [{}]", i, animId, categoryStr, rl);
                 }
             }
 
@@ -300,7 +300,7 @@ public class DeferredCapabilityBuilder {
             }
         }
 
-        EpicAPI.debugIfDevSide("Registered moveset: [{}], with combo: {}", this.currentMoveSetID, this.currentCombo);
+        EpicAPIMod.debugIfDevSide("Registered moveset: [{}], with combo: {}", this.currentMoveSetID, this.currentCombo);
         return this.moveSetBuilder;
     }
 
@@ -311,7 +311,7 @@ public class DeferredCapabilityBuilder {
                 this.currentInnate,
                 this.currentPassive,
         };
-        EpicAPI.debugIfDevSide("Registered preset with properties: {}", this.currentPresetProperties);
+        EpicAPIMod.debugIfDevSide("Registered preset with properties: {}", this.currentPresetProperties);
         return this.weaponCapabilityBuilder;
     }
 }

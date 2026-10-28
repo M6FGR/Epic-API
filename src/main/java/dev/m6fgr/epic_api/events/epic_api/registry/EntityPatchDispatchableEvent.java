@@ -8,7 +8,7 @@ import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.marks.HybridEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.world.entity.Entity;
 import yesman.epicfight.api.client.event.EpicFightClientEventHooks;
 import yesman.epicfight.api.client.event.types.registry.RegisterPatchedRenderersEvent;
@@ -34,7 +34,7 @@ public class EntityPatchDispatchableEvent extends DispatchableEvent implements I
     public EntityPatchDispatchableEvent post() {
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             if (this.entityPatchMap.keySet().isEmpty()) {
-                EpicAPI.debugIfDevSide("No entity patches were found in the map, skipping!");
+                EpicAPIMod.debugIfDevSide("No entity patches were found in the map, skipping!");
                 return;
             }
             // entity patches registry
@@ -45,7 +45,7 @@ public class EntityPatchDispatchableEvent extends DispatchableEvent implements I
         });
         EpicFightClientEventHooks.Registry.ADD_PATCHED_ENTITY.registerEvent(event -> {
             if (this.entityPatchMap.values().isEmpty()) {
-                EpicAPI.debugIfDevSide("No renderers found in map, skipping!");
+                EpicAPIMod.debugIfDevSide("No renderers found in map, skipping!");
                 return;
             }
             // Use the map to get the factory or just use the entry

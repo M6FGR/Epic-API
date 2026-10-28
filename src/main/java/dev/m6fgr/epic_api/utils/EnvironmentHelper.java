@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.utils;
 
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.User;
 import net.minecraft.client.server.IntegratedServer;
@@ -45,7 +45,7 @@ public class EnvironmentHelper {
     public static void setServerAndType(MinecraftServer server, ServerTypes type) {
         EnvironmentHelper.currentServer = server;
         EnvironmentHelper.serverType = type;
-        EpicAPI.debugIfDevSide("Set the server and it's type: {}, {}", type.is(ServerTypes.SINGLE_PLAYER) ? "SinglePlayerServer" : server.getClass().getSimpleName(), type.getDisplayName());
+        EpicAPIMod.debugIfDevSide("Set the server and it's type: {}, {}", type.is(ServerTypes.SINGLE_PLAYER) ? "SinglePlayerServer" : server.getClass().getSimpleName(), type.getDisplayName());
     }
 
     private static boolean isDevAndOfficialMC() {

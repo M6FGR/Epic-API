@@ -1,10 +1,14 @@
 package dev.m6fgr.epic_api.cls.loadable;
 
 import dev.m6fgr.epic_api.cls.loadable.enums.LoadableEnum;
+import dev.m6fgr.epic_api.cls.loadable.marks.Compatibility;
+import dev.m6fgr.epic_api.cls.loadable.marks.Invoke;
+import dev.m6fgr.epic_api.cls.maps.BasicHashMap;
 import dev.m6fgr.epic_api.cls.maps.BasicMap;
+import dev.m6fgr.epic_api.events.bus.ModBus;
+import dev.m6fgr.epic_api.events.bus.NeoBus;
 import dev.m6fgr.epic_api.exception.ClassLoadingException;
-import dev.m6fgr.epic_api.exception.DeveloperException;
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper.Environments;
 import net.neoforged.api.distmarker.Dist;
@@ -29,8 +33,8 @@ import java.util.stream.Collectors;
 
 public final class LoadableClassManager {
     private static final Logger LOGGER = LogManager.getLogger("LoadableClassManager");
-    private static final BasicMap<String, Class<? extends ILoadableClass>> LOADED_CLASSES = new BasicMap<>();
-    private static final BasicMap<String, Class<? extends ILoadableClass>> ERRORED_CLASSES = new BasicMap<>();
+    private static final BasicMap<String, Class<? extends ILoadableClass>> LOADED_CLASSES = new BasicHashMap<>();
+    private static final BasicMap<String, Class<? extends ILoadableClass>> ERRORED_CLASSES = new BasicHashMap<>();
 
     @SafeVarargs
     public static void loadClass(IEventBus bus, Class<? extends ILoadableClass>... loadableClasses) {
@@ -41,7 +45,7 @@ public final class LoadableClassManager {
             }
 
             if (loadableClass.isEnum()) {
-                LOGGER.warn("Class [{}] is an enum class!, use LoadableClassManager#loadEnumValues instead!", loadableClass.getSimpleName());
+                LOGGER.warn("Class [{}] is an enum class!, use LoadableClassManager#loadEnum instead!", loadableClass.getSimpleName());
             }
 
             if (LOADED_CLASSES.containsValue(loadableClass)) {
@@ -51,13 +55,48 @@ public final class LoadableClassManager {
             Map<Class<?>, Object> allowedConstructorArgs = Map.of(
                     Environments.class, EnvironmentHelper.getEnvironment(),
                     Dist.class, FMLLoader.getDist(),
-                    IEventBus.class, bus
+                    ModBus.class, bus,
+                    NeoBus.class, NeoBus.get()
             );
 
             try {
                 Compatibility compatibilityAnn = loadableClass.getAnnotation(Compatibility.class);
                 String simpleClassName = loadableClass.getSimpleName();
                 StringBuilder modDisplayNames = new StringBuilder();
+
+                if (compatibilityAnn != null) {
+                    if (compatibilityAnn.clientSide() && !EnvironmentHelper.getEnvironment().is(Environments.CLIENT)) {
+                        if (compatibilityAnn.debug()) {
+                            LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
+                        }
+                        // Mark as handled/loaded so checkUnloaded doesn't flag it
+                        LOADED_CLASSES.put(loadableClass.getSimpleName(), loadableClass);
+                        continue;
+                    }
+
+                    String[] requiredMods = compatibilityAnn.modid();
+                    boolean allModsLoaded = true;
+
+                    for (String modid : requiredMods) {
+                        if (!ModList.get().isLoaded(modid)) {
+                            allModsLoaded = false;
+                            if (compatibilityAnn.debug()) {
+                                LOGGER.info("Compatibility class [{}] skipped: Missing mod '{}'.", simpleClassName, modid);
+                            }
+                            break;
+                        }
+
+                        modDisplayNames.append(modDisplayNames.isEmpty() ? "" : ", ")
+                                .append(ModList.get().getModContainerById(modid)
+                                        .map(c -> c.getModInfo().getDisplayName())
+                                        .orElse(modid));
+                    }
+
+                    if (!allModsLoaded) {
+                        LOADED_CLASSES.put(loadableClass.getSimpleName(), loadableClass);
+                        continue;
+                    }
+                }
 
                 Constructor<?> selectedConstructor = null;
                 Object[] resolvedArgs = null;
@@ -103,35 +142,6 @@ public final class LoadableClassManager {
                 selectedConstructor.setAccessible(true);
                 ILoadableClass instance = (ILoadableClass) selectedConstructor.newInstance(resolvedArgs);
 
-                if (compatibilityAnn != null) {
-                    if (compatibilityAnn.clientSide() && !EnvironmentHelper.getEnvironment().is(Environments.CLIENT)) {
-                        if (compatibilityAnn.debug()) {
-                            LOGGER.debug("Skipping Client-Only Compatibility Class [{}]: On Dedicated Server.", simpleClassName);
-                        }
-                        continue;
-                    }
-
-                    String[] requiredMods = compatibilityAnn.modid();
-                    boolean allModsLoaded = true;
-
-                    for (String modid : requiredMods) {
-                        if (!ModList.get().isLoaded(modid)) {
-                            allModsLoaded = false;
-                            if (compatibilityAnn.debug()) {
-                                LOGGER.info("Compatibility class [{}] skipped: Missing mod '{}'.", simpleClassName, modid);
-                            }
-                            break;
-                        }
-
-                        modDisplayNames.append(modDisplayNames.isEmpty() ? "" : ", ")
-                                .append(ModList.get().getModContainerById(modid)
-                                        .map(c -> c.getModInfo().getDisplayName())
-                                        .orElse(modid));
-                    }
-
-                    if (!allModsLoaded) continue;
-                }
-
                 instance.onModConstruct(bus);
                 instance.onGameConstruct(NeoForge.EVENT_BUS);
 
@@ -142,8 +152,7 @@ public final class LoadableClassManager {
 
                 if (selectedConstructor.isAnnotationPresent(Invoke.class)) {
                     LOGGER.info("Constructed class [{}]", simpleClassName);
-                }
-                if (loadableClass.isAnnotationPresent(Compatibility.class)) {
+                } else if (compatibilityAnn != null) {
                     LOGGER.info("Loaded compatibility class [{}] for ({})", simpleClassName, modDisplayNames);
                 } else {
                     LOGGER.info("Loaded class: [{}]", simpleClassName);
@@ -152,13 +161,18 @@ public final class LoadableClassManager {
                 ERRORED_CLASSES.removeIfPresent(loadableClass.getSimpleName(), loadableClass);
                 LOADED_CLASSES.put(loadableClass.getSimpleName(), loadableClass);
             } catch (Exception e) {
-                EpicAPI.err("Failed to load class [{}], {}", loadableClass.getName(), e);
+                EpicAPIMod.err("Failed to load class [{}], {}", loadableClass.getName(), e);
                 ERRORED_CLASSES.put(loadableClass.getSimpleName(), loadableClass);
                 e.printStackTrace();
             }
         }
+    }
+
+    public static void runUnloadedCheck() {
         ModContainer container = ModLoadingContext.get().getActiveContainer();
-        LoadableClassManager.checkUnloaded(container.getModId());
+        if (container != null) {
+            checkUnloaded(container.getModId());
+        }
     }
 
     public static Class<? extends ILoadableClass> getLoadedClassByName(String clsName) {
@@ -169,14 +183,11 @@ public final class LoadableClassManager {
         return ERRORED_CLASSES.containsValue(loadableCls);
     }
 
-    // in case you forgot to load a class, this will help
     private static void checkUnloaded(String modId) {
-        // it gets the package from the mod-id, as so:
         IModFileInfo modFile = ModList.get().getModFileById(modId);
         if (modFile == null)
             return;
 
-        // then it gets the scan result from the file, and the class type of ILoadableClass
         ModFileScanData scanData = modFile.getFile().getScanResult();
         Type loadableClsType = Type.getType(ILoadableClass.class);
 
@@ -189,11 +200,53 @@ public final class LoadableClassManager {
                 .collect(Collectors.toSet());
 
         scanData.getClasses().stream()
-                // ONLY check classes that implement ILoadableClass
                 .filter(data -> data.interfaces().contains(loadableClsType))
                 .map(data -> data.clazz().getClassName())
                 .filter(className -> !loadedNames.contains(className) && !errorClassNames.contains(className))
-                .forEach(className -> DeveloperException.throwOrLog("Class [{}] is never loaded!", className));
+                .filter(className -> {
+                    try {
+                        Class<?> clazz = Class.forName(className, false, Thread.currentThread().getContextClassLoader());
+
+                        Compatibility compatibilityAnn = clazz.getAnnotation(Compatibility.class);
+                        if (compatibilityAnn != null) {
+                            if (compatibilityAnn.clientSide() && !EnvironmentHelper.getEnvironment().is(Environments.CLIENT)) {
+                                return false;
+                            }
+                            for (String modid : compatibilityAnn.modid()) {
+                                if (!ModList.get().isLoaded(modid)) {
+                                    return false;
+                                }
+                            }
+                        }
+
+                        if (ILoadableClass.class.isAssignableFrom(clazz)) {
+                            try {
+                                var constructor = clazz.getDeclaredConstructor();
+                                constructor.setAccessible(true);
+                                ILoadableClass instance = (ILoadableClass) constructor.newInstance();
+                                return !instance.ignoreNotLoadedWarning();
+                            } catch (NoSuchMethodException e) {
+                                var method = clazz.getMethod("ignoreNotLoadedWarning");
+                                method.setAccessible(true);
+                                if (Modifier.isStatic(method.getModifiers())) {
+                                    return !((Boolean) method.invoke(null));
+                                }
+                            }
+                        }
+                    } catch (Throwable t) {
+                        return false;
+                    }
+                    return true;
+                })
+                .forEach(className -> {
+                    if (!loadedNames.contains(className) && !errorClassNames.contains(className)) {
+                        if (EnvironmentHelper.getEnvironment().isDevEnv()) {
+                            throw new ClassLoadingException("Class [" + className + "] is never loaded!");
+                        } else {
+                            EpicAPIMod.err("Class [{}] is never loaded!, report this issue asap!", className);
+                        }
+                    }
+                });
     }
 
     public static boolean acceptsImplementation(Class<?> clazz) {
@@ -201,11 +254,23 @@ public final class LoadableClassManager {
     }
 
     public static void loadEnum(IEventBus modBus, LoadableEnum[] loadableEnumValues) {
-        Class<? extends ILoadableClass>[] loadableClasses = Arrays.stream(loadableEnumValues).map(LoadableEnum::getLoadableClass).<Class<? extends ILoadableClass>>toArray(Class[]::new);
-        loadClass(modBus, loadableClasses);
+        Class<? extends ILoadableClass>[] commonClasses = Arrays.stream(loadableEnumValues)
+                .filter(loadableEnum -> !loadableEnum.isClientOnly())
+                .map(LoadableEnum::getLoadableClass)
+                .<Class<? extends ILoadableClass>>toArray(Class[]::new);
+
+        loadClass(modBus, commonClasses);
+
         if (EnvironmentHelper.getEnvironment().isClient()) {
-            Class<? extends ILoadableClass>[] clientLoadableClasses = Arrays.stream(loadableEnumValues).filter(LoadableEnum::isClientOnly).map(LoadableEnum::getLoadableClass).<Class<? extends ILoadableClass>>toArray(Class[]::new);
-            loadClass(modBus, clientLoadableClasses);
+            Class<? extends ILoadableClass>[] clientClasses = Arrays.stream(loadableEnumValues)
+                    .filter(LoadableEnum::isClientOnly)
+                    .map(LoadableEnum::getLoadableClass)
+                    .<Class<? extends ILoadableClass>>toArray(Class[]::new);
+
+            loadClass(modBus, clientClasses);
         }
+
+        // Run the unloaded check ONCE after all loads (both common and client) have completed
+        runUnloadedCheck();
     }
 }

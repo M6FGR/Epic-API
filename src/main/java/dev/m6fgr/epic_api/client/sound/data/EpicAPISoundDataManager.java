@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
@@ -44,7 +44,7 @@ public class EpicAPISoundDataManager extends SimpleJsonResourceReloadListener im
 
                         ResourceLocation soundId = ResourceLocation.tryParse(key);
                         if (soundId == null) {
-                            EpicAPI.warn("Invalid sound entry key '{}' in file {}", key, location);
+                            EpicAPIMod.warn("Invalid sound entry key '{}' in file {}", key, location);
                             continue;
                         }
 
@@ -54,7 +54,7 @@ public class EpicAPISoundDataManager extends SimpleJsonResourceReloadListener im
                     this.parseAndRegister(location, root);
                 }
             } catch (Exception e) {
-                EpicAPI.err("Failed to load Sound API data file: {} ", location, e);
+                EpicAPIMod.err("Failed to load Sound API data file: {} ", location, e);
             }
         });
     }
@@ -63,17 +63,17 @@ public class EpicAPISoundDataManager extends SimpleJsonResourceReloadListener im
         AtomicInteger integer = new AtomicInteger();
         int sequence = integer.incrementAndGet();
         if (!soundEntry.has("sound_event")) {
-            EpicAPI.warn("Missing 'sound_event' field for sound entry '{}'", soundId);
+            EpicAPIMod.warn("Missing 'sound_event' field for sound entry '{}'", soundId);
             return;
         }
 
         ResourceLocation soundEvent = ResourceLocation.tryParse(soundEntry.get("sound_event").getAsString());
         if (soundEvent == null) {
-            EpicAPI.warn("Invalid 'sound_event' ResourceLocation in sound entry '{}'", soundId);
+            EpicAPIMod.warn("Invalid 'sound_event' ResourceLocation in sound entry '{}'", soundId);
             return;
         }
         if (!BuiltInRegistries.SOUND_EVENT.containsKey(soundEvent)) {
-            EpicAPI.warn("No sound {} in the sound entry {}", soundEvent, soundEntry);
+            EpicAPIMod.warn("No sound {} in the sound entry {}", soundEvent, soundEntry);
         }
 
         String category = soundEntry.has("category") ? soundEntry.get("category").getAsString() : "master";
@@ -93,7 +93,7 @@ public class EpicAPISoundDataManager extends SimpleJsonResourceReloadListener im
 
         SoundDataDefinition def = new SoundDataDefinition(soundEvent, soundId, category, volume, pitch, speed, fadeInSpeed, start, end);
         if (containsSoundName(soundId) || containsSoundID(sequence)) {
-            EpicAPI.err("a JSON with the name: {} already exists!", soundId);
+            EpicAPIMod.err("a JSON with the name: {} already exists!", soundId);
         }
         soundByLocation.put(soundId, def);
         soundByID.put(sequence, def);

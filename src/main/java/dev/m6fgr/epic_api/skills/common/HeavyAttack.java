@@ -79,9 +79,9 @@ public class HeavyAttack extends Skill {
         // Recovery timing
         this.attackRecovery = parameters.contains("attack_recovery") ? parameters.getInt("attack_recovery") : 16;
         // Attributes multipliers
-        this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5f;
-        this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0f;
-        this.armorNegation = parameters.contains("armor_negation") ? parameters.getFloat("armor_negation") : 15.0f;
+        this.damageMultiplier = parameters.contains("damage_multiplier") ? parameters.getFloat("damage_multiplier") : 0.5F;
+        this.impactMultiplier = parameters.contains("impact_multiplier") ? parameters.getFloat("impact_multiplier") : 1.0F;
+        this.armorNegation = parameters.contains("armor_negation") ? parameters.getFloat("armor_negation") : 15.0F;
     }
 
     @Override
@@ -129,10 +129,7 @@ public class HeavyAttack extends Skill {
             }
 
             if (attackMotion != null && this.checkConsumption(executor, dashAttack, airAttack)) {
-                // apply scaling to the animation before playing
-                if (attackMotion.get() instanceof AttackAnimation attackAnim) {
-                    this.applyWeaponScaling(attackAnim);
-                }
+                this.applyWeaponScaling(attackMotion.get());
 
                 setHeavyCounter(ModifyComboCounter.Causal.ANOTHER_ACTION_ANIMATION, executor, skillContainer, attackMotion, comboCounter);
                 // do Animator#playAnimationSynchronized() instead of Animator#play(), for safer animation play handling
@@ -184,8 +181,7 @@ public class HeavyAttack extends Skill {
         WeaponCategory currentCategory = itemCapability.getWeaponCategory();
         Style currentStyle = itemCapability.getStyle(playerpatch);
 
-        List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> dynamicCombo =
-                DeferredCapabilityBuilder.getHeavyCombo(currentCategory, currentStyle);
+        List<AnimationManager.AnimationAccessor<? extends AttackAnimation>> dynamicCombo = DeferredCapabilityBuilder.getHeavyCombo(currentCategory, currentStyle);
 
         if (dynamicCombo != null) return dynamicCombo;
 

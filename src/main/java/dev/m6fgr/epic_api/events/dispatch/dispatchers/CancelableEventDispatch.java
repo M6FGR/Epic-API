@@ -67,8 +67,8 @@ public class CancelableEventDispatch<T extends DispatchableEvent> extends EventD
     }
 
     @Override
-    public void removeEvent(EventDispatcher<T> listener) {
-        this.cancelableEntries.removeIf(entry -> entry.dispatcher().equals(listener));
+    public void removeEvent(EventDispatcher<T> dispatcher) {
+        this.cancelableEntries.removeIf(entry -> entry.dispatcher().equals(dispatcher));
     }
 
     public void clearEntries() {

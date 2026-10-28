@@ -2,8 +2,6 @@ package dev.m6fgr.epic_api.events.epic_api.skill;
 
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventBus;
-import dev.m6fgr.epic_api.events.dispatch.marks.HybridEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import yesman.epicfight.skill.guard.GuardSkill;
 import yesman.epicfight.skill.guard.GuardSkill.Builder;
@@ -15,7 +13,6 @@ import yesman.epicfight.world.capabilities.item.WeaponCategory;
 import java.util.function.BiFunction;
 
 
-@HybridEvent(EventBus.MOD)
 public abstract class AddGuardMotionsDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<AddGuardMotionsDispatchableEvent> {
 
     protected final GuardSkill.Builder builder;

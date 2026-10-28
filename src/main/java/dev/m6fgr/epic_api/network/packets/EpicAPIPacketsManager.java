@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.network.packets;
 
-import dev.m6fgr.epic_api.main.EpicAPI;
+import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.network.packets.client.CPEntityInteraction;
 import dev.m6fgr.epic_api.network.packets.client.CPFreezeEntity;
 import dev.m6fgr.epic_api.network.packets.server.SPGameRuleSync;
@@ -38,7 +38,7 @@ public class EpicAPIPacketsManager {
             BIDIRECTIONAL_PACKETS.add(customPacket);
             packetType = "bidirectional";
         }
-        EpicAPI.debugIfDevSide("Registered {} packet {}", packetType, packetName);
+        EpicAPIMod.debugIfDevSide("Registered {} packet {}", packetType, packetName);
     }
 
     static {

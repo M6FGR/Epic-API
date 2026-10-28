@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.events.dispatch.dispatchers;
 
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.entires.CancelableListenerEntry;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventDispatcher;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class CancelableEventDispatch<T extends DispatchableEvent> extends EventDispatch<T> {
+public class CancelableEventDispatch<T extends DispatchEvent> extends EventDispatch<T> {
 
     protected final EventSide side;
     protected T event;
@@ -31,11 +31,11 @@ public class CancelableEventDispatch<T extends DispatchableEvent> extends EventD
         this(EventSide.BOTH);
     }
 
-    public static <T extends DispatchableEvent> CancelableEventDispatch<T> createDispatchable() {
+    public static <T extends DispatchEvent> CancelableEventDispatch<T> createDispatchable() {
         return new CancelableEventDispatch<>();
     }
 
-    public static <T extends DispatchableEvent> CancelableEventDispatch<T> createDispatchable(EventSide side) {
+    public static <T extends DispatchEvent> CancelableEventDispatch<T> createDispatchable(EventSide side) {
         return new CancelableEventDispatch<>(side);
     }
 
@@ -92,7 +92,7 @@ public class CancelableEventDispatch<T extends DispatchableEvent> extends EventD
 
         boolean hasHybrid = CodeUtils.hasAnnotationSuper(eventClass, HybridEvent.class);
 
-        if (hasHybrid && CodeUtils.getSuperClass(eventClass) != DispatchableEvent.class) {
+        if (hasHybrid && CodeUtils.getSuperClass(eventClass) != DispatchEvent.class) {
             HybridEvent hybridEvent = eventClass.getAnnotation(HybridEvent.class);
             if (hybridEvent != null) {
                 switch (hybridEvent.value()) {

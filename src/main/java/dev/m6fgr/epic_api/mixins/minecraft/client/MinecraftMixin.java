@@ -1,10 +1,10 @@
 package dev.m6fgr.epic_api.mixins.minecraft.client;
 
-import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchableEvent;
-import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchableEvent.Post;
-import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchableEvent.Pre;
-import dev.m6fgr.epic_api.events.mc.client.ClientTickDispatchableEvent;
-import dev.m6fgr.epic_api.events.mc.client.WorldLoadDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchEvent;
+import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchEvent.Post;
+import dev.m6fgr.epic_api.events.mc.client.ClientInitializeDispatchEvent.Pre;
+import dev.m6fgr.epic_api.events.mc.client.ClientTickDispatchEvent;
+import dev.m6fgr.epic_api.events.mc.client.WorldLoadDispatchEvent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.main.GameConfig;
 import net.minecraft.server.WorldStem;
@@ -24,7 +24,7 @@ public abstract class MinecraftMixin {
     )
 
     public void injectCWDE(LevelStorageAccess levelStorage, PackRepository packRepository, WorldStem worldStem, boolean newWorld, CallbackInfo ci) {
-        WorldLoadDispatchableEvent.Initialize worldInitEventHook = new WorldLoadDispatchableEvent.Initialize(levelStorage, packRepository, worldStem, newWorld);
+        WorldLoadDispatchEvent.Initialize worldInitEventHook = new WorldLoadDispatchEvent.Initialize(levelStorage, packRepository, worldStem, newWorld);
         worldInitEventHook.post();
     }
 
@@ -35,7 +35,7 @@ public abstract class MinecraftMixin {
     )
 
     public void injectCIDEPre(GameConfig gameConfig, CallbackInfo ci) {
-        ClientInitializeDispatchableEvent.Pre clientInitDEPre = new Pre((Minecraft) (Object) this);
+        ClientInitializeDispatchEvent.Pre clientInitDEPre = new Pre((Minecraft) (Object) this);
         clientInitDEPre.post();
     }
 
@@ -46,7 +46,7 @@ public abstract class MinecraftMixin {
     )
 
     public void injectCIDEPost(GameConfig gameConfig, CallbackInfo ci) {
-        ClientInitializeDispatchableEvent.Post clientInitDEPost = new Post((Minecraft) (Object) this);
+        ClientInitializeDispatchEvent.Post clientInitDEPost = new Post((Minecraft) (Object) this);
         clientInitDEPost.post();
     }
 
@@ -57,7 +57,7 @@ public abstract class MinecraftMixin {
     )
 
     public void injectCTDE(CallbackInfo ci) {
-        ClientTickDispatchableEvent clientTickDE = new ClientTickDispatchableEvent((Minecraft) (Object) this);
+        ClientTickDispatchEvent clientTickDE = new ClientTickDispatchEvent((Minecraft) (Object) this);
         clientTickDE.post();
     }
 

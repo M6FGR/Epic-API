@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.mixins.minecraft.server;
 
-import dev.m6fgr.epic_api.events.mc.entity.EntitySummonDispatchableEvent;
-import dev.m6fgr.epic_api.events.mc.player.PlayerJoinDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.entity.EntitySummonDispatchEvent;
+import dev.m6fgr.epic_api.events.mc.player.PlayerJoinDispatchEvent;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -26,7 +26,7 @@ public class ServerLevelMixin {
     )
     public void injectSummonEventHook(Entity entity, CallbackInfoReturnable<Boolean> cir) {
         if (!this.server.isDedicatedServer()) return;
-        EntitySummonDispatchableEvent.Server serverSummonEH = new EntitySummonDispatchableEvent.Server(entity, (ServerLevel) (Object) this);
+        EntitySummonDispatchEvent.Server serverSummonEH = new EntitySummonDispatchEvent.Server(entity, (ServerLevel) (Object) this);
         serverSummonEH.post();
     }
 
@@ -37,7 +37,7 @@ public class ServerLevelMixin {
     )
     public void injectPlayerJoinEventHook(ServerPlayer player, CallbackInfo ci) {
         if (!this.server.isDedicatedServer()) return;
-        PlayerJoinDispatchableEvent.Server serverPlayerJoinEH = new PlayerJoinDispatchableEvent.Server(player, (ServerLevel) (Object) this);
+        PlayerJoinDispatchEvent.Server serverPlayerJoinEH = new PlayerJoinDispatchEvent.Server(player, (ServerLevel) (Object) this);
         serverPlayerJoinEH.post();
     }
 

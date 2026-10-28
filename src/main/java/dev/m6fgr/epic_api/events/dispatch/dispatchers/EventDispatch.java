@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.events.dispatch.dispatchers;
 
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.entires.ListenerEntry;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventDispatcher;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
@@ -16,7 +16,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
-public class EventDispatch<T extends DispatchableEvent> {
+public class EventDispatch<T extends DispatchEvent> {
 
     protected final EventSide side;
     protected T event;
@@ -31,11 +31,11 @@ public class EventDispatch<T extends DispatchableEvent> {
         this(EventSide.BOTH);
     }
 
-    public static <T extends DispatchableEvent> EventDispatch<T> createDispatchable() {
+    public static <T extends DispatchEvent> EventDispatch<T> createDispatchable() {
         return new EventDispatch<>();
     }
 
-    public static <T extends DispatchableEvent> EventDispatch<T> createDispatchable(EventSide side) {
+    public static <T extends DispatchEvent> EventDispatch<T> createDispatchable(EventSide side) {
         return new EventDispatch<>(side);
     }
 
@@ -82,7 +82,7 @@ public class EventDispatch<T extends DispatchableEvent> {
         Class<?> eventClass = dispatchableEvent.getClass();
 
         boolean hasHybrid = CodeUtils.hasAnnotationSuper(eventClass, HybridEvent.class);
-        if (hasHybrid && CodeUtils.getSuperClass(eventClass) != DispatchableEvent.class) {
+        if (hasHybrid && CodeUtils.getSuperClass(eventClass) != DispatchEvent.class) {
             HybridEvent hybridEvent = eventClass.getAnnotation(HybridEvent.class);
             if (hybridEvent != null) {
                 switch (hybridEvent.value()) {

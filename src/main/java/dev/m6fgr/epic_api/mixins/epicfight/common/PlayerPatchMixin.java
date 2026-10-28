@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.mixins.epicfight.common;
 
-import dev.m6fgr.epic_api.events.epic_api.player.AddPlayerMotionsDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.player.AddPlayerMotionsDispatchEvent;
 import dev.m6fgr.epic_api.gameassets.EpicAPISkills;
 import dev.m6fgr.epic_api.skills.EpicAPISkillSlots;
 import net.minecraft.world.entity.player.Player;
@@ -44,7 +44,7 @@ public abstract class PlayerPatchMixin<T extends Player> extends LivingEntityPat
     )
 
     public void injectAddMotionsEH(Animator animator, CallbackInfo ci) {
-        AddPlayerMotionsDispatchableEvent addPlayerMotionsEH = new AddPlayerMotionsDispatchableEvent(animator, (PlayerPatch<?>) (Object) this);
+        AddPlayerMotionsDispatchEvent addPlayerMotionsEH = new AddPlayerMotionsDispatchEvent(animator, (PlayerPatch<?>) (Object) this);
         addPlayerMotionsEH.post();
     }
 }

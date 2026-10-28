@@ -2,7 +2,7 @@ package dev.m6fgr.epic_api.skills.common;
 
 import dev.m6fgr.epic_api.animation.EpicAPIAnimationStates;
 import dev.m6fgr.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
-import dev.m6fgr.epic_api.events.epic_api.player.CounterAttackDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.player.CounterAttackDispatchEvent;
 import dev.m6fgr.epic_api.gameassets.EpicAPISkillDataKeys;
 import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
 import dev.m6fgr.epic_api.skills.EpicAPISkillCategories;
@@ -53,7 +53,7 @@ public class CounterAttack extends Skill {
 
         CapabilityItem mainHand = executor.getHoldingItemCapability(InteractionHand.MAIN_HAND);
 
-        CounterAttackDispatchableEvent counterAttackEvent = new CounterAttackDispatchableEvent(container);
+        CounterAttackDispatchEvent counterAttackEvent = new CounterAttackDispatchEvent(container);
         SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(executor, this, this.resource, null);
 
         boolean canParry = EpicFightSkills.PARRYING.get().isHoldingWeaponAvailable(executor, mainHand, GuardSkill.BlockType.ADVANCED_GUARD);

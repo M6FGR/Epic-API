@@ -5,11 +5,11 @@ import dev.m6fgr.epic_api.cls.loadable.enums.EpicAPILoadableEnums;
 import dev.m6fgr.epic_api.config.EpicAPIConfigs;
 import dev.m6fgr.epic_api.events.bus.ModBus;
 import dev.m6fgr.epic_api.events.bus.NeoBus;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.EventDispatch;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
-import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchEvent;
-import dev.m6fgr.epic_api.events.epic_api.registry.EntityPatchDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchingEvent;
+import dev.m6fgr.epic_api.events.epic_api.registry.EntityPatchDispatchEvent;
 import dev.m6fgr.epic_api.gameassets.EpicAPIGameRules;
 import dev.m6fgr.epic_api.input.EpicAPIIntputAction;
 import dev.m6fgr.epic_api.skills.EpicAPISkillCategories;
@@ -38,12 +38,12 @@ public final class EpicAPIMod implements EpicAPI {
     }
 
     private void modConstruct(FMLConstructModEvent event) {
-        EntityPatchDispatchableEvent entityPatchEH = new EntityPatchDispatchableEvent();
+        EntityPatchDispatchEvent entityPatchEH = new EntityPatchDispatchEvent();
         event.enqueueWork(entityPatchEH::post);
     }
 
     private void doEpicAPIStuff() {
-        DispatchEvent.postEvent();
+        DispatchingEvent.postEvent();
 
         this.modBus.addListener(this::modConstruct);
 
@@ -70,7 +70,7 @@ public final class EpicAPIMod implements EpicAPI {
         return this.modBus;
     }
 
-    public <T extends EventDispatch<? extends DispatchableEvent>> void debugEvent(T eventDispatch) {
+    public <T extends EventDispatch<? extends DispatchEvent>> void debugEvent(T eventDispatch) {
         eventDispatch.dispatchEvent(event -> {
             if (event.getPriority().is(EventPriority.MIDDLE)) {
                 debugIfDevSide("Hello from {}!", event.getEventClsName());

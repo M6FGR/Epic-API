@@ -29,7 +29,7 @@ import dev.m6fgr.epic_api.events.bus.ModBus;
 import dev.m6fgr.epic_api.events.bus.NeoBus;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
-import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchEvent;
+import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchingEvent;
 import dev.m6fgr.epic_api.events.mc.MinecraftDispatchableEvents;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper.Environments;
 import net.minecraft.commands.CommandSourceStack;
@@ -385,7 +385,7 @@ class EpicAPIExamples {
         // or if needed, and the event is hybrid (having the @HybridEvent annotation), you can use neo's event subscribers
         @SubscribeEvent
         // This event is empty, used to dispatch other events, posted in the mod's constructor
-        public static void onDispatch(DispatchEvent event) {
+        public static void onDispatch(DispatchingEvent event) {
             MinecraftDispatchableEvents.Client.CLIENT_START_PRE.dispatchEvent(joinEvent -> EpicAPIMod.debugIfDevSide("Hello from [{}] subscribed!", event.getEventClsName()));
         }
         // IF the event is not hybrid and used in a subscriber, it'd do nothing

@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.mixins.epicfight.common;
 
-import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchableEvent;
-import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchableEvent.Normal;
+import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchEvent;
+import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchEvent.Normal;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -21,7 +21,7 @@ public class GuardSkillMixin {
     )
 
     private static void injectEvent(Function<Builder, GuardSkill> constructor, CallbackInfoReturnable<Builder> cir) {
-        AddGuardMotionsDispatchableEvent.Normal normalEH = new Normal(cir.getReturnValue());
+        AddGuardMotionsDispatchEvent.Normal normalEH = new Normal(cir.getReturnValue());
         normalEH.post();
     }
 

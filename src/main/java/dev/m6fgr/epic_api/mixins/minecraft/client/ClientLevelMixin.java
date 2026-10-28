@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.mixins.minecraft.client;
 
-import dev.m6fgr.epic_api.events.mc.entity.EntitySummonDispatchableEvent;
-import dev.m6fgr.epic_api.events.mc.player.PlayerJoinDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.entity.EntitySummonDispatchEvent;
+import dev.m6fgr.epic_api.events.mc.player.PlayerJoinDispatchEvent;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -21,10 +21,10 @@ public abstract class ClientLevelMixin {
     public void injectJoinEventHook(Entity entity, CallbackInfo ci) {
         // we put it in an "if-else" block, so we avoid firing both events if the entity was an instance of a player
         if (entity instanceof Player player) {
-            PlayerJoinDispatchableEvent.Client playerJoinClientEH = new PlayerJoinDispatchableEvent.Client(player, (ClientLevel) (Object) this);
+            PlayerJoinDispatchEvent.Client playerJoinClientEH = new PlayerJoinDispatchEvent.Client(player, (ClientLevel) (Object) this);
             playerJoinClientEH.post();
         } else {
-            EntitySummonDispatchableEvent.Client entitySummonClientEH = new EntitySummonDispatchableEvent.Client(entity, (ClientLevel) (Object) this);
+            EntitySummonDispatchEvent.Client entitySummonClientEH = new EntitySummonDispatchEvent.Client(entity, (ClientLevel) (Object) this);
             entitySummonClientEH.post();
         }
     }

@@ -1,26 +1,26 @@
 package dev.m6fgr.epic_api.events.mc.entity;
 
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.mc.MinecraftDispatchableEvents;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 
-public abstract class EntitySummonDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<EntitySummonDispatchableEvent> {
+public abstract class EntitySummonDispatchEvent extends DispatchEvent implements IDispatchableEvent<EntitySummonDispatchEvent> {
 
     private final Entity entity;
     private final Level level;
     private final boolean fromDisk;
 
-    public EntitySummonDispatchableEvent(Entity entity, Level level, boolean isFromDisk) {
+    public EntitySummonDispatchEvent(Entity entity, Level level, boolean isFromDisk) {
         this.entity = entity;
         this.level = level;
         this.fromDisk = isFromDisk;
     }
 
-    public EntitySummonDispatchableEvent(Entity entity, Level level) {
+    public EntitySummonDispatchEvent(Entity entity, Level level) {
         this(entity, level, false);
     }
 
@@ -37,7 +37,7 @@ public abstract class EntitySummonDispatchableEvent extends DispatchableEvent im
     }
 
 
-    public static class Server extends EntitySummonDispatchableEvent {
+    public static class Server extends EntitySummonDispatchEvent {
         public Server(Entity entity, ServerLevel level) {
             super(entity, level);
         }
@@ -48,7 +48,7 @@ public abstract class EntitySummonDispatchableEvent extends DispatchableEvent im
         }
     }
 
-    public static class Client extends EntitySummonDispatchableEvent {
+    public static class Client extends EntitySummonDispatchEvent {
         public Client(Entity entity, ClientLevel level) {
             super(entity, level);
         }

@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.events.dispatch.marks;
 
-import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventBus;
+import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventBusType;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface HybridEvent {
-     EventBus value() default EventBus.BOTH;
+     EventBusType value() default EventBusType.BOTH;
 }

@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.animation.client.camera;
 
 import dev.m6fgr.epic_api.animation.client.CameraAnimatorAPI;
-import dev.m6fgr.epic_api.events.epic_api.registry.CameraAnimationRegistryDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.registry.CameraAnimationRegistryDispatchEvent;
 import dev.m6fgr.epic_api.main.EpicAPI;
 import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.minecraft.resources.ResourceLocation;
@@ -45,7 +45,7 @@ public final class ExampleCameraAnimation {
 
 
     @SubscribeEvent
-    public static void registerExampleCamAnim(CameraAnimationRegistryDispatchableEvent event){
+    public static void registerExampleCamAnim(CameraAnimationRegistryDispatchEvent event){
         // you can register the animation in these 3 ways:
         // First, is the array registry
         event.register(TEST2, TEST);

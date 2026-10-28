@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.mixins.epicfight.common;
 
-import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchableEvent;
-import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchableEvent.Parry;
+import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchEvent;
+import dev.m6fgr.epic_api.events.epic_api.skill.AddGuardMotionsDispatchEvent.Parry;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -20,7 +20,7 @@ public class ParrySkillMixin {
     )
 
     private static void injectEvent(CallbackInfoReturnable<Builder> cir) {
-        AddGuardMotionsDispatchableEvent.Parry parryEH = new Parry(cir.getReturnValue());
+        AddGuardMotionsDispatchEvent.Parry parryEH = new Parry(cir.getReturnValue());
         parryEH.post();
     }
 

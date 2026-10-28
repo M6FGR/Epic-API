@@ -1,16 +1,16 @@
 package dev.m6fgr.epic_api.events.epic_api.player;
 
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.dispatch.marks.HybridEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import yesman.epicfight.skill.SkillContainer;
 
 @HybridEvent
-public class CounterAttackDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<CounterAttackDispatchableEvent> {
+public class CounterAttackDispatchEvent extends DispatchEvent implements IDispatchableEvent<CounterAttackDispatchEvent> {
     private final SkillContainer skillContainer;
 
-    public CounterAttackDispatchableEvent(SkillContainer skillContainer) {
+    public CounterAttackDispatchEvent(SkillContainer skillContainer) {
         this.skillContainer = skillContainer;
     }
 
@@ -20,7 +20,7 @@ public class CounterAttackDispatchableEvent extends DispatchableEvent implements
 
 
     @Override
-    public CounterAttackDispatchableEvent post() {
+    public CounterAttackDispatchEvent post() {
        return EpicAPIDispatchableEvents.Player.COUNTER_ATTACK.postEvent(this);
     }
 }

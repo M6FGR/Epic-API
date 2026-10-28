@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.skills.common;
 
 import dev.m6fgr.epic_api.builders.epicfight.excap.deferred.DeferredCapabilityBuilder;
-import dev.m6fgr.epic_api.events.epic_api.player.HeavyAttackDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.player.HeavyAttackDispatchEvent;
 import dev.m6fgr.epic_api.exception.DeveloperException;
 import dev.m6fgr.epic_api.gameassets.EpicAPISkillDataKeys;
 import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
@@ -88,7 +88,7 @@ public class HeavyAttack extends Skill {
     public void executeOnServer(SkillContainer skillContainer, CompoundTag args) {
         ServerPlayerPatch executor = skillContainer.getServerExecutor();
         SkillConsumeEvent skillConsumeEvent = new SkillConsumeEvent(executor, this, this.resource, null);
-        HeavyAttackDispatchableEvent heavyAttackEvent = new HeavyAttackDispatchableEvent(skillContainer);
+        HeavyAttackDispatchEvent heavyAttackEvent = new HeavyAttackDispatchEvent(skillContainer);
 
         if (!executor.getEntityState().canBasicAttack()) {
             return;

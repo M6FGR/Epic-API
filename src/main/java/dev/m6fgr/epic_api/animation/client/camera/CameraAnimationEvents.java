@@ -2,7 +2,7 @@ package dev.m6fgr.epic_api.animation.client.camera;
 
 import dev.m6fgr.epic_api.animation.client.CameraAnimatorAPI;
 import dev.m6fgr.epic_api.animation.client.CameraAnimatorAPI.CameraFOVHelper;
-import dev.m6fgr.epic_api.events.epic_api.registry.CameraAnimationRegistryDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.registry.CameraAnimationRegistryDispatchEvent;
 import dev.m6fgr.epic_api.main.EpicAPIMod;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -49,7 +49,7 @@ public class CameraAnimationEvents {
         });
 
         evt.enqueueWork(() -> {
-            new CameraAnimationRegistryDispatchableEvent().post();
+            new CameraAnimationRegistryDispatchEvent().post();
         });
 
     }

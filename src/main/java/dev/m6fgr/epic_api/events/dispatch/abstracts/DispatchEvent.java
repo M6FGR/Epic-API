@@ -7,12 +7,12 @@ import org.jetbrains.annotations.ApiStatus.Internal;
 
 import java.lang.reflect.Modifier;
 
-public abstract class DispatchableEvent extends Event implements IModBusEvent {
+public abstract class DispatchEvent extends Event implements IModBusEvent {
 
     protected boolean canceled;
     protected EventPriority currentPriority;
 
-    protected DispatchableEvent() {
+    protected DispatchEvent() {
         super();
     }
 
@@ -41,7 +41,7 @@ public abstract class DispatchableEvent extends Event implements IModBusEvent {
         Class<?> cls = this.getClass();
         Class<?> superclass = cls.getSuperclass();
 
-        if (superclass != null && superclass != Object.class && superclass != DispatchableEvent.class && Modifier.isAbstract(superclass.getModifiers())) {
+        if (superclass != null && superclass != Object.class && superclass != DispatchEvent.class && Modifier.isAbstract(superclass.getModifiers())) {
             return superclass.getSimpleName() + "#" + cls.getSimpleName();
         }
 

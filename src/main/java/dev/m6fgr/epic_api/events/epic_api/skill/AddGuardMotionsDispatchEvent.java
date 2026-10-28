@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.events.epic_api.skill;
 
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import yesman.epicfight.skill.guard.GuardSkill;
 import yesman.epicfight.skill.guard.GuardSkill.Builder;
@@ -13,11 +13,11 @@ import yesman.epicfight.world.capabilities.item.WeaponCategory;
 import java.util.function.BiFunction;
 
 
-public abstract class AddGuardMotionsDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<AddGuardMotionsDispatchableEvent> {
+public abstract class AddGuardMotionsDispatchEvent extends DispatchEvent implements IDispatchableEvent<AddGuardMotionsDispatchEvent> {
 
     protected final GuardSkill.Builder builder;
 
-    public AddGuardMotionsDispatchableEvent(GuardSkill.Builder builder) {
+    public AddGuardMotionsDispatchEvent(GuardSkill.Builder builder) {
         this.builder = builder;
     }
 
@@ -25,10 +25,10 @@ public abstract class AddGuardMotionsDispatchableEvent extends DispatchableEvent
         return this.builder;
     }
 
-    public abstract AddGuardMotionsDispatchableEvent post();
+    public abstract AddGuardMotionsDispatchEvent post();
 
 
-    public static class Normal extends AddGuardMotionsDispatchableEvent {
+    public static class Normal extends AddGuardMotionsDispatchEvent {
 
         public Normal(Builder builder) {
             super(builder);
@@ -44,13 +44,13 @@ public abstract class AddGuardMotionsDispatchableEvent extends DispatchableEvent
         }
 
         @Override
-        public AddGuardMotionsDispatchableEvent.Normal post() {
+        public AddGuardMotionsDispatchEvent.Normal post() {
             return EpicAPIDispatchableEvents.Skill.ADD_NORMAL_GUARD_MOTIONS.postEvent(this);
         }
     }
 
 
-    public static class Parry extends AddGuardMotionsDispatchableEvent {
+    public static class Parry extends AddGuardMotionsDispatchEvent {
 
         public Parry(ParryingSkill.Builder builder) {
             super(builder);
@@ -62,7 +62,7 @@ public abstract class AddGuardMotionsDispatchableEvent extends DispatchableEvent
         }
 
         @Override
-        public AddGuardMotionsDispatchableEvent.Parry post() {
+        public AddGuardMotionsDispatchEvent.Parry post() {
             return EpicAPIDispatchableEvents.Skill.ADD_PARRY_GUARD_MOTIONS.postEvent(this);
         }
     }

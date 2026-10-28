@@ -3,7 +3,7 @@ package dev.m6fgr.epic_api.client.gui;
 import dev.m6fgr.epic_api.client.gui.data.DialogueData;
 import dev.m6fgr.epic_api.client.gui.data.OptionStyle;
 import dev.m6fgr.epic_api.client.gui.screens.InteractionMiniScreen;
-import dev.m6fgr.epic_api.events.epic_api.entity.EntityInteractDispatchableEvent;
+import dev.m6fgr.epic_api.events.epic_api.entity.EntityInteractDispatchEvent;
 import dev.m6fgr.epic_api.network.EpicAPINetworkManager;
 import dev.m6fgr.epic_api.network.packets.client.CPFreezeEntity;
 import dev.m6fgr.epic_api.utils.code.MathUtil;
@@ -81,7 +81,7 @@ public final class InteractionAPI {
         this.clearPendingColorBuffers();
         this.pendingDialogueBuilder = DialogueData.builder(interactedEntity.getDisplayName(), "...");
 
-        EntityInteractDispatchableEvent entityInteractDE = new EntityInteractDispatchableEvent(interacter, interactedEntity, this);
+        EntityInteractDispatchEvent entityInteractDE = new EntityInteractDispatchEvent(interacter, interactedEntity, this);
         entityInteractDE.post();
 
         if (entityInteractDE.isCanceled()) {
@@ -137,7 +137,7 @@ public final class InteractionAPI {
             this.pendingDialogueBuilder.addOption(opt.label(), opt.interactionType(), opt.clientCallback());
         }
 
-        EntityInteractDispatchableEvent entityInteractDE = new EntityInteractDispatchableEvent(interacter, interactedEntity, this);
+        EntityInteractDispatchEvent entityInteractDE = new EntityInteractDispatchEvent(interacter, interactedEntity, this);
         entityInteractDE.post();
 
         if (entityInteractDE.isCanceled()) {

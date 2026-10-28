@@ -5,7 +5,7 @@ import dev.m6fgr.epic_api.builders.epicfight.EntityPatchBuilder;
 import dev.m6fgr.epic_api.builders.epicfight.EntityPatchBuilder.FullPatchEntry;
 import dev.m6fgr.epic_api.builders.epicfight.EntityPatchBuilder.PRendererConstructor;
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.dispatch.marks.HybridEvent;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import dev.m6fgr.epic_api.main.EpicAPIMod;
@@ -21,7 +21,7 @@ import java.util.function.Function;
 
 
 @HybridEvent
-public class EntityPatchDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<EntityPatchDispatchableEvent> {
+public class EntityPatchDispatchEvent extends DispatchEvent implements IDispatchableEvent<EntityPatchDispatchEvent> {
     private final Map<FullPatchEntry<?>, PRendererConstructor> entityPatchMap = Maps.newHashMap();
 
     public void registerFrom(EntityPatchBuilder registrar) {
@@ -31,7 +31,7 @@ public class EntityPatchDispatchableEvent extends DispatchableEvent implements I
     }
 
     @Override
-    public EntityPatchDispatchableEvent post() {
+    public EntityPatchDispatchEvent post() {
         EpicFightEventHooks.Registry.ENTITY_PATCH.registerEvent(event -> {
             if (this.entityPatchMap.keySet().isEmpty()) {
                 EpicAPIMod.debugIfDevSide("No entity patches were found in the map, skipping!");

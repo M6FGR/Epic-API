@@ -1,15 +1,15 @@
 package dev.m6fgr.epic_api.events.mc.server;
 
 import dev.m6fgr.epic_api.events.dispatch.IDispatchableEvent;
-import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
+import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchEvent;
 import dev.m6fgr.epic_api.events.mc.MinecraftDispatchableEvents;
 import net.minecraft.server.MinecraftServer;
 
-public abstract class ServerInitializeDispatchableEvent extends DispatchableEvent implements IDispatchableEvent<ServerInitializeDispatchableEvent> {
+public abstract class ServerInitializeDispatchEvent extends DispatchEvent implements IDispatchableEvent<ServerInitializeDispatchEvent> {
 
     protected final MinecraftServer server;
 
-    public ServerInitializeDispatchableEvent(MinecraftServer server) {
+    public ServerInitializeDispatchEvent(MinecraftServer server) {
         this.server = server;
     }
 
@@ -18,9 +18,9 @@ public abstract class ServerInitializeDispatchableEvent extends DispatchableEven
     }
 
 
-    public abstract ServerInitializeDispatchableEvent post();
+    public abstract ServerInitializeDispatchEvent post();
 
-    public static class Pre extends ServerInitializeDispatchableEvent {
+    public static class Pre extends ServerInitializeDispatchEvent {
         public Pre(MinecraftServer server) {
             super(server);
         }
@@ -31,7 +31,7 @@ public abstract class ServerInitializeDispatchableEvent extends DispatchableEven
         }
     }
 
-    public static class Post extends ServerInitializeDispatchableEvent {
+    public static class Post extends ServerInitializeDispatchEvent {
         public Post(MinecraftServer server) {
             super(server);
         }

@@ -1,7 +1,7 @@
 package dev.m6fgr.epic_api.mixins.neoforge.server;
 
-import dev.m6fgr.epic_api.events.mc.server.ServerInitializeDispatchableEvent;
-import dev.m6fgr.epic_api.events.mc.server.ServerStopDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.server.ServerInitializeDispatchEvent;
+import dev.m6fgr.epic_api.events.mc.server.ServerStopDispatchEvent;
 import net.minecraft.server.MinecraftServer;
 import net.neoforged.neoforge.server.ServerLifecycleHooks;
 import org.spongepowered.asm.mixin.Mixin;
@@ -18,7 +18,7 @@ public class ServerLifecycleHooksMixin {
             remap = false
     )
     private static void injectEventHookPre(MinecraftServer server, CallbackInfo ci) {
-        ServerInitializeDispatchableEvent.Pre serverInitPre = new ServerInitializeDispatchableEvent.Pre(server);
+        ServerInitializeDispatchEvent.Pre serverInitPre = new ServerInitializeDispatchEvent.Pre(server);
         serverInitPre.post();
     }
     @Inject(
@@ -27,7 +27,7 @@ public class ServerLifecycleHooksMixin {
             remap = false
     )
     private static void injectEventHookPost(MinecraftServer server, CallbackInfo ci) {
-        ServerInitializeDispatchableEvent.Post serverInitPost = new ServerInitializeDispatchableEvent.Post(server);
+        ServerInitializeDispatchEvent.Post serverInitPost = new ServerInitializeDispatchEvent.Post(server);
         serverInitPost.post();
     }
 
@@ -37,7 +37,7 @@ public class ServerLifecycleHooksMixin {
             remap = false
     )
     private static void injectEventHookStop(MinecraftServer server, CallbackInfo callbackInfo) {
-        ServerStopDispatchableEvent stopEvent = new ServerStopDispatchableEvent(server);
+        ServerStopDispatchEvent stopEvent = new ServerStopDispatchEvent(server);
         stopEvent.post();
     }
 

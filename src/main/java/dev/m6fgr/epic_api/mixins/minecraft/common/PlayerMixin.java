@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.mixins.minecraft.common;
 
-import dev.m6fgr.epic_api.events.mc.player.PlayerTickDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.player.PlayerTickDispatchEvent;
 import net.minecraft.world.entity.player.Player;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,7 +15,7 @@ public abstract class PlayerMixin {
             remap = false
     )
     private void injectEventHookPre(CallbackInfo ci) {
-        PlayerTickDispatchableEvent.Pre tickPre = new PlayerTickDispatchableEvent.Pre((Player) (Object) this);
+        PlayerTickDispatchEvent.Pre tickPre = new PlayerTickDispatchEvent.Pre((Player) (Object) this);
         tickPre.post();
     }
 
@@ -26,7 +26,7 @@ public abstract class PlayerMixin {
     )
 
     private void injectEventHookPost(CallbackInfo ci) {
-        PlayerTickDispatchableEvent.Post tickPostEH = new PlayerTickDispatchableEvent.Post((Player) (Object) this);
+        PlayerTickDispatchEvent.Post tickPostEH = new PlayerTickDispatchEvent.Post((Player) (Object) this);
         tickPostEH.post();
     }
 }

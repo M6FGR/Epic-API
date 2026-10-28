@@ -1,6 +1,6 @@
 package dev.m6fgr.epic_api.mixins.minecraft.client;
 
-import dev.m6fgr.epic_api.events.mc.client.WorldLoadDispatchableEvent;
+import dev.m6fgr.epic_api.events.mc.client.WorldLoadDispatchEvent;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.WorldOpenFlows;
@@ -28,7 +28,7 @@ public abstract class WorldOpenFlowsMixin {
     )
 
     public void injectEventHookJoin(LevelStorageAccess levelStorage, WorldStem worldStem, PackRepository packRepository, CallbackInfo ci) {
-        WorldLoadDispatchableEvent.Join worldJoinEventHook = new WorldLoadDispatchableEvent.Join(levelStorage, packRepository, worldStem);
+        WorldLoadDispatchEvent.Join worldJoinEventHook = new WorldLoadDispatchEvent.Join(levelStorage, packRepository, worldStem);
         worldJoinEventHook.post();
     }
 
@@ -48,7 +48,7 @@ public abstract class WorldOpenFlowsMixin {
             @Local PackRepository packrepository,
             @Local WorldStem worldstem
     ) {
-        WorldLoadDispatchableEvent.Create worldCreateEventHook = new WorldLoadDispatchableEvent.Create(levelstoragesource$levelstorageaccess, packrepository, worldstem);
+        WorldLoadDispatchEvent.Create worldCreateEventHook = new WorldLoadDispatchEvent.Create(levelstoragesource$levelstorageaccess, packrepository, worldstem);
         worldCreateEventHook.post();
     }
 }

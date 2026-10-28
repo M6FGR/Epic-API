@@ -3,6 +3,8 @@ package dev.m6fgr.epic_api.main;
 import dev.m6fgr.epic_api.cls.loadable.LoadableClassManager;
 import dev.m6fgr.epic_api.cls.loadable.enums.EpicAPILoadableEnums;
 import dev.m6fgr.epic_api.config.EpicAPIConfigs;
+import dev.m6fgr.epic_api.events.bus.ModBus;
+import dev.m6fgr.epic_api.events.bus.NeoBus;
 import dev.m6fgr.epic_api.events.dispatch.abstracts.DispatchableEvent;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.EventDispatch;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
@@ -25,12 +27,12 @@ import yesman.epicfight.skill.SkillSlot;
 @Mod(EpicAPI.MOD_ID)
 public final class EpicAPIMod implements EpicAPI {
     private final ModContainer container;
-    private final IEventBus modBus;
+    private final ModBus modBus;
     static EpicAPIMod instance;
 
     public EpicAPIMod(IEventBus modBus, ModContainer container) {
         instance = this;
-        this.modBus = modBus;
+        this.modBus = ModBus.from(modBus);
         this.container = container;
         this.doEpicAPIStuff();
     }
@@ -64,7 +66,7 @@ public final class EpicAPIMod implements EpicAPI {
         return this.container;
     }
 
-    public IEventBus getModBus() {
+    public ModBus getModBus() {
         return this.modBus;
     }
 
@@ -80,6 +82,11 @@ public final class EpicAPIMod implements EpicAPI {
 
     public ResourceLocation identifier(String path) {
         return ResourceLocation.fromNamespaceAndPath(EpicAPI.MOD_ID, path);
+    }
+
+    @Override
+    public NeoBus getNeoBus() {
+        return NeoBus.get();
     }
 
     // Logger helpers

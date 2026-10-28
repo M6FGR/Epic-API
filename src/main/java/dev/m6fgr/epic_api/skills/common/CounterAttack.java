@@ -85,13 +85,17 @@ public class CounterAttack extends Skill {
             if (parryList != null && !parryList.isEmpty()) {
                 SkillDataManager dataManager = container.getDataManager();
                 int motionCounter = dataManager.getDataValue(EpicAPISkillDataKeys.MOTION_COUNTER);
-                dataManager.setDataF(EpicAPISkillDataKeys.MOTION_COUNTER, (v) -> v + 1);
+                dataManager.setDataF(EpicAPISkillDataKeys.MOTION_COUNTER, this::increment);
 
                 return parryList.get(Math.abs(motionCounter) % parryList.size());
             }
         }
 
         return DeferredCapabilityBuilder.getNormalCounterAttack(category);
+    }
+
+    private int increment(int original) {
+        return original + 1;
     }
 
     @Override

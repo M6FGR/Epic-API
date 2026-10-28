@@ -39,7 +39,7 @@ public class EpicAPISkillDataKeys implements ILoadableClass {
     }
 
     @SafeVarargs
-    private static <T> DeferredHolder<SkillDataKey<?>, SkillDataKey<T>> register(String name, StreamCodec<? super RegistryFriendlyByteBuf, T> packetCodec, T defaultValue, boolean syncronizeTrackingPlayers, Class<? extends Skill>... skillClass) {
-        return SKILL_DATA_KEYS.register(name, () -> SkillDataKey.createSkillDataKey(packetCodec, defaultValue, syncronizeTrackingPlayers, skillClass));
+    private static <T> DeferredHolder<SkillDataKey<?>, SkillDataKey<T>> register(String name, StreamCodec<? super RegistryFriendlyByteBuf, T> packetCodec, T defaultValue, boolean synchronizeTrackingPlayers, Class<? extends Skill>... skillClass) {
+        return SKILL_DATA_KEYS.register(name, () -> SkillDataKey.createSkillDataKey(packetCodec, defaultValue, synchronizeTrackingPlayers, skillClass));
     }
 }

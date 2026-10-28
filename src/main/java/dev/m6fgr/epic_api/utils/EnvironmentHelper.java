@@ -123,12 +123,12 @@ public class EnvironmentHelper {
     }
 
     public enum Environments {
-        CLIENT(EnvironmentHelper::isDevelopmentEnvironment),
-        IDE(EnvironmentHelper::isDevelopmentEnvironment, CLIENT),
-        DEDICATED_SERVER(EnvironmentHelper::isDevelopmentEnvironment),
-        COMMON(EnvironmentHelper::isDevelopmentEnvironment),
-        LAN_SERVER(EnvironmentHelper::isDevelopmentEnvironment, CLIENT),
-        GAME_TEST_SERVER(EnvironmentHelper::isDevelopmentEnvironment);
+        CLIENT,
+        IDE(CLIENT),
+        DEDICATED_SERVER,
+        COMMON,
+        LAN_SERVER(CLIENT),
+        GAME_TEST_SERVER;
 
         private final boolean isDeveloper;
         private final @Nullable Environments parent;
@@ -138,17 +138,14 @@ public class EnvironmentHelper {
             this.parent = parent;
         }
 
-        Environments(BooleanSupplier developer) {
-            this(developer, null);
+        Environments(@Nullable Environments parent) {
+            this(EnvironmentHelper::isDevelopmentEnvironment, parent);
         }
 
-        Environments(boolean developer) {
-            this(() -> developer, null);
+        Environments() {
+            this(null);
         }
 
-        Environments(boolean developer, @Nullable Environments parent) {
-            this(() -> developer, parent);
-        }
 
         public boolean isDevEnv() {
             return this.isDeveloper;
@@ -159,7 +156,7 @@ public class EnvironmentHelper {
         }
 
         public boolean isServer() {
-            return this.is(Environments.DEDICATED_SERVER, Environments.GAME_TEST_SERVER);
+            return !this.isClient();
         }
 
         @Nullable

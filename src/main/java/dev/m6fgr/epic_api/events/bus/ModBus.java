@@ -36,6 +36,10 @@ public class ModBus implements IEventBus {
         return new ModBus(ModLoadingContext.get().getActiveContainer().getEventBus());
     }
 
+    public static ModBus from(IEventBus eventBus) {
+        return new ModBus(eventBus);
+    }
+
     public IEventBus getOriginalBus() {
         return this.originalBus;
     }

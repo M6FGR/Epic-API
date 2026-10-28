@@ -11,12 +11,10 @@ import dev.m6fgr.epic_api.exception.ClassLoadingException;
 import dev.m6fgr.epic_api.main.EpicAPIMod;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper;
 import dev.m6fgr.epic_api.utils.EnvironmentHelper.Environments;
-import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.ModLoadingContext;
-import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforgespi.language.IModFileInfo;
 import net.neoforged.neoforgespi.language.ModFileScanData;
@@ -54,7 +52,6 @@ public final class LoadableClassManager {
 
             Map<Class<?>, Object> allowedConstructorArgs = Map.of(
                     Environments.class, EnvironmentHelper.getEnvironment(),
-                    Dist.class, FMLLoader.getDist(),
                     ModBus.class, bus,
                     NeoBus.class, NeoBus.get()
             );

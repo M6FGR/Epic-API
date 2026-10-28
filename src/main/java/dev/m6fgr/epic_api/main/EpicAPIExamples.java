@@ -23,11 +23,15 @@ import dev.m6fgr.epic_api.builders.minecraft.ItemsBuilder;
 import dev.m6fgr.epic_api.cls.loadable.ILoadableClass;
 import dev.m6fgr.epic_api.cls.loadable.enums.LoadableEnum;
 import dev.m6fgr.epic_api.cls.loadable.marks.Compatibility;
+import dev.m6fgr.epic_api.cls.loadable.marks.Invoke;
 import dev.m6fgr.epic_api.compat.plugin.CompatibilityPlugin;
+import dev.m6fgr.epic_api.events.bus.ModBus;
+import dev.m6fgr.epic_api.events.bus.NeoBus;
 import dev.m6fgr.epic_api.events.dispatch.dispatchers.extras.EventPriority;
 import dev.m6fgr.epic_api.events.epic_api.EpicAPIDispatchableEvents;
 import dev.m6fgr.epic_api.events.epic_api.dispatch.DispatchEvent;
 import dev.m6fgr.epic_api.events.mc.MinecraftDispatchableEvents;
+import dev.m6fgr.epic_api.utils.EnvironmentHelper.Environments;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.server.level.ServerPlayer;
@@ -348,6 +352,7 @@ class EpicAPIExamples {
                 .addParryingAnimations(Animations.LONGSWORD_GUARD_ACTIVE_HIT1, Animations.LONGSWORD_GUARD_ACTIVE_HIT2)
                 .addCounterAttack(Animations.SWEEPING_EDGE)
                 // these will play in order from first to last
+                // only if the weapon can parry!
                 .addParryCounterAttacks(Animations.DANCING_EDGE, Animations.STEEL_WHIRLWIND);
         // if you want another style, you can call newMoveSet() again, or for cleaner code, you can build another capability the same way
 
@@ -437,10 +442,21 @@ class EpicAPIExamples {
             ILoadableClass.super.onGameClientConstruct(neoBus);
         }
 
+        // Ignores the log/exception if this class wasn't loaded, false by default
         @Override
         public boolean ignoreNotLoadedWarning() {
             return true;
         }
+
+        // Or optionally, you can do everything inside it's constructor instead
+        // As shown, these are the allowed constructor arguments:
+        @Invoke // Don't forget the invoke annotation!
+        LoadableEnumsAndClasses(Environments environments, NeoBus neoBus, ModBus modBus) {
+            // your logic here
+        }
+
+        // The NeoBus and the ModBus above are impls from IEventBus, so they're the same
+        // They are separate classes so the arguments does not copy an instance of IEventBus
 
         // To load this class, you call LoadableClassManager#loadClass(IEventBus, Class<? extends ILoadableClass>[]) in your mod's constructor
         // each class loaded will automatically invoke and run these methods, easily registering and running code instead of calling everything in the mod's constructor
@@ -498,7 +514,6 @@ class EpicAPIExamples {
 
             // And to load this plugin, you call this in your mod's constructor:
             // CompatibilityPluginsManager.registerPlugins(null, ExamplePlugin.class);
-
         }
     }
 

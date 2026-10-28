@@ -1,8 +1,8 @@
 package dev.m6fgr.epic_api.main;
 
+import dev.m6fgr.epic_api.events.bus.ModBus;
 import dev.m6fgr.epic_api.events.bus.NeoBus;
 import net.minecraft.resources.ResourceLocation;
-import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -18,14 +18,12 @@ public sealed interface EpicAPI permits EpicAPIMod {
 
     ModContainer getModContainer();
 
-    IEventBus getModBus();
+    ModBus getModBus();
 
     boolean isDeveloperEnvironment();
 
     ResourceLocation identifier(String path);
 
-    default NeoBus getNeoBus() {
-        return NeoBus.get();
-    }
+    NeoBus getNeoBus();
 
 }

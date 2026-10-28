@@ -12,7 +12,7 @@ import dev.m6fgr.epic_api.events.dispatch.dispatchers.EventDispatch;
  * {@link #MIDDLE} is the default priority for a listener.
  *
  *
- * @see EventDispatch#dispatchEvent(EventDispatcher) 
+ * @see EventDispatch#dispatchEvent(EventDispatcher, EventPriority)
  */
 public enum EventPriority {
     OVERRIDE, // Overrides the event, even if it had the HIGHEST priority
